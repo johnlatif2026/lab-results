@@ -8,7 +8,7 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // إعداد التخزين للملفات
 const storage = multer.diskStorage({
@@ -34,8 +34,15 @@ app.use(session({
 // تحميل البيانات من JSON
 function loadResults() {
   if (!fs.existsSync("results.json")) fs.writeFileSync("results.json", "[]");
-  return JSON.parse(fs.readFileSync("results.json"));
+  const raw = fs.readFileSync("results.json", "utf-8");
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error("❌ ملف النتائج غير صالح JSON. سيتم تفريغه.");
+    return [];
+  }
 }
+
 function saveResults(results) {
   fs.writeFileSync("results.json", JSON.stringify(results, null, 2));
 }
@@ -133,5 +140,5 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`💡 السيرفر شغال على http://localhost:${PORT}`);
+  console.log(`✅ السيرفر شغال على http://localhost:${PORT}`);
 });
