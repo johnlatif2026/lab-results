@@ -9,6 +9,9 @@
   <h2>النتيجة الخاصة بـ <%= result.name %></h2>
   <p>رقم الهاتف: <%= result.phone %></p>
   <p>تاريخ الرفع: <%= new Date(result.date).toLocaleString('ar-EG') %></p>
-  <a href="/download/<%= result.file %>">تحميل النتيجة (PDF)</a>
+
+  <a href="/download/<%= result.file %>" target="_blank">📥 تحميل النتيجة (PDF)</a>
+  <br><br>
+  <a href="/view/<%= result.file %>" target="_blank">👁 عرض النتيجة على المتصفح</a>
 </body>
 </html>
