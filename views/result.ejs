@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/styles.css">
+  <title>نتيجتك</title>
+</head>
+<body>
+  <h2>النتيجة الخاصة بـ <%= result.name %></h2>
+  <p>رقم الهاتف: <%= result.phone %></p>
+  <p>تاريخ الرفع: <%= new Date(result.date).toLocaleString('ar-EG') %></p>
+  <a href="/download/<%= result.file %>">تحميل النتيجة (PDF)</a>
+</body>
+</html>
