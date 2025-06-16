@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="/styles.css">
   <title>نتيجتك</title>
 </head>
 <body>
-  <h2>النتيجة الخاصة بـ <%= result.name %></h2>
+  <h1>مرحبًا <%= result.name %></h1>
   <p>رقم الهاتف: <%= result.phone %></p>
-  <p>تاريخ الرفع: <%= new Date(result.date).toLocaleString('ar-EG') %></p>
-
-  <a href="/download/<%= result.file %>" target="_blank">📥 تحميل النتيجة (PDF)</a>
-  <br><br>
-  <a href="/view/<%= result.file %>" target="_blank">👁 عرض النتيجة على المتصفح</a>
+  <p>التاريخ: <%= new Date(result.date).toLocaleString() %></p>
+  <a href="/download/<%= result.file %>">📥 تحميل النتيجة</a>
+  <a href="/view/<%= result.file %>" target="_blank">👁️ عرض النتيجة</a>
 </body>
 </html>

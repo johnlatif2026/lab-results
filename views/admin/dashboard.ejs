@@ -1,96 +1,28 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>لوحة التحكم</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 30px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    form {
-      display: inline;
-    }
-    button {
-      padding: 6px 12px;
-      margin: 2px;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    button.delete {
-      background-color: #dc3545;
-    }
-    button.notify {
-      background-color: #ffc107;
-      color: black;
-    }
-  </style>
-</head>
+<html>
+<head><title>لوحة التحكم</title></head>
 <body>
   <h1>لوحة التحكم</h1>
-
-  <table>
-    <thead>
+  <table border="1">
+    <tr><th>الاسم</th><th>الهاتف</th><th>الإيميل</th><th>الملف</th><th>خيارات</th></tr>
+    <% results.forEach(r => { %>
       <tr>
-        <th>الاسم</th>
-        <th>الهاتف</th>
-        <th>الإيميل</th>
-        <th>الملف</th>
-        <th>التاريخ</th>
-        <th>الخيارات</th>
+        <td><%= r.name %></td>
+        <td><%= r.phone %></td>
+        <td><%= r.email %></td>
+        <td><a href="/download/<%= r.file %>">تحميل</a> | <a href="/view/<%= r.file %>" target="_blank">عرض</a></td>
+        <td>
+          <form method="POST" action="/admin/delete" style="display:inline;">
+            <input type="hidden" name="phone" value="<%= r.phone %>"/>
+            <button type="submit">🗑️ حذف</button>
+          </form>
+          <form method="POST" action="/admin/notify" style="display:inline;">
+            <input type="hidden" name="phone" value="<%= r.phone %>"/>
+            <button type="submit">📧 إرسال إشعار</button>
+          </form>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      <% results.forEach(result => { %>
-        <tr>
-          <td><%= result.name %></td>
-          <td><%= result.phone %></td>
-          <td><%= result.email %></td>
-          <td><%= result.file %></td>
-          <td><%= new Date(result.date).toLocaleString("ar-EG") %></td>
-          <td>
-            <form action="/download/<%= result.file %>" method="get">
-              <button>تحميل</button>
-            </form>
-
-            <form action="/view/<%= result.file %>" method="get" target="_blank">
-              <button>عرض</button>
-            </form>
-
-            <form action="/admin/delete" method="post" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
-              <input type="hidden" name="phone" value="<%= result.phone %>">
-              <button class="delete">حذف</button>
-            </form>
-
-            <form action="/admin/notify-delete" method="post">
-              <input type="hidden" name="phone" value="<%= result.phone %>">
-              <% const alreadySent = notified.find(n => n.phone === result.phone); %>
-              <button class="notify" <% if (alreadySent) { %>disabled<% } %>>
-                إرسال إشعار حذف
-              </button>
-            </form>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
+    <% }) %>
   </table>
 </body>
 </html>
