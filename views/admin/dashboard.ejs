@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>لوحة التحكم</title>
-  <style>
+<style>
     body {
       font-family: Arial, sans-serif;
       direction: rtl;
@@ -50,19 +50,17 @@
   </style>
 </head>
 <body>
+  <h2>لوحة التحكم</h2>
 
-  <h1>لوحة التحكم</h1>
-
-  <h2>رفع نتيجة جديدة</h2>
   <form action="/admin/upload" method="POST" enctype="multipart/form-data">
-    <input type="text" name="name" placeholder="الاسم" required />
-    <input type="text" name="phone" placeholder="رقم الهاتف" required />
-    <input type="email" name="email" placeholder="البريد الإلكتروني" required />
-    <input type="file" name="pdf" accept="application/pdf" required />
-    <button type="submit" class="btn">رفع التحليل</button>
+    <input type="text" name="name" placeholder="اسم المريض" required>
+    <input type="tel" name="phone" placeholder="رقم الهاتف" required pattern="^01[0-9]{9}$" title="يجب أن يكون رقم الهاتف 11 رقمًا يبدأ بـ 01">
+    <input type="email" name="email" placeholder="البريد الإلكتروني" required>
+    <input type="file" name="pdf" accept=".pdf" required>
+    <button type="submit">رفع التحليل</button>
   </form>
 
-  <h2>جميع النتائج</h2>
+  <h3>جميع التحاليل</h3>
   <table>
     <thead>
       <tr>
@@ -75,29 +73,22 @@
       </tr>
     </thead>
     <tbody>
-      <% results.forEach(result => { %>
+      <% results.forEach(r => { %>
         <tr>
-          <td><%= result.name %></td>
-          <td><%= result.phone %></td>
-          <td><%= result.email %></td>
-          <td><%= result.file %></td>
-          <td><%= new Date(result.date).toLocaleString('ar-EG') %></td>
+          <td><%= r.name %></td>
+          <td><%= r.phone %></td>
+          <td><%= r.email %></td>
+          <td><a href="/view/<%= r.file %>" target="_blank">عرض</a></td>
+          <td><%= r.date %></td>
           <td>
-            <a href="/download/<%= result.file %>" class="btn download">تحميل</a>
-            <a href="/view/<%= result.file %>" target="_blank" class="btn view">عرض</a>
             <form action="/admin/delete" method="POST" style="display:inline;">
-              <input type="hidden" name="phone" value="<%= result.phone %>" />
-              <button type="submit" class="btn delete">🗑 حذف</button>
-            </form>
-            <form action="/admin/notify" method="POST" style="display:inline;">
-              <input type="hidden" name="phone" value="<%= result.phone %>" />
-              <button type="submit" class="btn notify">📧 إشعار</button>
+              <input type="hidden" name="file" value="<%= r.file %>">
+              <button type="submit">🗑 حذف</button>
             </form>
           </td>
         </tr>
       <% }) %>
     </tbody>
   </table>
-
 </body>
 </html>

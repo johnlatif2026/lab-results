@@ -1,13 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-  <title>نتيجتك</title>
+  <meta charset="UTF-8">
+  <title>نتائج التحاليل</title>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <h1>مرحبًا <%= result.name %></h1>
-  <p>رقم الهاتف: <%= result.phone %></p>
-  <p>التاريخ: <%= new Date(result.date).toLocaleString() %></p>
-  <a href="/download/<%= result.file %>">📥 تحميل النتيجة</a>
-  <a href="/view/<%= result.file %>" target="_blank">👁️ عرض النتيجة</a>
+  <h2>نتائج التحاليل</h2>
+
+  <% if (Array.isArray(result) && result.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>الاسم</th>
+          <th>رقم الهاتف</th>
+          <th>التاريخ</th>
+          <th>تحميل</th>
+          <th>عرض</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% result.forEach(r => { %>
+          <tr>
+            <td><%= r.name %></td>
+            <td><%= r.phone %></td>
+            <td><%= r.date %></td>
+            <td><a href="/download/<%= r.file %>">تحميل</a></td>
+            <td><a href="/view/<%= r.file %>" target="_blank">عرض</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>لا توجد نتائج لهذا الرقم.</p>
+  <% } %>
 </body>
 </html>

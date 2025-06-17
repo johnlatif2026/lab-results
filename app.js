@@ -55,8 +55,8 @@ app.get("/", (req, res) => {
 app.post("/result", (req, res) => {
   const phone = req.body.phone;
   const results = loadResults();
-  const result = results.find(r => r.phone === phone);
-  if (result) {
+  const result = results.filter(r => r.phone === phone); // ✅ يسمح بأكثر من نتيجة
+  if (result.length > 0) {
     res.render("result", { result });
   } else {
     res.send("لم يتم العثور على نتيجة لهذا الرقم.");
@@ -102,7 +102,14 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
   const { name, phone, email } = req.body;
   const file = req.file.filename;
 
-  const newResult = { name, phone, email, file, date: new Date().toISOString() };
+  const newResult = {
+    name,
+    phone,
+    email,
+    file,
+    date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" }) // ✅ توقيت مصر
+  };
+
   const results = loadResults();
   results.push(newResult);
   saveResults(results);
@@ -111,29 +118,34 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
     from: process.env.EMAIL_ADDRESS || "johnlatif37@gmail.com",
     to: email,
     subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}، نتيجة التحليل أصبحت جاهزة. يمكنك تحميلها من الموقع باستخدام رقم هاتفك. الذي سجلت به في المعمل`,
+    text: `مرحبًا ${name}، نتيجة التحليل أصبحت جاهزة. يمكنك تحميلها من الموقع باستخدام رقم هاتفك الذي سجلت به في المعمل.`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
-    if (error) console.log("فشل إرسال الإيميل:", error);
+    if (error) console.log("❌ فشل إرسال الإيميل:", error);
     res.redirect("/admin");
   });
 });
 
 app.post("/admin/delete", (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
-  const phone = req.body.phone;
-  const results = loadResults().filter(r => r.phone !== phone);
+
+  const fileToDelete = req.body.file;
+  const results = loadResults().filter(r => r.file !== fileToDelete);
   saveResults(results);
+
+  const filePath = path.join(__dirname, "uploads", fileToDelete);
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
   res.redirect("/admin");
 });
 
 app.post("/admin/notify", (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const phone = req.body.phone;
-  const result = loadResults().find(r => r.phone === phone);
-  if (!result) return res.send("المريض غير موجود.");
+  const fileToNotify = req.body.file;
+  const result = loadResults().find(r => r.file === fileToNotify);
+  if (!result) return res.send("التحليل غير موجود.");
 
   const mailOptions = {
     from: process.env.EMAIL_ADDRESS || "johnlatif37@gmail.com",
