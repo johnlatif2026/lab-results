@@ -117,7 +117,7 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
   results.push(newResult);
   saveResults(results);
 
- const link = `http://lab-results-production.up.railway.app/download/${file}`;
+ const link = `http://lab-results-production.up.railway.app/`;
 
 const mailOptions = {
   from: process.env.EMAIL_ADDRESS,
