@@ -10,12 +10,14 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// إعدادات رفع الملفات
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
 
+// إعدادات التطبيق
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -25,6 +27,7 @@ app.use(session({
   saveUninitialized: true,
 }));
 
+// تحميل و حفظ النتائج
 function loadResults() {
   if (!fs.existsSync("results.json")) fs.writeFileSync("results.json", "[]");
   const raw = fs.readFileSync("results.json", "utf-8");
@@ -34,11 +37,11 @@ function loadResults() {
     return [];
   }
 }
-
 function saveResults(results) {
   fs.writeFileSync("results.json", JSON.stringify(results, null, 2));
 }
 
+// إعداد البريد
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -47,7 +50,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ===================== صفحات العملاء =====================
+// صفحات العملاء
 app.get("/", (req, res) => {
   res.render("index");
 });
@@ -55,7 +58,7 @@ app.get("/", (req, res) => {
 app.post("/result", (req, res) => {
   const phone = req.body.phone;
   const results = loadResults();
-  const result = results.filter(r => r.phone === phone); // ✅ يسمح بأكثر من نتيجة
+  const result = results.filter(r => r.phone === phone);
   if (result.length > 0) {
     res.render("result", { result });
   } else {
@@ -73,7 +76,7 @@ app.get("/view/:filename", (req, res) => {
   res.sendFile(file);
 });
 
-// ===================== لوحة التحكم =====================
+// لوحة التحكم
 app.get("/admin", (req, res) => {
   if (req.session.loggedIn) {
     const results = loadResults();
@@ -107,7 +110,7 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
     phone,
     email,
     file,
-    date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" }) // ✅ توقيت مصر
+    date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
   };
 
   const results = loadResults();
@@ -115,10 +118,10 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
   saveResults(results);
 
   const mailOptions = {
-    from: process.env.EMAIL_ADDRESS || "johnlatif37@gmail.com",
+    from: process.env.EMAIL_ADDRESS,
     to: email,
     subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}، نتيجة التحليل أصبحت جاهزة. يمكنك تحميلها من الموقع باستخدام رقم هاتفك الذي سجلت به في المعمل.`,
+    text: `مرحبًا ${name}، نتيجة التحليل أصبحت جاهزة. يمكنك تحميلها من الموقع باستخدام رقم هاتفك.`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
@@ -148,7 +151,7 @@ app.post("/admin/notify", (req, res) => {
   if (!result) return res.send("التحليل غير موجود.");
 
   const mailOptions = {
-    from: process.env.EMAIL_ADDRESS || "johnlatif37@gmail.com",
+    from: process.env.EMAIL_ADDRESS,
     to: result.email,
     subject: "تم حذف نتيجتك من الموقع",
     text: `مرحبًا ${result.name}، لقد تم حذف نتيجتك من النظام. لأي استفسار يرجى التواصل مع المعمل.`,

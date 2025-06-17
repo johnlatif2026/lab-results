@@ -3,92 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <title>لوحة التحكم</title>
-<style>
-    body {
-      font-family: Arial, sans-serif;
-      direction: rtl;
-      margin: 30px;
-      background-color: #f9f9f9;
-    }
-    h1, h2 {
-      color: #333;
-    }
-    form {
-      margin-bottom: 20px;
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ccc;
-    }
-    input, button {
-      margin: 5px;
-      padding: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #eee;
-    }
-    .btn {
-      padding: 6px 12px;
-      margin: 2px;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-    }
-    .delete { background-color: #e74c3c; color: white; }
-    .notify { background-color: #3498db; color: white; }
-    .download { background-color: #2ecc71; color: white; }
-    .view { background-color: #f39c12; color: white; }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <h2>لوحة التحكم</h2>
+  <h1>لوحة التحكم</h1>
 
   <form action="/admin/upload" method="POST" enctype="multipart/form-data">
     <input type="text" name="name" placeholder="اسم المريض" required>
-    <input type="tel" name="phone" placeholder="رقم الهاتف" required pattern="^01[0-9]{9}$" title="يجب أن يكون رقم الهاتف 11 رقمًا يبدأ بـ 01">
+    <input type="text" name="phone" placeholder="رقم الهاتف" required>
     <input type="email" name="email" placeholder="البريد الإلكتروني" required>
-    <input type="file" name="pdf" accept=".pdf" required>
-    <button type="submit">رفع التحليل</button>
+    <input type="file" name="pdf" accept="application/pdf" required>
+    <button type="submit">رفع النتيجة</button>
   </form>
 
-  <h3>جميع التحاليل</h3>
-  <table>
-    <thead>
+  <hr>
+  <h2>النتائج الحالية</h2>
+  <table border="1">
+    <tr>
+      <th>الاسم</th>
+      <th>الهاتف</th>
+      <th>الإيميل</th>
+      <th>الملف</th>
+      <th>التاريخ</th>
+      <th>خيارات</th>
+    </tr>
+    <% results.forEach(r => { %>
       <tr>
-        <th>الاسم</th>
-        <th>الهاتف</th>
-        <th>الإيميل</th>
-        <th>الملف</th>
-        <th>التاريخ</th>
-        <th>خيارات</th>
+        <td><%= r.name %></td>
+        <td><%= r.phone %></td>
+        <td><%= r.email %></td>
+        <td><a href="/view/<%= r.file %>" target="_blank">عرض</a></td>
+        <td><%= r.date %></td>
+        <td>
+          <form action="/admin/delete" method="POST" style="display:inline;">
+            <input type="hidden" name="file" value="<%= r.file %>">
+            <button type="submit" onclick="return confirm('هل أنت متأكد من الحذف؟')">حذف</button>
+          </form>
+          <form action="/admin/notify" method="POST" style="display:inline;">
+            <input type="hidden" name="file" value="<%= r.file %>">
+            <button type="submit" onclick="return confirm('هل تريد إرسال إشعار بالحذف؟')">إشعار</button>
+          </form>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      <% results.forEach(r => { %>
-        <tr>
-          <td><%= r.name %></td>
-          <td><%= r.phone %></td>
-          <td><%= r.email %></td>
-          <td><a href="/view/<%= r.file %>" target="_blank">عرض</a></td>
-          <td><%= r.date %></td>
-          <td>
-            <form action="/admin/delete" method="POST" style="display:inline;">
-              <input type="hidden" name="file" value="<%= r.file %>">
-              <button type="submit">🗑 حذف</button>
-            </form>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
+    <% }) %>
   </table>
 </body>
 </html>
