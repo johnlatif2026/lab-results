@@ -117,12 +117,16 @@ app.post("/admin/upload", upload.single("pdf"), (req, res) => {
   results.push(newResult);
   saveResults(results);
 
-  const mailOptions = {
-    from: process.env.EMAIL_ADDRESS,
-    to: email,
-    subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}، نتيجة التحليل أصبحت جاهزة. يمكنك تحميلها من الموقع باستخدام رقم هاتفك.`,
-  };
+ const link = `http://lab-results-production.up.railway.app/download/${file}`;
+
+const mailOptions = {
+  from: process.env.EMAIL_ADDRESS,
+  to: email,
+  subject: "نتيجة التحاليل الخاصة بك",
+  text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك تحميلها مباشرة من الرابط التالي:\n${link}\n\nأو يمكنك زيارة الموقع والبحث باستخدام رقم هاتفك.`,
+};
+
+
 
   transporter.sendMail(mailOptions, (error) => {
     if (error) console.log("❌ فشل إرسال الإيميل:", error);
