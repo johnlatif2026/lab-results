@@ -2,14 +2,91 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="/styles.css">
   <title>معمل تحاليل - إدخال رقم الهاتف</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 30px;
+      direction: rtl;
+    }
+
+    .device-selection, .form-section {
+      margin-top: 20px;
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 250px;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .phone-style input, .phone-style button {
+      font-size: 18px;
+      width: 90%;
+    }
+
+    .desktop-style input, .desktop-style button {
+      font-size: 14px;
+      width: 300px;
+    }
+  </style>
 </head>
 <body>
-  <h2>أدخل رقم الهاتف لعرض نتيجتك</h2>
-  <form method="POST" action="/result">
-    <input type="text" name="phone" placeholder="رقم الهاتف" required>
-    <button type="submit">عرض النتيجة</button>
-  </form>
+
+  <h2>يرجى اختيار نوع الجهاز</h2>
+
+  <div class="device-selection">
+    <button onclick="showForm('phone')">📱 الدخول من الهاتف</button>
+    <button onclick="showForm('desktop')">💻 الدخول من الكمبيوتر</button>
+  </div>
+
+  <div id="form" class="form-section">
+    <h3>أدخل رقم الهاتف لعرض نتيجتك</h3>
+    <form method="POST" action="/result" onsubmit="return validatePhone()">
+      <input type="text" name="phone" id="phoneInput" placeholder="رقم الهاتف" required>
+      <br>
+      <button type="submit">عرض النتيجة</button>
+    </form>
+  </div>
+
+  <script>
+    function showForm(device) {
+      const formSection = document.getElementById('form');
+      const input = document.getElementById('phoneInput');
+      formSection.style.display = 'block';
+
+      // إزالة كل الكلاسات
+      formSection.classList.remove('phone-style', 'desktop-style');
+
+      // إضافة كلاس حسب الجهاز
+      if (device === 'phone') {
+        formSection.classList.add('phone-style');
+      } else {
+        formSection.classList.add('desktop-style');
+      }
+    }
+
+    function validatePhone() {
+      const input = document.getElementById('phoneInput').value;
+      const isValid = /^[0-9]{10,11}$/.test(input);
+      if (!isValid) {
+        alert("من فضلك أدخل رقم هاتف صحيح (10 أو 11 رقم).");
+        return false;
+      }
+      return true;
+    }
+  </script>
 </body>
 </html>
