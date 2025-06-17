@@ -158,7 +158,7 @@ app.post("/admin/notify", (req, res) => {
     from: process.env.EMAIL_ADDRESS,
     to: result.email,
     subject: "تم حذف نتيجتك من الموقع",
-    text: `مرحبًا ${result.name}، لقد تم حذف نتيجتك من النظام. لأي استفسار يرجى التواصل مع المعمل.`,
+    text: `مرحبًا ${result.name}، لقد تم حذف نتيجتك من النظام. لأي استفسار يرجى التواصل مع https://wa.me/+201274445091.`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
