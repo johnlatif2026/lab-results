@@ -1,38 +1,155 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>نتائج التحاليل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نتائج التحاليل الطبية</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: right;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      color: #444;
+    }
+    
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+    
+    a {
+      color: #3498db;
+      text-decoration: none;
+      transition: color 0.3s;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    
+    a:hover {
+      color: #2980b9;
+      text-decoration: none;
+      background-color: #f0f7fc;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      background-color: white;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid #eee;
+    }
+    
+    .no-results p {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    
+    .no-results-icon {
+      font-size: 50px;
+      color: #ddd;
+      margin-bottom: 20px;
+    }
+    
+    .options-cell {
+      white-space: nowrap;
+    }
+    
+    .separator {
+      color: #ddd;
+      padding: 0 5px;
+    }
+  </style>
 </head>
 <body>
-  <h2>نتائج التحاليل</h2>
+  <header>
+    <h2>نتائج التحاليل الطبية</h2>
+  </header>
 
-  <% if (Array.isArray(result) && result.length > 0) { %>
-    <table>
-      <thead>
-        <tr>
-          <th>الاسم</th>
-          <th>رقم الهاتف</th>
-          <th>التاريخ</th>
-          <th>تحميل</th>
-          <th>عرض</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% result.forEach(r => { %>
-          <tr>
-            <td><%= r.name %></td>
-            <td><%= r.phone %></td>
-            <td><%= r.date %></td>
-            <td><a href="/download/<%= r.file %>">تحميل</a></td>
-            <td><a href="/view/<%= r.file %>" target="_blank">عرض</a></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } else { %>
-    <p>لا توجد نتائج لهذا الرقم.</p>
-  <% } %>
+  <main>
+    <% if (Array.isArray(result) && result.length > 0) { %>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>اسم المريض</th>
+              <th>رقم الهاتف</th>
+              <th>تاريخ التحليل</th>
+              <th>خيارات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% result.forEach(r => { %>
+              <tr>
+                <td><%= r.name %></td>
+                <td><%= r.phone %></td>
+                <td>
+                  <% 
+                  // معالجة التاريخ بشكل صحيح
+                  let displayDate = 'غير متوفر';
+                  try {
+                    const dateObj = new Date(r.date);
+                    if (!isNaN(dateObj.getTime())) {
+                      displayDate = dateObj.toLocaleDateString('ar-EG', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      });
+                    }
+                  } catch (e) {}
+                  %>
+                  <%= displayDate %>
+                </td>
+                <td class="options-cell">
+                  <a href="/download/<%= r.file %>" class="download-btn">تحميل</a>
+                  <span class="separator">|</span>
+                  <a href="/view/<%= r.file %>" target="_blank" class="view-btn">عرض</a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="no-results">
+        <div class="no-results-icon">☹️</div>
+        <p>لا توجد نتائج متاحة للرقم المطلوب</p>
+        <p>يرجى التأكد من صحة الرقم أو مراجعة المركز الطبي</p>
+      </div>
+    <% } %>
+  </main>
 </body>
 </html>

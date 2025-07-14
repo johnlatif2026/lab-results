@@ -45,8 +45,8 @@ function saveResults(results) {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_ADDRESS || "yourlabemail@gmail.com",
-    pass: process.env.EMAIL_PASSWORD || "your_app_password",
+    user: process.env.EMAIL_ADDRESS || "johnlatif50@gmail.com",
+    pass: process.env.EMAIL_PASSWORD || "wmpy qkjs iooi ukfy",
   },
 });
 
@@ -89,8 +89,8 @@ app.get("/admin", (req, res) => {
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
   if (
-    username === (process.env.ADMIN_USERNAME || "admin") &&
-    password === (process.env.ADMIN_PASSWORD || "123456")
+    username === (process.env.ADMIN_USERNAME || "john") &&
+    password === (process.env.ADMIN_PASSWORD || "latif")
   ) {
     req.session.loggedIn = true;
     res.redirect("/admin");
