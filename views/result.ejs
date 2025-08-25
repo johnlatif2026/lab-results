@@ -4,152 +4,327 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>نتائج التحاليل الطبية</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --accent-color: #e74c3c;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --success-color: #2ecc71;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
     }
     
-    h2 {
-      color: #2c3e50;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark-color);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+    }
+    
+    header {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+    
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    main {
+      padding: 30px 20px;
+    }
+    
+    .results-info {
       text-align: center;
       margin-bottom: 30px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
+    }
+    
+    .results-info p {
+      font-size: 1.1rem;
+      color: #6c757d;
+    }
+    
+    .phone-number {
+      font-weight: bold;
+      color: var(--primary-color);
+      direction: ltr;
+      display: inline-block;
+    }
+    
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 30px;
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 20px 0;
       box-shadow: 0 2px 3px rgba(0,0,0,0.1);
       background-color: white;
+      border-radius: var(--border-radius);
+      overflow: hidden;
     }
     
     th, td {
-      padding: 12px 15px;
+      padding: 15px;
       text-align: right;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #e9ecef;
     }
     
     th {
       background-color: #f8f9fa;
       font-weight: bold;
-      color: #444;
+      color: var(--secondary-color);
+      position: sticky;
+      top: 0;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
     }
     
     tr:hover {
-      background-color: #f5f5f5;
+      background-color: #f8f9fa;
     }
     
-    a {
-      color: #3498db;
-      text-decoration: none;
-      transition: color 0.3s;
-      padding: 5px 10px;
-      border-radius: 4px;
+    .action-buttons {
+      display: flex;
+      gap: 10px;
     }
     
-    a:hover {
-      color: #2980b9;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 15px;
+      border-radius: var(--border-radius);
+      font-weight: bold;
       text-decoration: none;
-      background-color: #f0f7fc;
+      transition: var(--transition);
+      font-size: 0.9rem;
+    }
+    
+    .btn-download {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-download:hover {
+      background-color: #2980b9;
+      color: white;
+    }
+    
+    .btn-view {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-view:hover {
+      background-color: #27ae60;
+      color: white;
+    }
+    
+    .btn i {
+      margin-left: 5px;
     }
     
     .no-results {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       background-color: white;
-      border-radius: 8px;
+      border-radius: var(--border-radius);
       margin-top: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      border: 1px solid #eee;
-    }
-    
-    .no-results p {
-      font-size: 18px;
-      color: #666;
-      margin-bottom: 20px;
+      box-shadow: var(--box-shadow);
+      border: 1px solid #e9ecef;
     }
     
     .no-results-icon {
-      font-size: 50px;
-      color: #ddd;
+      font-size: 4rem;
+      color: #dee2e6;
       margin-bottom: 20px;
     }
     
-    .options-cell {
-      white-space: nowrap;
+    .no-results h3 {
+      color: #6c757d;
+      margin-bottom: 15px;
     }
     
-    .separator {
-      color: #ddd;
-      padding: 0 5px;
+    .no-results p {
+      color: #6c757d;
+      margin-bottom: 25px;
+    }
+    
+    .search-again {
+      display: inline-block;
+      padding: 12px 25px;
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: white;
+      text-decoration: none;
+      border-radius: var(--border-radius);
+      font-weight: bold;
+      transition: var(--transition);
+    }
+    
+    .search-again:hover {
+      opacity: 0.9;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #6c757d;
+      font-size: 0.9rem;
+      padding: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      th, td {
+        padding: 10px;
+      }
+      
+      .btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+      
+      header h1 {
+        font-size: 1.5rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h2>نتائج التحاليل الطبية</h2>
-  </header>
+  <div class="container">
+    <header>
+      <a href="/" class="back-btn">
+        <i class="fas fa-arrow-right"></i> العودة
+      </a>
+      <h1>نتائج التحاليل الطبية</h1>
+    </header>
 
-  <main>
-    <% if (Array.isArray(result) && result.length > 0) { %>
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>اسم المريض</th>
-              <th>رقم الهاتف</th>
-              <th>تاريخ التحليل</th>
-              <th>خيارات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% result.forEach(r => { %>
+    <main>
+      <div class="results-info">
+        <p>النتائج المتاحة للرقم: <span class="phone-number"><%= phoneNumber || "غير محدد" %></span></p>
+      </div>
+      
+      <% if (Array.isArray(result) && result.length > 0) { %>
+        <div class="table-responsive">
+          <table>
+            <thead>
               <tr>
-                <td><%= r.name %></td>
-                <td><%= r.phone %></td>
-                <td>
-                  <% 
-                  // معالجة التاريخ بشكل صحيح
-                  let displayDate = 'غير متوفر';
-                  try {
-                    const dateObj = new Date(r.date);
-                    if (!isNaN(dateObj.getTime())) {
-                      displayDate = dateObj.toLocaleDateString('ar-EG', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      });
-                    }
-                  } catch (e) {}
-                  %>
-                  <%= displayDate %>
-                </td>
-                <td class="options-cell">
-                  <a href="/download/<%= r.file %>" class="download-btn">تحميل</a>
-                  <span class="separator">|</span>
-                  <a href="/view/<%= r.file %>" target="_blank" class="view-btn">عرض</a>
-                </td>
+                <th>اسم المريض</th>
+                <th>رقم الهاتف</th>
+                <th>تاريخ التحليل</th>
+                <th>خيارات</th>
               </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-    <% } else { %>
-      <div class="no-results">
-        <div class="no-results-icon">☹️</div>
-        <p>لا توجد نتائج متاحة للرقم المطلوب</p>
-        <p>يرجى التأكد من صحة الرقم أو مراجعة المركز الطبي</p>
-      </div>
-    <% } %>
-  </main>
+            </thead>
+            <tbody>
+              <% result.forEach(r => { %>
+                <tr>
+                  <td><%= r.name %></td>
+                  <td><%= r.phone %></td>
+                  <td>
+                    <% 
+                    let displayDate = 'غير متوفر';
+                    try {
+                      const dateObj = new Date(r.date);
+                      if (!isNaN(dateObj.getTime())) {
+                        displayDate = dateObj.toLocaleDateString('ar-EG', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        });
+                      }
+                    } catch (e) {}
+                    %>
+                    <%= displayDate %>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <a href="/download/<%= r.file %>" class="btn btn-download">
+                        <i class="fas fa-download"></i> تحميل
+                      </a>
+                      <a href="/view/<%= r.file %>" target="_blank" class="btn btn-view">
+                        <i class="fas fa-eye"></i> عرض
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="no-results">
+          <div class="no-results-icon">☹️</div>
+          <h3>لا توجد نتائج متاحة</h3>
+          <p>لا توجد نتائج متاحة للرقم المطلوب</p>
+          <p>يرجى التأكد من صحة الرقم أو مراجعة المركز الطبي</p>
+          <a href="/" class="search-again">البحث مرة أخرى</a>
+        </div>
+      <% } %>
+    </main>
+    
+    <footer>
+      <p>© 2023 معمل التحاليل الطبية. جميع الحقوق محفوظة.</p>
+    </footer>
+  </div>
 </body>
 </html>
