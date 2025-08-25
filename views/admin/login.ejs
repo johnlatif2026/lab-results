@@ -1,15 +1,176 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <link rel="stylesheet" href="styles.css">
-  <title>تسجيل الدخول</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول - لوحة التحكم</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --accent-color: #e74c3c;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --success-color: #2ecc71;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--dark-color);
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+    }
+    
+    .login-header {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+    
+    .login-header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    
+    .login-header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+    
+    .login-form {
+      padding: 30px 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--secondary-color);
+    }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      color: #6c757d;
+    }
+    
+    .input-with-icon input {
+      padding-right: 45px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    
+    .form-group input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .login-btn {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+    }
+    
+    .login-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 576px) {
+      .login-header h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>تسجيل دخول المسؤول</h1>
-  <form method="POST" action="/admin/login">
-    <input type="text" name="username" placeholder="اسم المستخدم" required /><br/>
-    <input type="password" name="password" placeholder="كلمة المرور" required /><br/>
-    <button type="submit">دخول</button>
-  </form>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>تسجيل دخول المسؤول</h1>
+      <p>لوحة تحكم معمل التحاليل الطبية</p>
+    </div>
+    
+    <form class="login-form" method="POST" action="/admin/login">
+      <div class="form-group">
+        <label for="username">اسم المستخدم</label>
+        <div class="input-with-icon">
+          <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم" required>
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">كلمة المرور</label>
+        <div class="input-with-icon">
+          <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required>
+          <i class="fas fa-lock"></i>
+        </div>
+      </div>
+      
+      <button type="submit" class="login-btn">
+        <i class="fas fa-sign-in-alt"></i> دخول
+      </button>
+    </form>
+    
+    <div class="login-footer">
+      <p>© 2023 معمل التحاليل الطبية. جميع الحقوق محفوظة.</p>
+    </div>
+  </div>
 </body>
 </html>
