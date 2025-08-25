@@ -58,11 +58,20 @@ app.get("/", (req, res) => {
 app.post("/result", (req, res) => {
   const phone = req.body.phone;
   const results = loadResults();
-  const result = results.filter(r => r.phone === phone);
-  if (result.length > 0) {
-    res.render("result", { result });
+  const filteredResults = results.filter(r => r.phone === phone);
+  
+  if (filteredResults.length > 0) {
+    // تمرير كلا المتغيرين: result و phoneNumber
+    res.render("result", { 
+      result: filteredResults,
+      phoneNumber: phone
+    });
   } else {
-    res.send("لم يتم العثور على نتيجة لهذا الرقم.");
+    // نمرر رقم الهاتف حتى في حالة عدم وجود نتائج
+    res.render("result", { 
+      result: [],
+      phoneNumber: phone
+    });
   }
 });
 
