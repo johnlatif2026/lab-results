@@ -271,7 +271,6 @@
               <tr>
                 <th>اسم المريض</th>
                 <th>رقم الهاتف</th>
-                <th>خيارات</th>
               </tr>
             </thead>
             <tbody>
@@ -279,22 +278,6 @@
                 <tr>
                   <td><%= r.name %></td>
                   <td><%= r.phone %></td>
-                  <td>
-                    <% 
-                    let displayDate = 'غير متوفر';
-                    try {
-                      const dateObj = new Date(r.date);
-                      if (!isNaN(dateObj.getTime())) {
-                        displayDate = dateObj.toLocaleDateString('ar-EG', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        });
-                      }
-                    } catch (e) {}
-                    %>
-                    <%= displayDate %>
-                  </td>
                   <td>
                     <div class="action-buttons">
                       <a href="/download/<%= r.file %>" class="btn btn-download">
