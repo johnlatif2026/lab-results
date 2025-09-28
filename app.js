@@ -108,6 +108,15 @@ app.post("/admin/login", (req, res) => {
   }
 });
 
+app.get("/admin/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.send("حدث خطأ أثناء تسجيل الخروج.");
+    }
+    res.redirect("/admin");
+  });
+});
+
 app.post("/admin/upload", upload.single("pdf"), (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
