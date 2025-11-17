@@ -118,11 +118,42 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
     
     .theme-toggle:hover {
       background-color: rgba(255, 255, 255, 0.3);
-      transform: rotate(30deg);
+      transform: rotate(15deg);
+    }
+    
+    .theme-icon {
+      transition: var(--transition);
+    }
+    
+    .sun-icon, .moon-icon {
+      position: absolute;
+      transition: var(--transition);
+    }
+    
+    .sun-icon {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    
+    .moon-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    [data-theme="dark"] .sun-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    [data-theme="dark"] .moon-icon {
+      opacity: 0;
+      transform: scale(0.5);
     }
     
     .back-btn {
@@ -378,10 +409,11 @@
     <header>
       <div class="header-controls">
         <button class="theme-toggle" id="themeToggle">
-          <i class="fas fa-moon"></i>
+          <i class="fas fa-sun sun-icon"></i>
+          <i class="fas fa-moon moon-icon"></i>
         </button>
         <a href="/" class="back-btn">
-          <i class="fas fa-arrow-right"></i> العودة
+          <i class="fas fa-arrow-right"></i> العودة للرئيسية
         </a>
       </div>
       <h1>نتائج التحاليل الطبية</h1>
@@ -449,24 +481,20 @@
     const themeToggle = document.getElementById('themeToggle');
     const body = document.body;
     
-    themeToggle.addEventListener('click', () => {
+    // منع السلوك الافتراضي للزر
+    themeToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
       const currentTheme = body.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       
       body.setAttribute('data-theme', newTheme);
       
-      // تحديث الأيقونة
-      const icon = themeToggle.querySelector('i');
-      if (newTheme === 'dark') {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      } else {
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
-      }
-      
       // حفظ التفضيل في التخزين المحلي
       localStorage.setItem('theme', newTheme);
+      
+      console.log('تم تغيير الوضع إلى:', newTheme);
     });
     
     // تحميل التفضيل المحفوظ
@@ -474,11 +502,13 @@
       const savedTheme = localStorage.getItem('theme') || 'light';
       body.setAttribute('data-theme', savedTheme);
       
-      const icon = themeToggle.querySelector('i');
-      if (savedTheme === 'dark') {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      }
+      console.log('تم تحميل الوضع:', savedTheme);
+    });
+
+    // التأكد من أن زر العودة يعمل
+    document.querySelector('.back-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      window.location.href = '/';
     });
   </script>
 </body>
