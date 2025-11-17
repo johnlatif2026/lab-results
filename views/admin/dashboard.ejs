@@ -449,7 +449,13 @@
               <label for="name">اسم المريض</label>
               <input type="text" id="name" name="name" placeholder="أدخل اسم المريض" required>
             </div>
-            
+
+            <div class="form-group">
+              <label for="test">اسم التحليل</label>
+              <input type="text" id="test" name="test" placeholder="أدخل اسم التحليل" required>
+            </div>
+          </div>
+
             <div class="form-group">
               <label for="phone">رقم الهاتف</label>
               <input type="text" id="phone" name="phone" placeholder="أدخل رقم الهاتف" required>
@@ -483,6 +489,7 @@
               <thead>
                 <tr>
                   <th>الاسم</th>
+                  <th>اسم التحليل</th>
                   <th>الهاتف</th>
                   <th>الإيميل</th>
                   <th>الملف</th>
@@ -494,6 +501,7 @@
                 <% results.forEach(r => { %>
                   <tr>
                     <td><%= r.name %></td>
+                    <td><%= r.test %></td>
                     <td><%= r.phone %></td>
                     <td><%= r.email %></td>
                     <td>
