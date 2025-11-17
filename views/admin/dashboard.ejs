@@ -21,17 +21,44 @@
       --transition: all 0.3s ease;
       --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     }
+
+    /* الوضع الفاتح */
+    [data-theme="light"] {
+      --bg-color: #f5f7fa;
+      --bg-secondary: #ffffff;
+      --text-color: #343a40;
+      --text-secondary: #6c757d;
+      --border-color: #e9ecef;
+      --header-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      --sidebar-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --input-bg: #f8f9fa;
+    }
+
+    /* الوضع المظلم */
+    [data-theme="dark"] {
+      --bg-color: #1a1d23;
+      --bg-secondary: #2d333b;
+      --text-color: #e9ecef;
+      --text-secondary: #adb5bd;
+      --border-color: #444c56;
+      --header-bg: linear-gradient(135deg, #1e3a5f, #0d1b2a);
+      --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      --sidebar-bg: linear-gradient(135deg, #1e3a5f, #0d1b2a);
+      --input-bg: #3b424c;
+    }
     
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
-      color: var(--dark-color);
+      background-color: var(--bg-color);
+      color: var(--text-color);
       line-height: 1.6;
       min-height: 100vh;
     }
@@ -45,12 +72,14 @@
     /* الشريط الجانبي المحسن */
     .sidebar {
       width: 280px;
-      background: var(--gradient);
+      background: var(--sidebar-bg);
       color: white;
       padding: 0;
       box-shadow: var(--box-shadow);
       position: relative;
       z-index: 10;
+      display: flex;
+      flex-direction: column;
     }
     
     .sidebar::before {
@@ -93,6 +122,7 @@
     .sidebar-menu {
       list-style: none;
       padding: 0 15px;
+      flex: 1;
     }
     
     .sidebar-menu li {
@@ -142,11 +172,7 @@
     
     .sidebar-footer {
       padding: 20px 25px;
-      margin-top: auto;
       border-top: 1px solid rgba(255, 255, 255, 0.15);
-      position: absolute;
-      bottom: 0;
-      width: 100%;
     }
     
     .logout-btn {
@@ -175,13 +201,14 @@
       flex: 1;
       padding: 25px;
       overflow-y: auto;
+      background-color: var(--bg-color);
     }
     
     .page-header {
-      background: white;
+      background: var(--bg-secondary);
       padding: 25px 30px;
       border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
+      box-shadow: var(--card-shadow);
       margin-bottom: 25px;
       display: flex;
       justify-content: space-between;
@@ -201,12 +228,72 @@
     }
     
     .page-header h1 {
-      color: var(--secondary-color);
+      color: var(--text-color);
       font-size: 1.7rem;
       font-weight: 700;
     }
     
-    .page-header > div {
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .theme-toggle {
+      background-color: rgba(52, 152, 219, 0.2);
+      color: var(--primary-color);
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    [data-theme="dark"] .theme-toggle {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #ffd43b;
+    }
+    
+    .theme-toggle:hover {
+      transform: rotate(15deg);
+    }
+    
+    .theme-icon {
+      transition: var(--transition);
+    }
+    
+    .sun-icon, .moon-icon {
+      position: absolute;
+      transition: var(--transition);
+    }
+    
+    .sun-icon {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    
+    .moon-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    [data-theme="dark"] .sun-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    [data-theme="dark"] .moon-icon {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    
+    .user-info {
       background: var(--gradient);
       color: white;
       padding: 8px 18px;
@@ -223,10 +310,10 @@
     }
     
     .stat-card {
-      background: white;
+      background: var(--bg-secondary);
       padding: 25px;
       border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
+      box-shadow: var(--card-shadow);
       text-align: center;
       transition: var(--transition);
       position: relative;
@@ -256,7 +343,7 @@
     
     .stat-card:hover {
       transform: translateY(-8px);
-      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
     }
     
     .stat-card i {
@@ -286,20 +373,21 @@
       font-size: 2.3rem;
       margin-bottom: 8px;
       font-weight: 700;
+      color: var(--text-color);
     }
     
     .stat-card p {
-      color: #6c757d;
+      color: var(--text-secondary);
       font-size: 1rem;
       font-weight: 500;
     }
     
     /* نموذج الرفع المحسن */
     .upload-section {
-      background: white;
+      background: var(--bg-secondary);
       padding: 30px;
       border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
+      box-shadow: var(--card-shadow);
       margin-bottom: 35px;
       position: relative;
       overflow: hidden;
@@ -316,10 +404,10 @@
     }
     
     .upload-section h2 {
-      color: var(--secondary-color);
+      color: var(--text-color);
       margin-bottom: 25px;
       padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       font-size: 1.5rem;
@@ -353,23 +441,24 @@
       display: block;
       margin-bottom: 10px;
       font-weight: 600;
-      color: var(--secondary-color);
+      color: var(--text-color);
       font-size: 1rem;
     }
     
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 14px 16px;
-      border: 2px solid #e9ecef;
+      border: 2px solid var(--border-color);
       border-radius: var(--border-radius);
       font-size: 1rem;
       transition: var(--transition);
-      background: #f8f9fa;
+      background: var(--input-bg);
+      color: var(--text-color);
     }
     
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--primary-light);
-      background: white;
+      background: var(--bg-secondary);
       outline: none;
       box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
     }
@@ -401,10 +490,10 @@
     
     /* جدول النتائج المحسن */
     .results-section {
-      background: white;
+      background: var(--bg-secondary);
       padding: 30px;
       border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
+      box-shadow: var(--card-shadow);
       position: relative;
       overflow: hidden;
     }
@@ -420,10 +509,10 @@
     }
     
     .results-section h2 {
-      color: var(--secondary-color);
+      color: var(--text-color);
       margin-bottom: 25px;
       padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       font-size: 1.5rem;
@@ -444,24 +533,25 @@
     .table-responsive {
       overflow-x: auto;
       border-radius: var(--border-radius);
-      box-shadow: 0 0 0 1px #e9ecef;
+      box-shadow: 0 0 0 1px var(--border-color);
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
+      background-color: var(--bg-secondary);
     }
     
     th, td {
       padding: 16px 20px;
       text-align: right;
-      border-bottom: 1px solid #e9ecef;
+      border-bottom: 1px solid var(--border-color);
     }
     
     th {
-      background-color: #f8f9fa;
+      background-color: var(--bg-color);
       font-weight: 700;
-      color: var(--secondary-color);
+      color: var(--text-color);
       position: sticky;
       top: 0;
     }
@@ -471,7 +561,7 @@
     }
     
     tr:hover {
-      background-color: #f8f9fa;
+      background-color: var(--bg-color);
       transform: scale(1.01);
     }
     
@@ -538,18 +628,24 @@
     .no-results {
       text-align: center;
       padding: 50px 20px;
-      color: #6c757d;
+      color: var(--text-secondary);
     }
     
     .no-results i {
       font-size: 4rem;
       margin-bottom: 20px;
-      color: #dee2e6;
+      color: var(--text-secondary);
+      opacity: 0.7;
     }
     
     .no-results h3 {
       margin-bottom: 10px;
       font-weight: 600;
+      color: var(--text-color);
+    }
+    
+    .no-results p {
+      color: var(--text-secondary);
     }
     
     /* تأثيرات للزر عند التمرير */
@@ -601,10 +697,6 @@
       .sidebar-menu a:hover, .sidebar-menu a.active {
         transform: translateY(-3px);
       }
-      
-      .sidebar-footer {
-        position: relative;
-      }
     }
     
     @media (max-width: 768px) {
@@ -631,10 +723,15 @@
         width: 100%;
         height: 6px;
       }
+      
+      .header-controls {
+        flex-direction: column;
+        gap: 10px;
+      }
     }
   </style>
 </head>
-<body>
+<body data-theme="light">
   <div class="admin-container">
     <!-- الشريط الجانبي المحسن -->
     <div class="sidebar">
@@ -657,7 +754,13 @@
     <div class="main-content">
       <div class="page-header">
         <h1>إدارة نتائج التحاليل</h1>
-        <div>مرحباً، المسؤول</div>
+        <div class="header-controls">
+          <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-sun sun-icon"></i>
+            <i class="fas fa-moon moon-icon"></i>
+          </button>
+          <div class="user-info">مرحباً، المسؤول</div>
+        </div>
       </div>
       
       <div class="stats-cards">
@@ -726,74 +829,4 @@
         
         <div class="table-responsive">
           <% if (results.length > 0) { %>
-            <table>
-              <thead>
-                <tr>
-                  <th>الاسم</th>
-                  <th>اسم التحليل</th>
-                  <th>الهاتف</th>
-                  <th>الإيميل</th>
-                  <th>الملف</th>
-                  <th>التاريخ</th>
-                  <th>خيارات</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% results.forEach(r => { %>
-                  <tr>
-                    <td><%= r.name %></td>
-                    <td><%= r.test %></td>
-                    <td><%= r.phone %></td>
-                    <td><%= r.email %></td>
-                    <td>
-                      <a href="/view/<%= r.file %>" target="_blank" class="btn btn-view">
-                        <i class="fas fa-eye"></i> عرض
-                      </a>
-                    </td>
-                    <td><%= r.date %></td>
-                    <td>
-                      <div class="action-buttons">
-                        <form action="/admin/delete" method="POST" style="display:inline;">
-                          <input type="hidden" name="file" value="<%= r.file %>">
-                          <button type="submit" class="btn btn-delete" onclick="return confirm('هل أنت متأكد من الحذف؟')">
-                            <i class="fas fa-trash"></i> حذف
-                          </button>
-                        </form>
-                        
-                        <form action="/admin/notify" method="POST" style="display:inline;">
-                          <input type="hidden" name="file" value="<%= r.file %>">
-                          <button type="submit" class="btn btn-notify" onclick="return confirm('هل تريد إرسال إشعار بالحذف؟')">
-                            <i class="fas fa-bell"></i> إشعار
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          <% } else { %>
-            <div class="no-results">
-              <i class="fas fa-inbox"></i>
-              <h3>لا توجد نتائج</h3>
-              <p>لم يتم رفع أي نتائج حتى الآن</p>
-            </div>
-          <% } %>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // إضافة تأثيرات للزر عند التمرير
-    window.addEventListener('scroll', function() {
-      const uploadBtn = document.querySelector('.upload-btn');
-      if (window.scrollY > 100) {
-        uploadBtn.classList.add('scrolled');
-      } else {
-        uploadBtn.classList.remove('scrolled');
-      }
-    });
-  </script>
-</body>
-</html>
+            <ta
