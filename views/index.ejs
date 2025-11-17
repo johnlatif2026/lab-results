@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نتائج التحاليل الطبية</title>
+  <title>معمل تحاليل - إدخال رقم الهاتف</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -31,6 +31,7 @@
       --border-color: #e9ecef;
       --header-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      --input-bg: #f8f9fa;
     }
 
     /* الوضع المظلم */
@@ -42,6 +43,7 @@
       --border-color: #444c56;
       --header-bg: linear-gradient(135deg, #1e3a5f, #0d1b2a);
       --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      --input-bg: #3b424c;
     }
     
     * {
@@ -56,24 +58,29 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       min-height: 100vh;
-      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 20px;
+      line-height: 1.6;
     }
     
     .container {
-      max-width: 1200px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: 900px;
       background-color: var(--bg-secondary);
       border-radius: var(--border-radius);
       box-shadow: var(--card-shadow);
       overflow: hidden;
+      margin: 0 auto;
       position: relative;
     }
     
     header {
       background: var(--header-bg);
       color: white;
-      padding: 25px 20px;
+      padding: 30px 25px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -91,33 +98,22 @@
       pointer-events: none;
     }
     
-    header h1 {
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-      font-weight: 700;
-      position: relative;
-    }
-    
-    .header-controls {
+    .theme-toggle {
       position: absolute;
       top: 20px;
       left: 20px;
-      display: flex;
-      gap: 10px;
-    }
-    
-    .theme-toggle {
       background-color: rgba(255, 255, 255, 0.2);
       color: white;
       border: none;
-      width: 40px;
-      height: 40px;
+      width: 45px;
+      height: 45px;
       border-radius: 50%;
       cursor: pointer;
       transition: var(--transition);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 1.2rem;
     }
     
     .theme-toggle:hover {
@@ -125,187 +121,181 @@
       transform: rotate(30deg);
     }
     
-    .back-btn {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: none;
-      padding: 10px 15px;
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      position: relative;
+    }
+    
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .content {
+      padding: 40px 30px;
+    }
+    
+    .content h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--text-color);
+      font-weight: 600;
+      font-size: 1.6rem;
+    }
+    
+    .device-selection {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+    
+    .device-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 180px;
+      height: 180px;
+      background-color: var(--bg-color);
+      border: 2px solid var(--border-color);
       border-radius: var(--border-radius);
       cursor: pointer;
       transition: var(--transition);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      font-weight: 500;
-    }
-    
-    .back-btn:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-      transform: translateX(-5px);
-    }
-    
-    main {
-      padding: 30px 20px;
-    }
-    
-    .results-info {
-      text-align: center;
-      margin-bottom: 30px;
-      background: var(--bg-secondary);
       padding: 20px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      border-left: 5px solid var(--primary-color);
+      position: relative;
+      overflow: hidden;
     }
     
-    .results-info p {
-      font-size: 1.1rem;
-      color: var(--text-secondary);
-    }
-    
-    .phone-number {
-      font-weight: bold;
-      color: var(--primary-color);
-      direction: ltr;
-      display: inline-block;
-      background: rgba(52, 152, 219, 0.1);
-      padding: 5px 12px;
-      border-radius: 20px;
-      margin: 0 5px;
-    }
-    
-    .table-responsive {
-      overflow-x: auto;
-      margin-bottom: 30px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border-color);
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: var(--bg-secondary);
-    }
-    
-    th, td {
-      padding: 16px 20px;
-      text-align: right;
-      border-bottom: 1px solid var(--border-color);
-    }
-    
-    th {
-      background-color: var(--bg-color);
-      font-weight: bold;
-      color: var(--text-color);
-      position: sticky;
+    .device-btn::before {
+      content: '';
+      position: absolute;
       top: 0;
+      right: 0;
+      width: 100%;
+      height: 5px;
+      background: var(--gradient);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
     }
     
-    tr:last-child td {
-      border-bottom: none;
+    .device-btn:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--card-shadow);
+      border-color: var(--primary-color);
     }
     
-    tr {
+    .device-btn:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .device-btn i {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      color: var(--primary-color);
       transition: var(--transition);
     }
     
-    tr:hover {
+    .device-btn:hover i {
+      transform: scale(1.1);
+    }
+    
+    .device-btn span {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--text-color);
+    }
+    
+    .form-section {
+      display: none;
       background-color: var(--bg-color);
-      transform: scale(1.01);
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 16px;
-      border-radius: var(--border-radius);
-      font-weight: 600;
-      text-decoration: none;
-      transition: var(--transition);
-      font-size: 0.9rem;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .btn-download {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .btn-download:hover {
-      background-color: var(--primary-light);
-      color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
-    }
-    
-    .btn-view {
-      background-color: var(--success-color);
-      color: white;
-    }
-    
-    .btn-view:hover {
-      background-color: var(--success-light);
-      color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
-    }
-    
-    .btn i {
-      margin-left: 6px;
-    }
-    
-    .no-results {
-      text-align: center;
-      padding: 60px 20px;
-      background-color: var(--bg-secondary);
+      padding: 30px;
       border-radius: var(--border-radius);
       margin-top: 20px;
+      animation: fadeIn 0.5s ease;
+      border-top: 5px solid var(--primary-color);
       box-shadow: var(--card-shadow);
-      border: 1px solid var(--border-color);
     }
     
-    .no-results-icon {
-      font-size: 5rem;
-      margin-bottom: 20px;
-      color: var(--text-secondary);
-      opacity: 0.7;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
-    .no-results h3 {
+    .form-section h3 {
+      margin-bottom: 25px;
       color: var(--text-color);
-      margin-bottom: 15px;
+      text-align: center;
+      font-size: 1.4rem;
       font-weight: 600;
     }
     
-    .no-results p {
-      color: var(--text-secondary);
+    .input-group {
       margin-bottom: 25px;
     }
     
-    .search-again {
-      display: inline-flex;
-      align-items: center;
-      padding: 12px 25px;
+    .input-group input {
+      width: 100%;
+      padding: 18px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 1.1rem;
+      transition: var(--transition);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+    }
+    
+    .input-group input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+      background-color: var(--bg-secondary);
+    }
+    
+    .submit-btn {
       background: var(--gradient);
       color: white;
-      text-decoration: none;
+      border: none;
+      padding: 18px 30px;
       border-radius: var(--border-radius);
+      font-size: 1.2rem;
       font-weight: bold;
+      cursor: pointer;
       transition: var(--transition);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
     }
     
-    .search-again:hover {
+    .submit-btn:hover {
       transform: translateY(-3px);
       box-shadow: 0 8px 15px rgba(52, 152, 219, 0.4);
-      color: white;
+    }
+    
+    .phone-style .input-group input,
+    .phone-style .submit-btn {
+      font-size: 18px;
+      padding: 20px;
+    }
+    
+    .desktop-style .input-group input {
+      max-width: 500px;
+      margin: 0 auto;
+      display: block;
+    }
+    
+    .desktop-style .submit-btn {
+      max-width: 500px;
+      margin: 0 auto;
+      display: block;
     }
     
     footer {
@@ -314,7 +304,7 @@
       color: var(--text-secondary);
       font-size: 0.9rem;
       padding: 20px;
-      border-top: 1px solid var(--border-color);
+      width: 100%;
     }
     
     .pulse {
@@ -334,41 +324,51 @@
     }
     
     @media (max-width: 768px) {
-      th, td {
-        padding: 12px 15px;
+      .device-btn {
+        width: 160px;
+        height: 160px;
       }
       
-      .btn {
-        padding: 8px 12px;
-        font-size: 0.85rem;
+      .device-btn i {
+        font-size: 3rem;
+      }
+      
+      header h1 {
+        font-size: 1.7rem;
+      }
+      
+      .content {
+        padding: 30px 20px;
+      }
+      
+      .content h2 {
+        font-size: 1.4rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .device-btn {
+        width: 140px;
+        height: 140px;
+      }
+      
+      .device-btn i {
+        font-size: 2.5rem;
       }
       
       header h1 {
         font-size: 1.5rem;
       }
       
-      .header-controls {
-        position: relative;
-        top: 0;
-        left: 0;
-        justify-content: center;
-        margin-bottom: 15px;
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .action-buttons {
-        flex-direction: column;
-        gap: 8px;
+      .form-section {
+        padding: 20px;
       }
       
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-      
-      .results-info p {
-        font-size: 1rem;
+      .theme-toggle {
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
       }
     }
   </style>
@@ -376,75 +376,80 @@
 <body data-theme="light">
   <div class="container">
     <header>
-      <div class="header-controls">
-        <button class="theme-toggle" id="themeToggle">
-          <i class="fas fa-moon"></i>
-        </button>
-        <a href="/" class="back-btn">
-          <i class="fas fa-arrow-right"></i> العودة
-        </a>
-      </div>
-      <h1>نتائج التحاليل الطبية</h1>
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+      <h1>معمل التحاليل الطبية</h1>
+      <p>خدمة الاستعلام عن نتائج التحاليل عبر الإنترنت</p>
     </header>
-
-    <main>
-      <div class="results-info">
-        <p>النتائج المتاحة للرقم: <span class="phone-number"><%= phoneNumber || "غير محدد" %></span></p>
+    
+    <div class="content">
+      <h2>يرجى اختيار نوع الجهاز</h2>
+      
+      <div class="device-selection">
+        <div class="device-btn pulse" onclick="showForm('phone')">
+          <i class="fas fa-mobile-alt"></i>
+          <span>الدخول من الهاتف</span>
+        </div>
+        <div class="device-btn pulse" onclick="showForm('desktop')">
+          <i class="fas fa-laptop"></i>
+          <span>الدخول من الكمبيوتر</span>
+        </div>
       </div>
       
-      <% if (Array.isArray(result) && result.length > 0) { %>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>اسم المريض</th>
-                <th>اسم التحليل</th>
-                <th>رقم الهاتف</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% result.forEach(r => { %>
-                <tr>
-                  <td><%= r.name %></td>
-                  <td><%= r.test %></td>
-                  <td><%= r.phone %></td>
-                  <td>
-                    <div class="action-buttons">
-                      <a href="/download/<%= r.file %>" class="btn btn-download">
-                        <i class="fas fa-download"></i> تحميل
-                      </a>
-                      <a href="/view/<%= r.file %>" target="_blank" class="btn btn-view">
-                        <i class="fas fa-eye"></i> عرض
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-      <% } else { %>
-        <div class="no-results">
-          <div class="no-results-icon pulse">
-            <i class="fas fa-file-medical-alt"></i>
+      <div id="form" class="form-section">
+        <h3>أدخل رقم الهاتف لعرض نتيجتك</h3>
+        <form method="POST" action="/result" onsubmit="return validatePhone()">
+          <div class="input-group">
+            <input type="text" name="phone" id="phoneInput" placeholder="رقم الهاتف (10 أو 11 رقم)" required>
           </div>
-          <h3>لا توجد نتائج متاحة</h3>
-          <p>لا توجد نتائج متاحة للرقم المطلوب</p>
-          <p>يرجى التأكد من صحة الرقم أو مراجعة المركز الطبي</p>
-          <a href="/" class="search-again">
-            <i class="fas fa-search"></i> البحث مرة أخرى
-          </a>
-        </div>
-      <% } %>
-    </main>
-    
-    <footer>
-      <p>© 2025 معمل التحاليل الطبية. جميع الحقوق محفوظة.</p>
-    </footer>
+          <button type="submit" class="submit-btn">
+            <i class="fas fa-search"></i> عرض النتيجة
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
+  
+  <footer>
+      <p>© 2025 معمل بواسطة جون. جميع الحقوق محفوظة.</p>
+  </footer>
 
   <script>
+    function showForm(device) {
+      const formSection = document.getElementById('form');
+      const input = document.getElementById('phoneInput');
+      formSection.style.display = 'block';
+
+      // إزالة كل الكلاسات
+      formSection.classList.remove('phone-style', 'desktop-style');
+
+      // إضافة كلاس حسب الجهاز
+      if (device === 'phone') {
+        formSection.classList.add('phone-style');
+      } else {
+        formSection.classList.add('desktop-style');
+      }
+      
+      // وضع التركيز على حقل الإدخال
+      input.focus();
+    }
+
+    function validatePhone() {
+      const input = document.getElementById('phoneInput').value;
+      const cleanedInput = input.replace(/\D/g, '');
+      const isValid = /^[0-9]{10,11}$/.test(cleanedInput);
+      
+      if (!isValid) {
+        alert("من فضلك أدخل رقم هاتف صحيح (10 أو 11 رقم).");
+        return false;
+      }
+      
+      // تحديث قيمة الحقل بالأرقام فقط
+      document.getElementById('phoneInput').value = cleanedInput;
+      return true;
+    }
+
     // تبديل الوضع المظلم/الفاتح
     const themeToggle = document.getElementById('themeToggle');
     const body = document.body;
