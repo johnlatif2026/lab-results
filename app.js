@@ -126,12 +126,13 @@ app.get("/admin/logout", (req, res) => {
 app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const { name, phone, email } = req.body;
+  const { name, phone, email, test } = req.body;
   const file = req.file.filename;
 
   const newResult = {
-    name,
-    phone,
+    name,            // اسم المريض
+    test,            // اسم التحليل
+    phone,           // رقم الهاتف
     email,
     file,
     date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
