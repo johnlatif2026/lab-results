@@ -270,6 +270,7 @@
             <thead>
               <tr>
                 <th>اسم المريض</th>
+                <th>اسم التحليل</th>
                 <th>رقم الهاتف</th>
               </tr>
             </thead>
@@ -277,6 +278,7 @@
               <% result.forEach(r => { %>
                 <tr>
                   <td><%= r.name %></td>
+                  <td><%= r.test %></td>
                   <td><%= r.phone %></td>
                   <td>
                     <div class="action-buttons">
