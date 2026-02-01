@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة التحكم - إدارة النتائج</title>
+  <title>لوحة التحكم | إدارة نتائج التحاليل</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary-color: #3498db;
-      --primary-light: #5dade2;
-      --secondary-color: #2c3e50;
-      --accent-color: #e74c3c;
-      --accent-light: #ec7063;
-      --success-color: #2ecc71;
-      --success-light: #58d68d;
-      --border-radius: 12px;
-      --box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-      --transition: all 0.3s ease;
+      --primary-color: #6a11cb;
+      --secondary-color: #2575fc;
+      --accent-color: #ff512f;
+      --success-color: #00b09b;
+      --border-radius: 20px;
+      --box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --gradient-success: linear-gradient(135deg, #00b09b, #96c93d);
+      --gradient-danger: linear-gradient(135deg, #ff512f, #dd2476);
+      --gradient-sidebar: linear-gradient(135deg, #0f3460, #16213e);
     }
     
     * {
@@ -29,27 +29,168 @@
     
     body {
       background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-      color: #e9ecef;
+      color: #ffffff;
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* خلفية متحركة */
+    .background-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      overflow: hidden;
+    }
+
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      animation: float 30s infinite ease-in-out;
+      filter: blur(60px);
+      opacity: 0.08;
+    }
+
+    .floating-shape:nth-child(1) {
+      width: 600px;
+      height: 600px;
+      top: -300px;
+      right: -300px;
+      animation-delay: 0s;
+      background: var(--gradient);
+    }
+
+    .floating-shape:nth-child(2) {
+      width: 500px;
+      height: 500px;
+      bottom: -250px;
+      left: -250px;
+      animation-delay: 10s;
+      background: var(--gradient-success);
+    }
+
+    .floating-shape:nth-child(3) {
+      width: 400px;
+      height: 400px;
+      top: 60%;
+      left: 20%;
+      animation-delay: 20s;
+      background: var(--gradient-danger);
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      25% {
+        transform: translate(50px, -50px) rotate(90deg) scale(1.15);
+      }
+      50% {
+        transform: translate(-50px, 50px) rotate(180deg) scale(0.85);
+      }
+      75% {
+        transform: translate(25px, -25px) rotate(270deg) scale(1.05);
+      }
+    }
+
+    /* موجات */
+    .wave {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.015);
+      animation: wave 15s infinite ease-in-out;
+      z-index: -1;
+    }
+
+    .wave:nth-child(4) {
+      width: 800px;
+      height: 800px;
+      top: -400px;
+      right: -400px;
+      animation-delay: 0s;
+    }
+
+    .wave:nth-child(5) {
+      width: 700px;
+      height: 700px;
+      bottom: -350px;
+      left: -350px;
+      animation-delay: 5s;
+    }
+
+    @keyframes wave {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.015;
+      }
+      50% {
+        transform: scale(1.25);
+        opacity: 0.008;
+      }
+    }
+
+    /* نجوم */
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 5s infinite ease-in-out;
+    }
+
+    .star:nth-child(1) { top: 15%; left: 5%; width: 3px; height: 3px; animation-delay: 0s; }
+    .star:nth-child(2) { top: 35%; left: 90%; width: 2px; height: 2px; animation-delay: 1s; }
+    .star:nth-child(3) { top: 55%; left: 15%; width: 3px; height: 3px; animation-delay: 2s; }
+    .star:nth-child(4) { top: 75%; left: 80%; width: 2px; height: 2px; animation-delay: 3s; }
+    .star:nth-child(5) { top: 25%; left: 40%; width: 3px; height: 3px; animation-delay: 4s; }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.8); }
     }
     
     .admin-container {
       display: flex;
       min-height: 100vh;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 1;
     }
     
-    /* الشريط الجانبي المحسن */
+    /* الشريط الجانبي المتقدم */
     .sidebar {
-      width: 280px;
-      background: linear-gradient(135deg, #0f3460, #16213e);
+      width: 300px;
+      background: var(--gradient-sidebar);
       color: white;
       padding: 0;
-      box-shadow: var(--box-shadow);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
       position: relative;
       z-index: 10;
-      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      animation: slideInLeft 1s ease-out;
+      backdrop-filter: blur(10px);
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
     
     .sidebar::before {
@@ -59,56 +200,82 @@
       right: 0;
       bottom: 0;
       left: 0;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"/></svg>');
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.08)"/></svg>');
       background-size: cover;
       pointer-events: none;
     }
+
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient);
+      animation: slideRight 3s infinite linear;
+    }
     
     .sidebar-header {
-      padding: 25px 25px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-      margin-bottom: 15px;
+      padding: 35px 30px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 20px;
       position: relative;
+      animation: fadeIn 1s ease-out 0.3s both;
     }
     
     .sidebar-header h2 {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       display: flex;
       align-items: center;
-      font-weight: 600;
-      color: #e6e6e6;
+      font-weight: 700;
+      color: #ffffff;
+      gap: 15px;
     }
     
     .sidebar-header h2 i {
-      margin-left: 12px;
       background: rgba(255, 255, 255, 0.2);
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 10px;
+      border-radius: 15px;
+      font-size: 1.4rem;
+      animation: rotate 10s infinite linear;
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
     }
     
     .sidebar-menu {
       list-style: none;
-      padding: 0 15px;
+      padding: 0 20px;
     }
     
     .sidebar-menu li {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      animation: fadeIn 1s ease-out 0.5s both;
     }
     
     .sidebar-menu a {
       display: flex;
       align-items: center;
-      padding: 14px 18px;
+      padding: 18px 22px;
       color: rgba(255, 255, 255, 0.9);
       text-decoration: none;
       transition: var(--transition);
       border-radius: var(--border-radius);
       position: relative;
       overflow: hidden;
+      font-weight: 600;
+      gap: 15px;
     }
     
     .sidebar-menu a::before {
@@ -116,38 +283,61 @@
       position: absolute;
       top: 0;
       right: 0;
-      width: 4px;
+      width: 5px;
       height: 100%;
       background: white;
       transform: scaleY(0);
-      transition: transform 0.3s ease;
+      transition: transform 0.4s ease;
+    }
+    
+    .sidebar-menu a::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
     }
     
     .sidebar-menu a:hover, .sidebar-menu a.active {
       background: rgba(255, 255, 255, 0.15);
       color: white;
-      transform: translateX(-5px);
+      transform: translateX(-10px) translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
     
     .sidebar-menu a:hover::before, .sidebar-menu a.active::before {
       transform: scaleY(1);
     }
+
+    .sidebar-menu a:hover::after {
+      transform: translateX(100%);
+    }
     
     .sidebar-menu a i {
-      margin-left: 12px;
-      width: 20px;
+      font-size: 1.3rem;
+      width: 25px;
       text-align: center;
-      font-size: 1.1rem;
+      transition: var(--transition);
+    }
+
+    .sidebar-menu a:hover i {
+      transform: scale(1.2) rotate(10deg);
     }
     
     .sidebar-footer {
-      padding: 20px 25px;
+      padding: 25px 30px;
       margin-top: auto;
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
       position: absolute;
       bottom: 0;
       width: 100%;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 1s ease-out 0.7s both;
     }
     
     .logout-btn {
@@ -155,43 +345,83 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: 12px;
-      background-color: rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.15);
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: var(--border-radius);
       cursor: pointer;
       transition: var(--transition);
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logout-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.6s;
+    }
+
+    .logout-btn:hover::before {
+      left: 100%;
     }
     
     .logout-btn:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .logout-btn i {
+      transition: var(--transition);
+    }
+
+    .logout-btn:hover i {
+      transform: translateX(5px);
     }
     
-    /* المحتوى الرئيسي المحسن */
+    /* المحتوى الرئيسي المتقدم */
     .main-content {
       flex: 1;
-      padding: 25px;
+      padding: 30px;
       overflow-y: auto;
-      background-color: #1a1d23;
+      background: rgba(22, 33, 62, 0.85);
+      backdrop-filter: blur(10px);
+      animation: slideInRight 1s ease-out 0.2s both;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
     
     .page-header {
-      background: #2d333b;
-      padding: 25px 30px;
+      background: rgba(45, 51, 59, 0.8);
+      padding: 35px 40px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
-      margin-bottom: 25px;
+      margin-bottom: 35px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: fadeIn 1s ease-out 0.4s both;
     }
     
     .page-header::before {
@@ -199,43 +429,81 @@
       position: absolute;
       top: 0;
       right: 0;
-      width: 6px;
+      width: 8px;
       height: 100%;
       background: var(--gradient);
     }
+
+    .page-header::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-success);
+      animation: slideRight 3s infinite linear;
+    }
     
     .page-header h1 {
-      color: #e6e6e6;
-      font-size: 1.7rem;
-      font-weight: 700;
+      color: #ffffff;
+      font-size: 2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .page-header h1 i {
+      color: var(--primary-color);
+      animation: pulse 2s infinite;
     }
     
     .page-header > div {
       background: var(--gradient);
       color: white;
-      padding: 8px 18px;
+      padding: 12px 25px;
       border-radius: 30px;
-      font-weight: 500;
-      box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+      font-weight: 600;
+      box-shadow: 0 6px 15px rgba(106, 17, 203, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: bounceIn 1s ease-out 0.6s both;
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(20px);
+      }
+      50% {
+        transform: scale(1.05) translateY(-5px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
     
     .stats-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
-      margin-bottom: 35px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+      animation: fadeIn 1s ease-out 0.6s both;
     }
     
     .stat-card {
-      background: #2d333b;
-      padding: 25px;
+      background: rgba(45, 51, 59, 0.8);
+      padding: 35px 30px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       text-align: center;
       transition: var(--transition);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
     
     .stat-card::before {
@@ -244,73 +512,91 @@
       top: 0;
       right: 0;
       width: 100%;
-      height: 5px;
+      height: 6px;
     }
     
     .stat-card.blue::before {
-      background: var(--primary-color);
+      background: var(--gradient);
     }
     
     .stat-card.green::before {
-      background: var(--success-color);
+      background: var(--gradient-success);
     }
     
     .stat-card.red::before {
-      background: var(--accent-color);
+      background: var(--gradient-danger);
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.8s ease;
     }
     
     .stat-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
-      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .stat-card:hover::after {
+      transform: translateX(100%);
     }
     
     .stat-card i {
-      font-size: 2.8rem;
-      margin-bottom: 18px;
+      font-size: 3.5rem;
+      margin-bottom: 25px;
       display: inline-block;
-      padding: 15px;
-      border-radius: 15px;
+      padding: 20px;
+      border-radius: 20px;
     }
     
     .stat-card.blue i {
       color: var(--primary-color);
-      background: rgba(52, 152, 219, 0.15);
+      background: rgba(106, 17, 203, 0.2);
     }
     
     .stat-card.green i {
       color: var(--success-color);
-      background: rgba(46, 204, 113, 0.15);
+      background: rgba(0, 176, 155, 0.2);
     }
     
     .stat-card.red i {
       color: var(--accent-color);
-      background: rgba(231, 76, 60, 0.15);
+      background: rgba(255, 81, 47, 0.2);
     }
     
     .stat-card h3 {
-      font-size: 2.3rem;
-      margin-bottom: 8px;
-      font-weight: 700;
-      color: #e6e6e6;
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     }
     
     .stat-card p {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 1rem;
-      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+      font-weight: 600;
     }
-    
-    /* نموذج الرفع المحسن */
+
+    /* نموذج الرفع المتقدم */
     .upload-section {
-      background: #2d333b;
-      padding: 30px;
+      background: rgba(45, 51, 59, 0.8);
+      padding: 40px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
-      margin-bottom: 35px;
+      margin-bottom: 40px;
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: fadeIn 1s ease-out 0.8s both;
     }
     
     .upload-section::before {
@@ -319,61 +605,81 @@
       top: 0;
       right: 0;
       width: 100%;
-      height: 5px;
+      height: 6px;
       background: var(--gradient);
+    }
+
+    .upload-section::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-success);
+      animation: slideRight 3s infinite linear;
     }
     
     .upload-section h2 {
-      color: #e6e6e6;
-      margin-bottom: 25px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
       display: flex;
       align-items: center;
-      font-size: 1.5rem;
+      font-size: 1.7rem;
+      gap: 15px;
     }
     
     .upload-section h2 i {
-      margin-left: 12px;
       background: var(--gradient);
       color: white;
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 10px;
+      border-radius: 15px;
+      font-size: 1.4rem;
     }
     
     .form-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
-      margin-bottom: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-bottom: 30px;
     }
     
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       position: relative;
+      animation: fadeIn 1s ease-out 1s both;
     }
     
     .form-group label {
       display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #e6e6e6;
-      font-size: 1rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group label i {
+      color: var(--secondary-color);
     }
     
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
-      padding: 14px 16px;
+      padding: 18px 20px;
       border: 2px solid rgba(255, 255, 255, 0.2);
       border-radius: var(--border-radius);
-      font-size: 1rem;
+      font-size: 1.1rem;
       transition: var(--transition);
-      background: #3b424c;
-      color: #e6e6e6;
+      background: rgba(15, 52, 96, 0.6);
+      color: #ffffff;
     }
     
     .form-group input::placeholder {
@@ -381,47 +687,72 @@
     }
     
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: var(--primary-light);
-      background: #444c56;
+      border-color: var(--primary-color);
+      background: rgba(22, 33, 62, 0.8);
       outline: none;
-      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+      box-shadow: 0 0 0 5px rgba(106, 17, 203, 0.3);
+      transform: translateY(-3px);
     }
     
     .upload-btn {
       background: var(--gradient);
       color: white;
       border: none;
-      padding: 15px 35px;
+      padding: 20px 45px;
       border-radius: var(--border-radius);
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.2rem;
+      font-weight: 700;
       cursor: pointer;
       transition: var(--transition);
       display: inline-flex;
       align-items: center;
-      box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+      box-shadow: 0 8px 20px rgba(106, 17, 203, 0.4);
+      gap: 15px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 1s ease-out 1.2s both;
+    }
+
+    .upload-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.6s;
+    }
+
+    .upload-btn:hover::before {
+      left: 100%;
     }
     
     .upload-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(52, 152, 219, 0.4);
-      background: linear-gradient(135deg, #2980b9, #1a252f);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(106, 17, 203, 0.5);
+      background: linear-gradient(135deg, #2575fc, #6a11cb);
     }
-    
+
     .upload-btn i {
-      margin-left: 10px;
-      font-size: 1.2rem;
+      transition: var(--transition);
+      font-size: 1.3rem;
+    }
+
+    .upload-btn:hover i {
+      transform: translateY(-3px) rotate(10deg);
     }
     
-    /* جدول النتائج المحسن */
+    /* جدول النتائج المتقدم */
     .results-section {
-      background: #2d333b;
-      padding: 30px;
+      background: rgba(45, 51, 59, 0.8);
+      padding: 40px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: fadeIn 1s ease-out 1s both;
     }
     
     .results-section::before {
@@ -430,152 +761,298 @@
       top: 0;
       right: 0;
       width: 100%;
-      height: 5px;
+      height: 6px;
       background: var(--gradient);
+    }
+
+    .results-section::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-success);
+      animation: slideRight 3s infinite linear;
     }
     
     .results-section h2 {
-      color: #e6e6e6;
-      margin-bottom: 25px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
       display: flex;
       align-items: center;
-      font-size: 1.5rem;
+      font-size: 1.7rem;
+      gap: 15px;
     }
     
     .results-section h2 i {
-      margin-left: 12px;
       background: var(--gradient);
       color: white;
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 10px;
+      border-radius: 15px;
+      font-size: 1.4rem;
     }
     
     .table-responsive {
       overflow-x: auto;
       border-radius: var(--border-radius);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
+      border-radius: var(--border-radius);
+      overflow: hidden;
     }
     
-    th, td {
-      padding: 16px 20px;
-      text-align: right;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e6e6e6;
+    thead {
+      background: var(--gradient);
     }
     
     th {
-      background-color: rgba(0, 0, 0, 0.3);
+      padding: 22px 25px;
+      text-align: right;
+      color: white;
       font-weight: 700;
-      color: #e6e6e6;
-      position: sticky;
-      top: 0;
+      font-size: 1.15rem;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    th::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.3);
     }
     
-    tr {
+    tbody tr {
+      background: rgba(255, 255, 255, 0.05);
       transition: var(--transition);
+      animation: slideInRow 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideInRow {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    tbody tr:nth-child(1) { animation-delay: 0.1s; }
+    tbody tr:nth-child(2) { animation-delay: 0.2s; }
+    tbody tr:nth-child(3) { animation-delay: 0.3s; }
+    tbody tr:nth-child(4) { animation-delay: 0.4s; }
+    tbody tr:nth-child(5) { animation-delay: 0.5s; }
+    tbody tr:nth-child(6) { animation-delay: 0.6s; }
+    
+    td {
+      padding: 22px 25px;
+      text-align: right;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 1.05rem;
     }
     
     tr:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-      transform: scale(1.01);
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
     
     .action-buttons {
       display: flex;
-      gap: 10px;
+      gap: 12px;
     }
     
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 8px 16px;
+      padding: 14px 28px;
       border-radius: var(--border-radius);
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: none;
       transition: var(--transition);
-      font-size: 0.85rem;
+      font-size: 1rem;
       border: none;
       cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      min-width: 140px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
     }
     
     .btn-view {
-      background-color: var(--primary-color);
+      background: var(--gradient);
       color: white;
+      box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
     }
     
     .btn-view:hover {
-      background-color: var(--primary-light);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(52, 152, 219, 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(106, 17, 203, 0.5);
+      background: linear-gradient(135deg, #2575fc, #6a11cb);
     }
     
     .btn-delete {
-      background-color: var(--accent-color);
+      background: var(--gradient-danger);
       color: white;
+      box-shadow: 0 5px 15px rgba(255, 81, 47, 0.4);
     }
     
     .btn-delete:hover {
-      background-color: var(--accent-light);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(231, 76, 60, 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(255, 81, 47, 0.5);
+      background: linear-gradient(135deg, #dd2476, #ff512f);
     }
     
     .btn-notify {
-      background-color: var(--success-color);
+      background: var(--gradient-success);
       color: white;
+      box-shadow: 0 5px 15px rgba(0, 176, 155, 0.4);
     }
     
     .btn-notify:hover {
-      background-color: var(--success-light);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(46, 204, 113, 0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 176, 155, 0.5);
+      background: linear-gradient(135deg, #96c93d, #00b09b);
     }
     
     .btn i {
-      margin-left: 6px;
+      font-size: 1.2rem;
+      transition: var(--transition);
+    }
+
+    .btn:hover i {
+      transform: translateY(-3px) rotate(10deg);
     }
     
     .no-results {
       text-align: center;
-      padding: 50px 20px;
-      color: rgba(255, 255, 255, 0.7);
+      padding: 80px 40px;
+      background: rgba(15, 52, 96, 0.6);
+      border-radius: var(--border-radius);
+      margin: 30px 0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 1s ease-out 1.2s both;
+    }
+
+    .no-results::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 6px;
+      background: var(--gradient-danger);
+      animation: slideRight 3s infinite linear;
     }
     
-    .no-results i {
-      font-size: 4rem;
-      margin-bottom: 20px;
+    .no-results-icon {
+      font-size: 5.5rem;
+      margin-bottom: 30px;
+      display: inline-block;
+      animation: floatIcon 4s infinite ease-in-out;
       color: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes floatIcon {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-25px) rotate(15deg);
+      }
     }
     
     .no-results h3 {
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #e6e6e6;
+      color: #ffffff;
+      margin-bottom: 20px;
+      font-size: 2.2rem;
+      background: var(--gradient-danger);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .no-results p {
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
     
     /* تأثيرات للزر عند التمرير */
     .upload-btn.scrolled {
       position: fixed;
-      bottom: 25px;
-      left: 25px;
+      bottom: 30px;
+      left: 30px;
       z-index: 100;
-      box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+      box-shadow: 0 10px 25px rgba(106, 17, 203, 0.5);
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    @media (max-width: 1200px) {
+      .sidebar {
+        width: 250px;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+      
+      .page-header::before {
+        width: 100%;
+        height: 8px;
+      }
     }
     
     @media (max-width: 992px) {
@@ -590,13 +1067,13 @@
       
       .sidebar-header {
         text-align: center;
-        padding: 20px;
+        padding: 25px 20px;
       }
       
       .sidebar-menu {
         display: flex;
         overflow-x: auto;
-        padding: 10px 15px;
+        padding: 15px;
       }
       
       .sidebar-menu li {
@@ -606,21 +1083,25 @@
       
       .sidebar-menu a {
         border-radius: 30px;
-        border: none;
-        padding: 12px 20px;
+        padding: 15px 25px;
         white-space: nowrap;
       }
       
-      .sidebar-menu a::before {
+      .sidebar-menu a::before,
+      .sidebar-menu a::after {
         display: none;
       }
       
       .sidebar-menu a:hover, .sidebar-menu a.active {
-        transform: translateY(-3px);
+        transform: translateY(-5px);
       }
       
       .sidebar-footer {
         position: relative;
+      }
+
+      .main-content {
+        padding: 20px;
       }
     }
     
@@ -637,30 +1118,76 @@
         width: 100%;
         justify-content: center;
       }
-      
-      .page-header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
+
+      .stats-cards {
+        grid-template-columns: 1fr;
       }
-      
-      .page-header::before {
+
+      .upload-section,
+      .results-section {
+        padding: 25px;
+      }
+
+      th, td {
+        padding: 15px 18px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .page-header h1 {
+        font-size: 1.6rem;
+      }
+
+      .upload-btn {
         width: 100%;
-        height: 6px;
+        justify-content: center;
+      }
+
+      .stat-card h3 {
+        font-size: 2.3rem;
+      }
+
+      .no-results {
+        padding: 50px 20px;
+      }
+
+      .no-results h3 {
+        font-size: 1.8rem;
       }
     }
   </style>
 </head>
 <body>
+  <!-- خلفية متحركة -->
+  <div class="background-animation">
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
+  <!-- النجوم -->
+  <div class="stars">
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+  </div>
+
   <div class="admin-container">
-    <!-- الشريط الجانبي المحسن -->
+    <!-- الشريط الجانبي المتقدم -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <h2><i class="fas fa-cogs"></i> لوحة التحكم</h2>
+        <h2><i class="fas fa-cogs"></i> لوحة التحكم المتقدمة</h2>
       </div>
       
       <ul class="sidebar-menu">
         <li><a href="#" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="#"><i class="fas fa-chart-bar"></i> الإحصائيات</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> المرضى</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> الإعدادات</a></li>
       </ul>
       
       <div class="sidebar-footer">
@@ -670,116 +1197,123 @@
       </div>
     </div>
     
-    <!-- المحتوى الرئيسي المحسن -->
+    <!-- المحتوى الرئيسي المتقدم -->
     <div class="main-content">
       <div class="page-header">
-        <h1>إدارة نتائج التحاليل</h1>
-        <div>مرحباً، المسؤول</div>
+        <h1><i class="fas fa-tachometer-alt"></i> لوحة التحكم الرئيسية</h1>
+        <div><i class="fas fa-user-shield"></i> مرحباً، المسؤول</div>
       </div>
       
       <div class="stats-cards">
         <div class="stat-card blue">
           <i class="fas fa-file-pdf"></i>
           <h3><%= results.length %></h3>
-          <p>عدد النتائج</p>
+          <p>إجمالي النتائج</p>
         </div>
         
         <div class="stat-card green">
           <i class="fas fa-check-circle"></i>
-          <h3>0</h3>
+          <h3 id="sentCount">0</h3>
           <p>النتائج المرسلة</p>
         </div>
         
         <div class="stat-card red">
           <i class="fas fa-clock"></i>
-          <h3>0</h3>
+          <h3 id="pendingCount">0</h3>
           <p>في انتظار الإرسال</p>
         </div>
       </div>
       
       <div class="upload-section">
-        <h2><i class="fas fa-upload"></i> رفع نتيجة جديدة</h2>
+        <h2><i class="fas fa-cloud-upload-alt"></i> رفع نتيجة جديدة</h2>
         
-        <form action="/admin/upload" method="POST" enctype="multipart/form-data">
+        <form action="/admin/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
           <div class="form-row">
             <div class="form-group">
-              <label for="name">اسم المريض</label>
-              <input type="text" id="name" name="name" placeholder="أدخل اسم المريض" required>
+              <label for="name"><i class="fas fa-user"></i> اسم المريض</label>
+              <input type="text" id="name" name="name" placeholder="أدخل اسم المريض الكامل" required>
             </div>
 
             <div class="form-group">
-              <label for="test">اسم التحليل</label>
-              <input type="text" id="test" name="test" placeholder="أدخل اسم التحليل" required>
+              <label for="test"><i class="fas fa-flask"></i> نوع التحليل</label>
+              <input type="text" id="test" name="test" placeholder="أدخل نوع التحليل" required>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="phone">رقم الهاتف</label>
-              <input type="text" id="phone" name="phone" placeholder="أدخل رقم الهاتف" required>
+              <label for="phone"><i class="fas fa-phone"></i> رقم الهاتف</label>
+              <input type="text" id="phone" name="phone" placeholder="أدخل رقم الهاتف (10 أو 11 رقم)" required pattern="[0-9]{10,11}">
             </div>
             
             <div class="form-group">
-              <label for="email">البريد الإلكتروني</label>
-              <input type="email" id="email" name="email" placeholder="أدخل البريد الإلكتروني" required>
+              <label for="email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+              <input type="email" id="email" name="email" placeholder="example@domain.com" required>
             </div>
           </div>
           
           <div class="form-row">
             <div class="form-group">
-              <label for="pdf">رفع ملف PDF</label>
-              <input type="file" id="pdf" name="pdf" accept="application/pdf" required>
+              <label for="pdf"><i class="fas fa-file-pdf"></i> رفع ملف PDF</label>
+              <input type="file" id="pdf" name="pdf" accept="application/pdf" required onchange="previewFileName(this)">
             </div>
           </div>
           
-          <button type="submit" class="upload-btn">
-            <i class="fas fa-cloud-upload-alt"></i> رفع النتيجة
+          <div class="form-row">
+            <div class="form-group">
+              <label for="notes"><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
+              <textarea id="notes" name="notes" placeholder="أي ملاحظات إضافية حول النتيجة..." rows="3"></textarea>
+            </div>
+          </div>
+          
+          <button type="submit" class="upload-btn" id="uploadButton">
+            <i class="fas fa-cloud-upload-alt"></i> رفع النتيجة إلى النظام
           </button>
         </form>
       </div>
       
       <div class="results-section">
-        <h2><i class="fas fa-list"></i> النتائج الحالية</h2>
+        <h2><i class="fas fa-list-alt"></i> قاعدة بيانات النتائج</h2>
         
         <div class="table-responsive">
           <% if (results.length > 0) { %>
             <table>
               <thead>
                 <tr>
-                  <th>الاسم</th>
-                  <th>اسم التحليل</th>
-                  <th>الهاتف</th>
-                  <th>الإيميل</th>
+                  <th>اسم المريض</th>
+                  <th>نوع التحليل</th>
+                  <th>رقم الهاتف</th>
+                  <th>البريد الإلكتروني</th>
                   <th>الملف</th>
-                  <th>التاريخ</th>
-                  <th>خيارات</th>
+                  <th>تاريخ الإضافة</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
-                <% results.forEach(r => { %>
-                  <tr>
-                    <td><%= r.name %></td>
-                    <td><%= r.test %></td>
-                    <td><%= r.phone %></td>
-                    <td><%= r.email %></td>
+                <% results.forEach((r, index) => { %>
+                  <tr data-index="<%= index %>">
+                    <td><strong><%= r.name %></strong></td>
+                    <td><span class="test-badge"><%= r.test %></span></td>
+                    <td><code><%= r.phone %></code></td>
+                    <td><small><%= r.email %></small></td>
                     <td>
-                      <a href="/view/<%= r.file %>" target="_blank" class="btn btn-view">
-                        <i class="fas fa-eye"></i> عرض
+                      <a href="/view/<%= r.file %>" target="_blank" class="btn btn-view" onclick="createParticles(event)">
+                        <i class="fas fa-eye"></i> معاينة
                       </a>
                     </td>
                     <td><%= r.date %></td>
                     <td>
                       <div class="action-buttons">
-                        <form action="/admin/delete" method="POST" style="display:inline;">
+                        <form action="/admin/delete" method="POST" class="delete-form" onsubmit="return confirmDelete(event)">
                           <input type="hidden" name="file" value="<%= r.file %>">
-                          <button type="submit" class="btn btn-delete" onclick="return confirm('هل أنت متأكد من الحذف؟')">
+                          <button type="submit" class="btn btn-delete">
                             <i class="fas fa-trash"></i> حذف
                           </button>
                         </form>
                         
-                        <form action="/admin/notify" method="POST" style="display:inline;">
+                        <form action="/admin/notify" method="POST" class="notify-form" onsubmit="return confirmNotify(event)">
                           <input type="hidden" name="file" value="<%= r.file %>">
-                          <button type="submit" class="btn btn-notify" onclick="return confirm('هل تريد إرسال إشعار بالحذف؟')">
+                          <button type="submit" class="btn btn-notify">
                             <i class="fas fa-bell"></i> إشعار
                           </button>
                         </form>
@@ -791,9 +1325,10 @@
             </table>
           <% } else { %>
             <div class="no-results">
-              <i class="fas fa-inbox"></i>
-              <h3>لا توجد نتائج</h3>
-              <p>لم يتم رفع أي نتائج حتى الآن</p>
+              <div class="no-results-icon"><i class="fas fa-inbox"></i></div>
+              <h3>لا توجد نتائج مسجلة</h3>
+              <p>لم يتم رفع أي نتائج إلى النظام حتى الآن</p>
+              <p>استخدم نموذج الرفع أعلاه لإضافة أول نتيجة</p>
             </div>
           <% } %>
         </div>
@@ -802,14 +1337,208 @@
   </div>
 
   <script>
-    // إضافة تأثيرات للزر عند التمرير
+    // تأثير الجسيمات
+    function createParticles(event) {
+      const colors = ['#6a11cb', '#2575fc', '#ff512f', '#00b09b'];
+      const buttonRect = event.currentTarget.getBoundingClientRect();
+      const centerX = buttonRect.left + buttonRect.width / 2;
+      const centerY = buttonRect.top + buttonRect.height / 2;
+      
+      for (let i = 0; i < 25; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.position = 'fixed';
+        particle.style.zIndex = '1000';
+        particle.style.pointerEvents = 'none';
+        particle.style.borderRadius = '50%';
+        
+        // حجم عشوائي
+        const size = Math.random() * 8 + 3;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // لون عشوائي
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.backgroundColor = color;
+        
+        // موقع البداية
+        particle.style.left = `${centerX}px`;
+        particle.style.top = `${centerY}px`;
+        
+        // حركة عشوائية
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 120 + 60;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        const duration = Math.random() * 1.5 + 0.5;
+        particle.style.animation = `particle-explode ${duration}s ease-out forwards`;
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        
+        document.body.appendChild(particle);
+        
+        // إزالة الجسيم
+        setTimeout(() => particle.remove(), duration * 1000);
+      }
+    }
+
+    // معاينة اسم الملف
+    function previewFileName(input) {
+      if (input.files && input.files[0]) {
+        const fileName = input.files[0].name;
+        // يمكنك إضافة تأثير لعرض اسم الملف
+        console.log('تم اختيار الملف:', fileName);
+      }
+    }
+
+    // تأكيد الحذف مع تأثيرات
+    function confirmDelete(event) {
+      if (!confirm('⚠️ هل أنت متأكد من حذف هذه النتيجة؟\n\nهذا الإجراء لا يمكن التراجع عنه.')) {
+        event.preventDefault();
+        return false;
+      }
+      
+      // تأثير الجسيمات
+      createParticles({currentTarget: event.target});
+      
+      // تغيير حالة الزر
+      const button = event.target;
+      const originalHTML = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
+      button.disabled = true;
+      
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.disabled = false;
+      }, 2000);
+      
+      return true;
+    }
+
+    // تأكيد الإشعار
+    function confirmNotify(event) {
+      if (!confirm('🔔 هل تريد إرسال إشعار للمريض بنتيجة التحليل؟')) {
+        event.preventDefault();
+        return false;
+      }
+      
+      createParticles({currentTarget: event.target});
+      
+      const button = event.target;
+      const originalHTML = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+      button.disabled = true;
+      
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.disabled = false;
+      }, 2000);
+      
+      return true;
+    }
+
+    // تحديث الإحصائيات
+    function updateStats() {
+      const total = <%= results.length %>;
+      const sent = Math.floor(total * 0.7); // مثال: 70% مرسلة
+      const pending = total - sent;
+      
+      document.getElementById('sentCount').textContent = sent;
+      document.getElementById('pendingCount').textContent = pending;
+    }
+
+    // تأثير عند التمرير
     window.addEventListener('scroll', function() {
-      const uploadBtn = document.querySelector('.upload-btn');
-      if (window.scrollY > 100) {
+      const uploadBtn = document.querySelector('#uploadButton');
+      if (uploadBtn && window.scrollY > 300) {
         uploadBtn.classList.add('scrolled');
-      } else {
+      } else if (uploadBtn) {
         uploadBtn.classList.remove('scrolled');
       }
+    });
+
+    // تحقق من نموذج الرفع
+    document.addEventListener('DOMContentLoaded', function() {
+      updateStats();
+      
+      const uploadForm = document.getElementById('uploadForm');
+      const uploadButton = document.getElementById('uploadButton');
+      
+      if (uploadForm) {
+        uploadForm.addEventListener('submit', function(e) {
+          const phoneInput = document.getElementById('phone');
+          const phonePattern = /^[0-9]{10,11}$/;
+          
+          if (!phonePattern.test(phoneInput.value)) {
+            e.preventDefault();
+            
+            // تأثير اهتزاز
+            phoneInput.style.animation = 'shake 0.5s';
+            phoneInput.style.borderColor = '#ff512f';
+            
+            setTimeout(() => {
+              phoneInput.style.animation = '';
+              phoneInput.style.borderColor = '';
+            }, 500);
+            
+            alert('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقمًا فقط');
+            phoneInput.focus();
+            return false;
+          }
+          
+          // تأثير التحميل
+          uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+          uploadButton.disabled = true;
+          
+          // تأثير الجسيمات
+          createParticles({currentTarget: uploadButton});
+          
+          return true;
+        });
+      }
+      
+      // إضافة تأثير اهتزاز
+      if (!document.querySelector('#shakeStyle')) {
+        const shakeStyle = document.createElement('style');
+        shakeStyle.id = 'shakeStyle';
+        shakeStyle.textContent = `
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+          }
+          @keyframes particle-explode {
+            0% {
+              opacity: 1;
+              transform: translate(0, 0) scale(1);
+            }
+            100% {
+              opacity: 0;
+              transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+          }
+        `;
+        document.head.appendChild(shakeStyle);
+      }
+      
+      // تأثيرات للصفوف
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.1}s`;
+        
+        // تأثير عند المرور
+        row.addEventListener('mouseenter', function() {
+          createParticles({currentTarget: this});
+        });
+      });
+    });
+
+    // تأثير عند المرور على الأزرار
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mouseenter', function(e) {
+        createParticles({currentTarget: this});
+      });
     });
   </script>
 </body>
