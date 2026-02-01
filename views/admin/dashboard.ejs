@@ -12,12 +12,10 @@
       --secondary-color: #2c3e50;
       --accent-color: #e74c3c;
       --accent-light: #ec7063;
-      --light-color: #f8f9fa;
-      --dark-color: #343a40;
       --success-color: #2ecc71;
       --success-light: #58d68d;
       --border-radius: 12px;
-      --box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      --box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
       --transition: all 0.3s ease;
       --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     }
@@ -30,8 +28,8 @@
     }
     
     body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
-      color: var(--dark-color);
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: #e9ecef;
       line-height: 1.6;
       min-height: 100vh;
     }
@@ -39,18 +37,19 @@
     .admin-container {
       display: flex;
       min-height: 100vh;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
     }
     
     /* الشريط الجانبي المحسن */
     .sidebar {
       width: 280px;
-      background: var(--gradient);
+      background: linear-gradient(135deg, #0f3460, #16213e);
       color: white;
       padding: 0;
       box-shadow: var(--box-shadow);
       position: relative;
       z-index: 10;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .sidebar::before {
@@ -77,6 +76,7 @@
       display: flex;
       align-items: center;
       font-weight: 600;
+      color: #e6e6e6;
     }
     
     .sidebar-header h2 i {
@@ -147,6 +147,7 @@
       position: absolute;
       bottom: 0;
       width: 100%;
+      background: rgba(0, 0, 0, 0.2);
     }
     
     .logout-btn {
@@ -168,6 +169,7 @@
     .logout-btn:hover {
       background-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     }
     
     /* المحتوى الرئيسي المحسن */
@@ -175,10 +177,11 @@
       flex: 1;
       padding: 25px;
       overflow-y: auto;
+      background-color: #1a1d23;
     }
     
     .page-header {
-      background: white;
+      background: #2d333b;
       padding: 25px 30px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
@@ -188,6 +191,7 @@
       align-items: center;
       position: relative;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .page-header::before {
@@ -201,7 +205,7 @@
     }
     
     .page-header h1 {
-      color: var(--secondary-color);
+      color: #e6e6e6;
       font-size: 1.7rem;
       font-weight: 700;
     }
@@ -223,7 +227,7 @@
     }
     
     .stat-card {
-      background: white;
+      background: #2d333b;
       padding: 25px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
@@ -231,6 +235,7 @@
       transition: var(--transition);
       position: relative;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .stat-card::before {
@@ -256,7 +261,8 @@
     
     .stat-card:hover {
       transform: translateY(-8px);
-      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.2);
     }
     
     .stat-card i {
@@ -269,40 +275,42 @@
     
     .stat-card.blue i {
       color: var(--primary-color);
-      background: rgba(52, 152, 219, 0.1);
+      background: rgba(52, 152, 219, 0.15);
     }
     
     .stat-card.green i {
       color: var(--success-color);
-      background: rgba(46, 204, 113, 0.1);
+      background: rgba(46, 204, 113, 0.15);
     }
     
     .stat-card.red i {
       color: var(--accent-color);
-      background: rgba(231, 76, 60, 0.1);
+      background: rgba(231, 76, 60, 0.15);
     }
     
     .stat-card h3 {
       font-size: 2.3rem;
       margin-bottom: 8px;
       font-weight: 700;
+      color: #e6e6e6;
     }
     
     .stat-card p {
-      color: #6c757d;
+      color: rgba(255, 255, 255, 0.7);
       font-size: 1rem;
       font-weight: 500;
     }
     
     /* نموذج الرفع المحسن */
     .upload-section {
-      background: white;
+      background: #2d333b;
       padding: 30px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       margin-bottom: 35px;
       position: relative;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .upload-section::before {
@@ -316,10 +324,10 @@
     }
     
     .upload-section h2 {
-      color: var(--secondary-color);
+      color: #e6e6e6;
       margin-bottom: 25px;
       padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       font-size: 1.5rem;
@@ -353,25 +361,30 @@
       display: block;
       margin-bottom: 10px;
       font-weight: 600;
-      color: var(--secondary-color);
+      color: #e6e6e6;
       font-size: 1rem;
     }
     
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 14px 16px;
-      border: 2px solid #e9ecef;
+      border: 2px solid rgba(255, 255, 255, 0.2);
       border-radius: var(--border-radius);
       font-size: 1rem;
       transition: var(--transition);
-      background: #f8f9fa;
+      background: #3b424c;
+      color: #e6e6e6;
+    }
+    
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
     }
     
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--primary-light);
-      background: white;
+      background: #444c56;
       outline: none;
-      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
     }
     
     .upload-btn {
@@ -392,6 +405,7 @@
     .upload-btn:hover {
       transform: translateY(-3px);
       box-shadow: 0 10px 20px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(135deg, #2980b9, #1a252f);
     }
     
     .upload-btn i {
@@ -401,12 +415,13 @@
     
     /* جدول النتائج المحسن */
     .results-section {
-      background: white;
+      background: #2d333b;
       padding: 30px;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
       position: relative;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .results-section::before {
@@ -420,10 +435,10 @@
     }
     
     .results-section h2 {
-      color: var(--secondary-color);
+      color: #e6e6e6;
       margin-bottom: 25px;
       padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       font-size: 1.5rem;
@@ -444,7 +459,7 @@
     .table-responsive {
       overflow-x: auto;
       border-radius: var(--border-radius);
-      box-shadow: 0 0 0 1px #e9ecef;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     table {
@@ -455,13 +470,14 @@
     th, td {
       padding: 16px 20px;
       text-align: right;
-      border-bottom: 1px solid #e9ecef;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e6e6e6;
     }
     
     th {
-      background-color: #f8f9fa;
+      background-color: rgba(0, 0, 0, 0.3);
       font-weight: 700;
-      color: var(--secondary-color);
+      color: #e6e6e6;
       position: sticky;
       top: 0;
     }
@@ -471,7 +487,7 @@
     }
     
     tr:hover {
-      background-color: #f8f9fa;
+      background-color: rgba(255, 255, 255, 0.05);
       transform: scale(1.01);
     }
     
@@ -492,7 +508,7 @@
       font-size: 0.85rem;
       border: none;
       cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     }
     
     .btn-view {
@@ -538,18 +554,19 @@
     .no-results {
       text-align: center;
       padding: 50px 20px;
-      color: #6c757d;
+      color: rgba(255, 255, 255, 0.7);
     }
     
     .no-results i {
       font-size: 4rem;
       margin-bottom: 20px;
-      color: #dee2e6;
+      color: rgba(255, 255, 255, 0.2);
     }
     
     .no-results h3 {
       margin-bottom: 10px;
       font-weight: 600;
+      color: #e6e6e6;
     }
     
     /* تأثيرات للزر عند التمرير */
