@@ -1198,7 +1198,7 @@
     <div class="main-content">
       <div class="page-header">
         <h1><i class="fas fa-tachometer-alt"></i> لوحة التحكم الرئيسية</h1>
-        <div><i class="fas fa-user-shield"></i> مرحباً، المسؤول</div>
+        <div><i class="fas fa-user-shield"></i> مرحباً، جون</div>
       </div>
       
       <div class="stats-cards">
@@ -1288,7 +1288,7 @@
               </thead>
               <tbody>
                 <% results.forEach((r, index) => { %>
-                  <tr data-index="<%= index %>">
+                  <tr data-index="<%= index %>" id="row-<%= r.file %>">
                     <td><strong><%= r.name %></strong></td>
                     <td><span class="test-badge"><%= r.test %></span></td>
                     <td><code><%= r.phone %></code></td>
@@ -1301,19 +1301,13 @@
                     <td><%= r.date %></td>
                     <td>
                       <div class="action-buttons">
-                        <form action="/admin/delete" method="POST" class="delete-form" onsubmit="return confirmDelete(event)">
-                          <input type="hidden" name="file" value="<%= r.file %>">
-                          <button type="submit" class="btn btn-delete">
-                            <i class="fas fa-trash"></i> حذف
-                          </button>
-                        </form>
+                        <button type="button" class="btn btn-delete" onclick="deleteResult('<%= r.file %>', '<%= r.name %>')" id="deleteBtn-<%= r.file %>">
+                          <i class="fas fa-trash"></i> حذف
+                        </button>
                         
-                        <form action="/admin/notify" method="POST" class="notify-form" onsubmit="return confirmNotify(event)">
-                          <input type="hidden" name="file" value="<%= r.file %>">
-                          <button type="submit" class="btn btn-notify">
-                            <i class="fas fa-bell"></i> إشعار
-                          </button>
-                        </form>
+                        <button type="button" class="btn btn-notify" onclick="sendNotification('<%= r.file %>', '<%= r.name %>')" id="notifyBtn-<%= r.file %>">
+                          <i class="fas fa-bell"></i> إشعار
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1389,50 +1383,161 @@
       }
     }
 
-    // تأكيد الحذف مع تأثيرات
-    function confirmDelete(event) {
-      if (!confirm('⚠️ هل أنت متأكد من حذف هذه النتيجة؟\n\nهذا الإجراء لا يمكن التراجع عنه.')) {
-        event.preventDefault();
-        return false;
+    // دالة الحذف باستخدام AJAX
+    async function deleteResult(filename, patientName) {
+      if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+        return;
       }
       
-      // تأثير الجسيمات
-      createParticles({currentTarget: event.target});
+      const button = document.getElementById(`deleteBtn-${filename}`);
+      const originalHTML = button.innerHTML;
+      const row = document.getElementById(`row-${filename}`);
       
       // تغيير حالة الزر
-      const button = event.target;
-      const originalHTML = button.innerHTML;
       button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
       button.disabled = true;
       
-      setTimeout(() => {
+      // إضافة تأثير الجسيمات
+      createParticles({currentTarget: button});
+      
+      try {
+        // إرسال طلب الحذف باستخدام fetch API
+        const formData = new FormData();
+        formData.append('file', filename);
+        
+        const response = await fetch('/admin/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `file=${encodeURIComponent(filename)}`
+        });
+        
+        if (response.ok) {
+          // عرض رسالة نجاح
+          showNotification('تم حذف النتيجة بنجاح!', 'success');
+          
+          // إضافة تأثير اختفاء للصف
+          if (row) {
+            row.style.opacity = '0.5';
+            row.style.transform = 'translateX(100px)';
+            
+            setTimeout(() => {
+              row.style.display = 'none';
+              updateStatsAfterDelete();
+            }, 500);
+          }
+        } else {
+          throw new Error('فشل في الحذف');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('حدث خطأ أثناء الحذف!', 'error');
+        
+        // استعادة حالة الزر
         button.innerHTML = originalHTML;
         button.disabled = false;
-      }, 2000);
-      
-      return true;
+      }
     }
 
-    // تأكيد الإشعار
-    function confirmNotify(event) {
-      if (!confirm('🔔 هل تريد إرسال إشعار للمريض بنتيجة التحليل؟')) {
-        event.preventDefault();
-        return false;
+    // دالة إرسال الإشعار
+    async function sendNotification(filename, patientName) {
+      if (!confirm(`🔔 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض:\n${patientName}؟`)) {
+        return;
       }
       
-      createParticles({currentTarget: event.target});
-      
-      const button = event.target;
+      const button = document.getElementById(`notifyBtn-${filename}`);
       const originalHTML = button.innerHTML;
+      
+      // تغيير حالة الزر
       button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
       button.disabled = true;
       
-      setTimeout(() => {
-        button.innerHTML = originalHTML;
-        button.disabled = false;
-      }, 2000);
+      // إضافة تأثير الجسيمات
+      createParticles({currentTarget: button});
       
-      return true;
+      try {
+        // إرسال طلب الإشعار باستخدام fetch API
+        const response = await fetch('/admin/notify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `file=${encodeURIComponent(filename)}`
+        });
+        
+        if (response.ok) {
+          showNotification('تم إرسال الإشعار بنجاح!', 'success');
+        } else {
+          throw new Error('فشل في إرسال الإشعار');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('حدث خطأ أثناء إرسال الإشعار!', 'error');
+      } finally {
+        // استعادة حالة الزر بعد 2 ثانية
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+          button.disabled = false;
+        }, 2000);
+      }
+    }
+
+    // دالة عرض الإشعارات
+    function showNotification(message, type = 'info') {
+      // إزالة أي إشعارات سابقة
+      const existingNotifications = document.querySelectorAll('.notification');
+      existingNotifications.forEach(n => n.remove());
+      
+      // إنشاء الإشعار
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+      `;
+      
+      // إضافة الأنماط
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? 'var(--gradient-success)' : 'var(--gradient-danger)'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        animation: slideDown 0.5s ease-out;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // إزالة الإشعار تلقائياً بعد 5 ثواني
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.style.animation = 'slideUp 0.5s ease-out forwards';
+          setTimeout(() => notification.remove(), 500);
+        }
+      }, 5000);
+    }
+
+    // دالة تحديث الإحصائيات بعد الحذف
+    function updateStatsAfterDelete() {
+      const totalElement = document.querySelector('.stat-card.blue h3');
+      if (totalElement) {
+        const currentTotal = parseInt(totalElement.textContent) || 0;
+        if (currentTotal > 0) {
+          totalElement.textContent = currentTotal - 1;
+        }
+      }
     }
 
     // تحديث الإحصائيات
@@ -1479,7 +1584,7 @@
               phoneInput.style.borderColor = '';
             }, 500);
             
-            alert('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقمًا فقط');
+            showNotification('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقمًا فقط', 'error');
             phoneInput.focus();
             return false;
           }
@@ -1514,6 +1619,31 @@
               opacity: 0;
               transform: translate(var(--tx), var(--ty)) scale(0);
             }
+          }
+          @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+          }
+          
+          @keyframes slideUp {
+            from { top: 20px; opacity: 1; }
+            to { top: -100px; opacity: 0; }
+          }
+          
+          .notification button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+          }
+          
+          .notification button:hover {
+            opacity: 1;
           }
         `;
         document.head.appendChild(shakeStyle);
