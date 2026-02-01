@@ -8,53 +8,26 @@
   <style>
     :root {
       --primary-color: #3498db;
-      --primary-light: #5dade2;
       --secondary-color: #2c3e50;
       --accent-color: #e74c3c;
-      --accent-light: #ec7063;
-      --light-color: #f8f9fa;
-      --dark-color: #343a40;
+      --light-color: #1a1a2e;
+      --dark-color: #f0f0f0;
       --success-color: #2ecc71;
-      --success-light: #58d68d;
-      --border-radius: 12px;
-      --box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
       --transition: all 0.3s ease;
-      --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    }
-
-    /* الوضع الفاتح */
-    [data-theme="light"] {
-      --bg-color: #f5f7fa;
-      --bg-secondary: #ffffff;
-      --text-color: #343a40;
-      --text-secondary: #6c757d;
-      --border-color: #e9ecef;
-      --header-bg: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    /* الوضع المظلم */
-    [data-theme="dark"] {
-      --bg-color: #1a1d23;
-      --bg-secondary: #2d333b;
-      --text-color: #e9ecef;
-      --text-secondary: #adb5bd;
-      --border-color: #444c56;
-      --header-bg: linear-gradient(135deg, #1e3a5f, #0d1b2a);
-      --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
     }
     
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: var(--dark-color);
       min-height: 100vh;
       line-height: 1.6;
       padding: 20px;
@@ -63,135 +36,62 @@
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      background-color: var(--bg-secondary);
+      background-color: #16213e;
       border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
+      box-shadow: var(--box-shadow);
       overflow: hidden;
-      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     header {
-      background: var(--header-bg);
+      background: linear-gradient(to right, #0f3460, #16213e);
       color: white;
       padding: 25px 20px;
       text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
-      overflow: hidden;
-    }
-    
-    header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
-      background-size: cover;
-      pointer-events: none;
     }
     
     header h1 {
       font-size: 1.8rem;
       margin-bottom: 10px;
-      font-weight: 700;
-      position: relative;
-    }
-    
-    .header-controls {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      display: flex;
-      gap: 10px;
-    }
-    
-    .theme-toggle {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .theme-toggle:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-      transform: rotate(15deg);
-    }
-    
-    .theme-icon {
-      transition: var(--transition);
-    }
-    
-    .sun-icon, .moon-icon {
-      position: absolute;
-      transition: var(--transition);
-    }
-    
-    .sun-icon {
-      opacity: 0;
-      transform: scale(0.5);
-    }
-    
-    .moon-icon {
-      opacity: 1;
-      transform: scale(1);
-    }
-    
-    [data-theme="dark"] .sun-icon {
-      opacity: 1;
-      transform: scale(1);
-    }
-    
-    [data-theme="dark"] .moon-icon {
-      opacity: 0;
-      transform: scale(0.5);
+      color: #e6e6e6;
     }
     
     .back-btn {
-      background-color: rgba(255, 255, 255, 0.2);
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.1);
       color: white;
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       padding: 10px 15px;
       border-radius: var(--border-radius);
       cursor: pointer;
       transition: var(--transition);
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      font-weight: 500;
+      display: inline-block;
     }
     
     .back-btn:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-      transform: translateX(-5px);
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
     }
     
     main {
       padding: 30px 20px;
+      background-color: #1a1a2e;
+      min-height: 400px;
     }
     
     .results-info {
       text-align: center;
       margin-bottom: 30px;
-      background: var(--bg-secondary);
-      padding: 20px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      border-left: 5px solid var(--primary-color);
     }
     
     .results-info p {
       font-size: 1.1rem;
-      color: var(--text-secondary);
+      color: rgba(255, 255, 255, 0.8);
     }
     
     .phone-number {
@@ -199,36 +99,36 @@
       color: var(--primary-color);
       direction: ltr;
       display: inline-block;
-      background: rgba(52, 152, 219, 0.1);
-      padding: 5px 12px;
-      border-radius: 20px;
-      margin: 0 5px;
+      background-color: rgba(52, 152, 219, 0.1);
+      padding: 5px 10px;
+      border-radius: 4px;
     }
     
     .table-responsive {
       overflow-x: auto;
       margin-bottom: 30px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border-color);
     }
     
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: var(--bg-secondary);
+      box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+      background-color: #0f3460;
+      border-radius: var(--border-radius);
+      overflow: hidden;
     }
     
     th, td {
-      padding: 16px 20px;
+      padding: 15px;
       text-align: right;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e6e6e6;
     }
     
     th {
-      background-color: var(--bg-color);
+      background-color: #16213e;
       font-weight: bold;
-      color: var(--text-color);
+      color: var(--primary-color);
       position: sticky;
       top: 0;
     }
@@ -237,13 +137,8 @@
       border-bottom: none;
     }
     
-    tr {
-      transition: var(--transition);
-    }
-    
     tr:hover {
-      background-color: var(--bg-color);
-      transform: scale(1.01);
+      background-color: rgba(255, 255, 255, 0.05);
     }
     
     .action-buttons {
@@ -255,13 +150,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 10px 16px;
+      padding: 8px 15px;
       border-radius: var(--border-radius);
-      font-weight: 600;
+      font-weight: bold;
       text-decoration: none;
       transition: var(--transition);
       font-size: 0.9rem;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      border: none;
+      cursor: pointer;
     }
     
     .btn-download {
@@ -270,10 +166,10 @@
     }
     
     .btn-download:hover {
-      background-color: var(--primary-light);
+      background-color: #2980b9;
       color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
     .btn-view {
@@ -282,140 +178,113 @@
     }
     
     .btn-view:hover {
-      background-color: var(--success-light);
+      background-color: #27ae60;
       color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
     .btn i {
-      margin-left: 6px;
+      margin-left: 5px;
     }
     
     .no-results {
       text-align: center;
       padding: 60px 20px;
-      background-color: var(--bg-secondary);
+      background-color: #0f3460;
       border-radius: var(--border-radius);
       margin-top: 20px;
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border-color);
+      box-shadow: var(--box-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .no-results-icon {
-      font-size: 5rem;
+      font-size: 4rem;
+      color: rgba(255, 255, 255, 0.2);
       margin-bottom: 20px;
-      color: var(--text-secondary);
-      opacity: 0.7;
     }
     
     .no-results h3 {
-      color: var(--text-color);
+      color: #e6e6e6;
       margin-bottom: 15px;
-      font-weight: 600;
     }
     
     .no-results p {
-      color: var(--text-secondary);
+      color: rgba(255, 255, 255, 0.7);
       margin-bottom: 25px;
     }
     
     .search-again {
-      display: inline-flex;
-      align-items: center;
+      display: inline-block;
       padding: 12px 25px;
-      background: var(--gradient);
+      background: linear-gradient(to right, var(--primary-color), #0f3460);
       color: white;
       text-decoration: none;
       border-radius: var(--border-radius);
       font-weight: bold;
       transition: var(--transition);
-      box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+      border: none;
+      cursor: pointer;
     }
     
     .search-again:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 15px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(to right, #2980b9, #133c6e);
       color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     }
     
     footer {
       text-align: center;
       margin-top: 40px;
-      color: var(--text-secondary);
+      color: rgba(255, 255, 255, 0.6);
       font-size: 0.9rem;
       padding: 20px;
-      border-top: 1px solid var(--border-color);
-    }
-    
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-      100% {
-        transform: scale(1);
-      }
+      background-color: rgba(0, 0, 0, 0.2);
     }
     
     @media (max-width: 768px) {
       th, td {
-        padding: 12px 15px;
+        padding: 10px;
       }
       
       .btn {
-        padding: 8px 12px;
-        font-size: 0.85rem;
+        padding: 6px 10px;
+        font-size: 0.8rem;
       }
       
       header h1 {
         font-size: 1.5rem;
       }
       
-      .header-controls {
+      .back-btn {
         position: relative;
-        top: 0;
-        left: 0;
-        justify-content: center;
+        top: auto;
+        right: auto;
         margin-bottom: 15px;
+        display: inline-block;
       }
     }
     
     @media (max-width: 576px) {
       .action-buttons {
         flex-direction: column;
-        gap: 8px;
+        gap: 5px;
       }
       
       .btn {
         width: 100%;
         justify-content: center;
       }
-      
-      .results-info p {
-        font-size: 1rem;
-      }
     }
   </style>
 </head>
-<body data-theme="light">
+<body>
   <div class="container">
     <header>
-      <div class="header-controls">
-        <button class="theme-toggle" id="themeToggle">
-          <i class="fas fa-sun sun-icon"></i>
-          <i class="fas fa-moon moon-icon"></i>
-        </button>
-        <a href="/" class="back-btn">
-          <i class="fas fa-arrow-right"></i> العودة للرئيسية
-        </a>
-      </div>
+      <a href="/" class="back-btn">
+        <i class="fas fa-arrow-right"></i> العودة
+      </a>
       <h1>نتائج التحاليل الطبية</h1>
     </header>
 
@@ -430,7 +299,6 @@
             <thead>
               <tr>
                 <th>اسم المريض</th>
-                <th>اسم التحليل</th>
                 <th>رقم الهاتف</th>
                 <th>الإجراءات</th>
               </tr>
@@ -439,7 +307,6 @@
               <% result.forEach(r => { %>
                 <tr>
                   <td><%= r.name %></td>
-                  <td><%= r.test %></td>
                   <td><%= r.phone %></td>
                   <td>
                     <div class="action-buttons">
@@ -458,15 +325,11 @@
         </div>
       <% } else { %>
         <div class="no-results">
-          <div class="no-results-icon pulse">
-            <i class="fas fa-file-medical-alt"></i>
-          </div>
+          <div class="no-results-icon">☹️</div>
           <h3>لا توجد نتائج متاحة</h3>
           <p>لا توجد نتائج متاحة للرقم المطلوب</p>
           <p>يرجى التأكد من صحة الرقم أو مراجعة المركز الطبي</p>
-          <a href="/" class="search-again">
-            <i class="fas fa-search"></i> البحث مرة أخرى
-          </a>
+          <a href="/" class="search-again">البحث مرة أخرى</a>
         </div>
       <% } %>
     </main>
@@ -475,41 +338,5 @@
       <p>© 2025 معمل التحاليل الطبية. جميع الحقوق محفوظة.</p>
     </footer>
   </div>
-
-  <script>
-    // تبديل الوضع المظلم/الفاتح
-    const themeToggle = document.getElementById('themeToggle');
-    const body = document.body;
-    
-    // منع السلوك الافتراضي للزر
-    themeToggle.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const currentTheme = body.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      
-      body.setAttribute('data-theme', newTheme);
-      
-      // حفظ التفضيل في التخزين المحلي
-      localStorage.setItem('theme', newTheme);
-      
-      console.log('تم تغيير الوضع إلى:', newTheme);
-    });
-    
-    // تحميل التفضيل المحفوظ
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      body.setAttribute('data-theme', savedTheme);
-      
-      console.log('تم تحميل الوضع:', savedTheme);
-    });
-
-    // التأكد من أن زر العودة يعمل
-    document.querySelector('.back-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = '/';
-    });
-  </script>
 </body>
 </html>
