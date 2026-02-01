@@ -17,6 +17,7 @@
       --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       --gradient-success: linear-gradient(135deg, #00b09b, #96c93d);
       --gradient-danger: linear-gradient(135deg, #ff512f, #dd2476);
+      --gradient-info: linear-gradient(135deg, #3498db, #2980b9);
     }
     
     * {
@@ -323,15 +324,35 @@
       }
     }
     
-    .phone-number-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 15px;
+    .patient-info {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .info-card {
       background: rgba(106, 17, 203, 0.2);
       padding: 15px 25px;
       border-radius: var(--border-radius);
       border: 1px solid rgba(106, 17, 203, 0.3);
-      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 200px;
+    }
+    
+    .info-label {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+    }
+    
+    .info-value {
+      font-weight: bold;
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      font-size: 1.1rem;
     }
     
     .phone-number {
@@ -346,11 +367,6 @@
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    
-    .phone-label {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1.1rem;
-    }
 
     .result-count {
       background: var(--gradient-success);
@@ -361,6 +377,68 @@
       font-size: 1.1rem;
       box-shadow: 0 4px 10px rgba(0, 176, 155, 0.3);
       animation: fadeIn 1s ease-out 0.9s both;
+      margin-top: 20px;
+      display: inline-block;
+    }
+    
+    /* قسم الملاحظات */
+    .notes-section {
+      background: rgba(52, 152, 219, 0.1);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(52, 152, 219, 0.3);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 1s ease-out 1s both;
+    }
+
+    .notes-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-info);
+      animation: slideRight 3s infinite linear;
+    }
+    
+    .notes-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+      color: #ffffff;
+    }
+    
+    .notes-header i {
+      color: #3498db;
+      font-size: 1.4rem;
+    }
+    
+    .notes-header h3 {
+      font-size: 1.4rem;
+      margin: 0;
+    }
+    
+    .notes-content {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      line-height: 1.7;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: var(--border-radius);
+      border-right: 4px solid #3498db;
+    }
+    
+    .no-notes {
+      color: rgba(255, 255, 255, 0.6);
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: var(--border-radius);
     }
     
     .table-container {
@@ -657,10 +735,14 @@
         gap: 10px;
       }
 
-      .phone-number-container {
+      .patient-info {
         flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        align-items: center;
+      }
+
+      .info-card {
+        width: 100%;
+        max-width: 300px;
       }
 
       .action-buttons {
@@ -745,19 +827,67 @@
         <h2><i class="fas fa-file-medical-alt"></i> نتائج التحاليل</h2>
         <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px; font-size: 1.1rem;">يمكنك الاطلاع على نتائج تحاليلك وتحميلها بسهولة</p>
         
-        <div class="phone-number-container">
-          <span class="phone-label">رقم الهاتف:</span>
-          <span class="phone-number"><%= phoneNumber || "غير محدد" %></span>
-        </div>
-        
-        <% if (Array.isArray(result) && result.length > 0) { %>
-          <div class="result-count" style="margin-top: 20px;">
+        <% if (Array.isArray(result) && result.length > 0) { 
+          const patient = result[0]; // نفترض أن جميع النتائج لنفس المريض
+        %>
+          <div class="patient-info">
+            <div class="info-card">
+              <span class="info-label">اسم المريض:</span>
+              <span class="info-value"><%= patient.name %></span>
+            </div>
+            
+            <div class="info-card">
+              <span class="info-label">رقم الهاتف:</span>
+              <span class="phone-number"><%= phoneNumber || "غير محدد" %></span>
+            </div>
+            
+            <% if (patient.test) { %>
+              <div class="info-card">
+                <span class="info-label">نوع التحليل:</span>
+                <span class="info-value"><%= patient.test %></span>
+              </div>
+            <% } %>
+            
+            <% if (patient.date) { %>
+              <div class="info-card">
+                <span class="info-label">تاريخ النتيجة:</span>
+                <span class="info-value"><%= patient.date %></span>
+              </div>
+            <% } %>
+          </div>
+          
+          <div class="result-count">
             <i class="fas fa-check-circle"></i> تم العثور على <%= result.length %> نتيجة
           </div>
         <% } %>
       </div>
       
-      <% if (Array.isArray(result) && result.length > 0) { %>
+      <% if (Array.isArray(result) && result.length > 0) { 
+        const patient = result[0];
+      %>
+        <!-- قسم الملاحظات الإضافية -->
+        <% if (patient.notes && patient.notes.trim() !== '') { %>
+          <div class="notes-section">
+            <div class="notes-header">
+              <i class="fas fa-sticky-note"></i>
+              <h3>ملاحظات إضافية</h3>
+            </div>
+            <div class="notes-content">
+              <%= patient.notes %>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="notes-section">
+            <div class="notes-header">
+              <i class="fas fa-sticky-note"></i>
+              <h3>ملاحظات إضافية</h3>
+            </div>
+            <div class="no-notes">
+              لا توجد ملاحظات إضافية مرفقة مع هذه النتيجة
+            </div>
+          </div>
+        <% } %>
+        
         <div class="table-container">
           <div class="table-responsive">
             <table>
@@ -771,7 +901,12 @@
               <tbody>
                 <% result.forEach((r, index) => { %>
                   <tr>
-                    <td><%= r.name %></td>
+                    <td>
+                      <strong><%= r.name %></strong>
+                      <% if (r.test) { %>
+                        <br><small style="color: rgba(255, 255, 255, 0.7);">نوع التحليل: <%= r.test %></small>
+                      <% } %>
+                    </td>
                     <td><%= r.phone %></td>
                     <td>
                       <div class="action-buttons">
@@ -804,6 +939,7 @@
     
     <footer>
       <p>© 2025 معمل التحاليل (جون). جميع الحقوق محفوظة.</p>
+      <p class="footer-contact">للاستفسارات: 01234567890 | البريد الإلكتروني: info@lab.com</p>
     </footer>
   </div>
 
@@ -858,6 +994,20 @@
       const phoneNumber = document.querySelector('.phone-number');
       if (phoneNumber && phoneNumber.textContent !== 'غير محدد') {
         phoneNumber.style.animation = 'pulse 2s infinite';
+      }
+      
+      // تأثير للقسم الملاحظات
+      const notesSection = document.querySelector('.notes-section');
+      if (notesSection) {
+        notesSection.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+          this.style.boxShadow = '0 10px 25px rgba(52, 152, 219, 0.3)';
+        });
+        
+        notesSection.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+          this.style.boxShadow = 'none';
+        });
       }
     });
 
