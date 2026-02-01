@@ -126,7 +126,7 @@ app.get("/admin/logout", (req, res) => {
 app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const { name, phone, email, test } = req.body;
+  const { name, phone, email, test, notes } = req.body; // إضافة notes
   const file = req.file.filename;
 
   const newResult = {
@@ -134,6 +134,7 @@ app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
     test,            // اسم التحليل
     phone,           // رقم الهاتف
     email,
+    notes: notes || "", // إضافة الملاحظات
     file,
     date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
   };
@@ -146,7 +147,7 @@ app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
     from: process.env.EMAIL_ADDRESS,
     to: email,
     subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك زيارة الموقع والبحث باستخدام رقم هاتفك:\n${link}\n\n.`,
+    text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك زيارة الموقع والبحث باستخدام رقم هاتفك:\n${link}\n\n${notes ? `ملاحظات إضافية: ${notes}\n` : ''}`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
