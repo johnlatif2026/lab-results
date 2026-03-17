@@ -3,217 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>معمل تحاليل - الاستعلام عن النتائج</title>
+  <title>معمل التحاليل - استعلام النتائج</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary-color: #6a11cb;
-      --secondary-color: #2575fc;
-      --accent-color: #ff512f;
-      --light-color: #1a1a2e;
-      --dark-color: #ffffff;
-      --success-color: #00b09b;
-      --border-radius: 16px;
-      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      --primary: #4e54c8;
+      --secondary: #8f94fb;
+      --accent: #ff6a00;
+      --bg-dark: #1c1c2e;
+      --bg-light: #252544;
+      --text-light: #f0f0f0;
+      --radius: 12px;
+      --shadow: 0 8px 20px rgba(0,0,0,0.3);
       --transition: all 0.3s ease;
-      --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
-      color: var(--dark-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      line-height: 1.6;
+      background: linear-gradient(135deg, #0f0c29, #302b63);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      color: var(--text-light);
     }
-    
+
     .container {
+      background: var(--bg-dark);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 420px;
       width: 100%;
-      max-width: 500px;
-      background: rgba(22, 33, 62, 0.95);
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
       overflow: hidden;
-      margin: 0 auto;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    
+
     header {
-      background: linear-gradient(135deg, rgba(106, 17, 203, 0.9), rgba(37, 117, 252, 0.9));
-      color: white;
-      padding: 40px 20px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      text-align:center;
+      padding: 35px 20px;
     }
-    
+
     header h1 {
-      font-size: 2.2rem;
-      margin-bottom: 15px;
-      font-weight: 700;
-    }
-    
-    header p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-    
-    .content {
-      padding: 40px 30px;
-      background-color: rgba(26, 26, 46, 0.9);
-    }
-    
-    .welcome-text {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .welcome-text h2 {
-      font-size: 1.8rem;
-      color: #ffffff;
+      font-size: 2rem;
+      color: #fff;
       margin-bottom: 10px;
-      background: var(--gradient);
+    }
+
+    header p {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .content {
+      padding: 30px 25px;
+    }
+
+    .welcome-text h2 {
+      text-align:center;
+      font-size:1.6rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
+      margin-bottom: 8px;
     }
-    
+
     .welcome-text p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1rem;
+      text-align:center;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 25px;
     }
-    
+
     .form-section {
-      background: rgba(15, 52, 96, 0.8);
-      padding: 35px 30px;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      position: relative;
+      background: var(--bg-light);
+      padding: 25px 20px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: var(--shadow);
     }
-    
+
     .form-section h3 {
-      margin-bottom: 25px;
-      color: #ffffff;
-      text-align: center;
-      font-size: 1.4rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+      text-align:center;
+      font-size:1.3rem;
+      margin-bottom: 20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      color: #fff;
     }
-    
-    .form-section h3 i {
-      color: var(--success-color);
-    }
-    
+
+    .form-section h3 i { color: var(--accent); }
+
     .input-group {
-      margin-bottom: 25px;
       position: relative;
+      margin-bottom: 20px;
     }
-    
+
     .input-group input {
       width: 100%;
-      padding: 18px 50px 18px 20px;
-      background: rgba(22, 33, 62, 0.9);
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--border-radius);
-      font-size: 1.1rem;
+      padding: 16px 45px 16px 18px;
+      border-radius: var(--radius);
+      border: 2px solid rgba(255,255,255,0.2);
+      background: var(--bg-dark);
+      color: #fff;
+      font-size: 1rem;
       transition: var(--transition);
-      color: #ffffff;
-      letter-spacing: 2px;
     }
-    
+
     .input-group input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-      letter-spacing: normal;
+      color: rgba(255,255,255,0.5);
     }
-    
+
     .input-group input:focus {
-      border-color: var(--primary-color);
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.3);
-      background: rgba(26, 26, 46, 0.9);
+      border-color: var(--primary);
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(78,84,200,0.3);
     }
 
     .input-group::after {
       content: '📱';
       position: absolute;
-      left: 20px;
+      left: 15px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 1.2rem;
-      opacity: 0.7;
+      font-size:1.2rem;
+      opacity:0.7;
     }
-    
+
     .submit-btn {
-      background: var(--gradient);
-      color: white;
-      border: none;
-      padding: 18px 30px;
-      border-radius: var(--border-radius);
-      font-size: 1.2rem;
-      font-weight: bold;
-      cursor: pointer;
+      width:100%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color:#fff;
+      border:none;
+      padding: 14px 0;
+      border-radius: var(--radius);
+      font-size:1.1rem;
+      cursor:pointer;
+      font-weight:bold;
       transition: var(--transition);
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
     }
-    
+
     .submit-btn:hover {
-      background: linear-gradient(135deg, #2575fc, #6a11cb);
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
       transform: translateY(-2px);
     }
-    
+
     footer {
-      text-align: center;
-      margin-top: 30px;
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.9rem;
-      padding: 20px;
-      background-color: rgba(0, 0, 0, 0.3);
-      border-radius: var(--border-radius);
-      width: 100%;
-      max-width: 500px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align:center;
+      margin-top: 20px;
+      padding:15px;
+      color: rgba(255,255,255,0.5);
+      font-size:0.85rem;
     }
-    
-    @media (max-width: 576px) {
-      .container {
-        max-width: 100%;
-      }
-      
-      header {
-        padding: 30px 20px;
-      }
-      
-      header h1 {
-        font-size: 1.8rem;
-      }
-      
-      .content {
-        padding: 30px 20px;
-      }
-      
-      .form-section {
-        padding: 25px 20px;
-      }
-      
-      .input-group input {
-        padding: 16px 45px 16px 16px;
-      }
+
+    @media(max-width:480px){
+      header { padding: 25px 15px; }
+      .content { padding: 20px 15px; }
+      .form-section { padding: 20px 15px; }
     }
   </style>
 </head>
@@ -223,100 +176,57 @@
       <h1>معمل التحاليل (جون)</h1>
       <p>استعلم عن نتائج تحاليلك بسهولة وسرية تامة</p>
     </header>
-    
     <div class="content">
       <div class="welcome-text">
         <h2>مرحباً بك</h2>
         <p>أدخل رقم هاتفك للاستعلام عن نتائج التحاليل</p>
       </div>
-      
-      <div id="form" class="form-section">
+      <div class="form-section">
         <h3><i class="fas fa-search"></i> استعلام عن النتيجة</h3>
         <form method="POST" action="/result" onsubmit="return validatePhone()" id="phoneForm">
           <div class="input-group">
             <input type="text" name="phone" id="phoneInput" placeholder="أدخل رقم هاتفك هنا..." required autofocus>
           </div>
-          <button type="submit" class="submit-btn" id="submitBtn">
+          <button type="submit" class="submit-btn">
             <i class="fas fa-search"></i> عرض النتائج
           </button>
         </form>
       </div>
     </div>
+    <footer>
+      © 2025 معمل التحاليل (جون). جميع الحقوق محفوظة.
+    </footer>
   </div>
-  
-  <footer>
-    <p>© 2025 معمل التحاليل (جون). جميع الحقوق محفوظة.</p>
-  </footer>
 
   <script>
-    // تركيز على حقل الإدخال تلقائياً
-    document.addEventListener('DOMContentLoaded', function() {
-      const phoneInput = document.getElementById('phoneInput');
-      phoneInput.focus();
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('phoneInput').focus();
     });
 
-    // التحقق من صحة رقم الهاتف
     function validatePhone() {
-      const input = document.getElementById('phoneInput').value;
-      const cleanedInput = input.replace(/\D/g, '');
-      const isValid = /^[0-9]{10,11}$/.test(cleanedInput);
-      
-      if (!isValid) {
-        // تأثير اهتزاز للحقل
-        const phoneInput = document.getElementById('phoneInput');
-        phoneInput.style.borderColor = '#ff512f';
-        
-        // رسالة خطأ
+      const input = document.getElementById('phoneInput').value.replace(/\D/g,'');
+      if(!/^[0-9]{10,11}$/.test(input)) {
         showError("من فضلك أدخل رقم هاتف صحيح (10 أو 11 رقم)");
         return false;
       }
-      
-      // تحديث قيمة الحقل بالأرقام فقط
-      document.getElementById('phoneInput').value = cleanedInput;
-      
-      // تعطيل الزر مؤقتاً لمنع النقر المتكرر
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري البحث...';
-      
+      document.getElementById('phoneInput').value = input;
       return true;
     }
 
-    // عرض رسالة خطأ
-    function showError(message) {
-      // إزالة أي رسائل خطأ سابقة
-      const existingError = document.querySelector('.error-message');
-      if (existingError) existingError.remove();
-      
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'error-message';
-      errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle"></i> ${message}
+    function showError(msg) {
+      const prev = document.querySelector('.error-message');
+      if(prev) prev.remove();
+      const div = document.createElement('div');
+      div.className='error-message';
+      div.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+      div.style.cssText = `
+        position:fixed; top:20px; left:50%; transform:translateX(-50%);
+        background: linear-gradient(135deg, #ff6a00, #ff512f);
+        color:white; padding:12px 20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.3);
+        display:flex; align-items:center; gap:8px; z-index:1000;
       `;
-      
-      // إضافة الأنماط
-      errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #ff512f, #dd2476);
-        color: white;
-        padding: 15px 25px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      `;
-      
-      document.body.appendChild(errorDiv);
-      
-      // إزالة الرسالة بعد 3 ثواني
-      setTimeout(() => {
-        errorDiv.remove();
-      }, 3000);
+      document.body.appendChild(div);
+      setTimeout(()=>div.remove(),3000);
     }
   </script>
 </body>
