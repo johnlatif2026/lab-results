@@ -3,223 +3,231 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>معمل جون - استعلام النتائج</title>
-
+  <title>معمل التحاليل - استعلام النتائج</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
   <style>
-    :root{
-      --bg:#0b0f1a;
-      --card:#12182b;
-      --glass:rgba(255,255,255,0.05);
-      --primary:#00d4ff;
-      --secondary:#4facfe;
-      --text:#e6e9f0;
-      --muted:#9aa3b2;
-      --radius:14px;
+    :root {
+      --primary: #4e54c8;
+      --secondary: #8f94fb;
+      --accent: #ff6a00;
+      --bg-dark: #1c1c2e;
+      --bg-light: #252544;
+      --text-light: #f0f0f0;
+      --radius: 12px;
+      --shadow: 0 8px 20px rgba(0,0,0,0.3);
+      --transition: all 0.3s ease;
     }
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Cairo',sans-serif;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
-    body{
-      background: radial-gradient(circle at top,#11182c,#05070f);
-      color:var(--text);
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63);
+      display:flex;
+      justify-content:center;
+      align-items:center;
       min-height:100vh;
+      color: var(--text-light);
+    }
+
+    .container {
+      background: var(--bg-dark);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 420px;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      text-align:center;
+      padding: 35px 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .content {
+      padding: 30px 25px;
+    }
+
+    .welcome-text h2 {
+      text-align:center;
+      font-size:1.6rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .welcome-text p {
+      text-align:center;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 25px;
+    }
+
+    .form-section {
+      background: var(--bg-light);
+      padding: 25px 20px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .form-section h3 {
+      text-align:center;
+      font-size:1.3rem;
+      margin-bottom: 20px;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:20px;
+      gap:8px;
+      color: #fff;
     }
 
-    .container{
-      width:100%;
-      max-width:420px;
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:0 20px 50px rgba(0,0,0,0.6);
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.05);
+    .form-section h3 i { color: var(--accent); }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
     }
 
-    /* HEADER */
-    header{
-      padding:30px 20px;
-      text-align:center;
-      background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    .input-group input {
+      width: 100%;
+      padding: 16px 45px 16px 18px;
+      border-radius: var(--radius);
+      border: 2px solid rgba(255,255,255,0.2);
+      background: var(--bg-dark);
+      color: #fff;
+      font-size: 1rem;
+      transition: var(--transition);
     }
 
-    header h1{
-      font-size:1.7rem;
-      margin-bottom:8px;
+    .input-group input::placeholder {
+      color: rgba(255,255,255,0.5);
     }
 
-    header p{
-      color:var(--muted);
-      font-size:.95rem;
-    }
-
-    /* CONTENT */
-    .content{
-      padding:25px 20px;
-    }
-
-    .welcome{
-      text-align:center;
-      margin-bottom:20px;
-    }
-
-    .welcome h2{
-      color:var(--primary);
-      margin-bottom:5px;
-    }
-
-    .welcome p{
-      color:var(--muted);
-      font-size:.9rem;
-    }
-
-    /* FORM */
-    .form{
-      background:var(--glass);
-      padding:20px;
-      border-radius:var(--radius);
-      backdrop-filter:blur(10px);
-    }
-
-    .input-group{
-      position:relative;
-      margin-bottom:15px;
-    }
-
-    .input-group input{
-      width:100%;
-      padding:14px 15px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,0.1);
-      background:#0e1424;
-      color:white;
-      font-size:1rem;
-    }
-
-    .input-group input:focus{
+    .input-group input:focus {
+      border-color: var(--primary);
       outline:none;
-      border-color:var(--primary);
-      box-shadow:0 0 0 2px rgba(0,212,255,0.2);
+      box-shadow: 0 0 0 3px rgba(78,84,200,0.3);
     }
 
-    /* BUTTON */
-    .btn{
+    .input-group::after {
+      content: '📱';
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size:1.2rem;
+      opacity:0.7;
+    }
+
+    .submit-btn {
       width:100%;
-      padding:13px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color:#fff;
       border:none;
-      border-radius:10px;
-      background:linear-gradient(135deg,var(--primary),var(--secondary));
-      color:black;
-      font-size:1rem;
-      font-weight:bold;
+      padding: 14px 0;
+      border-radius: var(--radius);
+      font-size:1.1rem;
       cursor:pointer;
-      transition:.3s;
+      font-weight:bold;
+      transition: var(--transition);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
     }
 
-    .btn:hover{
-      transform:translateY(-2px) scale(1.02);
+    .submit-btn:hover {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      transform: translateY(-2px);
     }
 
-    footer{
+    footer {
       text-align:center;
+      margin-top: 20px;
       padding:15px;
-      font-size:.8rem;
-      color:var(--muted);
-    }
-
-    /* ERROR */
-    .error{
-      position:fixed;
-      top:20px;
-      left:50%;
-      transform:translateX(-50%);
-      background:#ff4d4d;
-      color:white;
-      padding:10px 20px;
-      border-radius:8px;
+      color: rgba(255,255,255,0.5);
+      font-size:0.85rem;
     }
 
     @media(max-width:480px){
-      .container{
-        margin-top:20px;
-      }
+      header { padding: 25px 15px; }
+      .content { padding: 20px 15px; }
+      .form-section { padding: 20px 15px; }
     }
-
   </style>
 </head>
-
 <body>
-
-<div class="container">
-
-<header>
-  <h1>🧪 معمل جون</h1>
-  <p>استعلام عن نتائج التحاليل بسهولة</p>
-</header>
-
-<div class="content">
-
-  <div class="welcome">
-    <h2>مرحباً بك</h2>
-    <p>أدخل رقم هاتفك لعرض النتائج</p>
-  </div>
-
-  <div class="form">
-    <form method="POST" action="/result" onsubmit="return validatePhone()">
-
-      <div class="input-group">
-        <input type="text" id="phoneInput" placeholder="ادخل رقم هاتفك" required>
+  <div class="container">
+    <header>
+      <h1>معمل التحاليل (جون)</h1>
+      <p>استعلم عن نتائج تحاليلك بسهولة وسرية تامة</p>
+    </header>
+    <div class="content">
+      <div class="welcome-text">
+        <h2>مرحباً بك</h2>
+        <p>أدخل رقم هاتفك للاستعلام عن نتائج التحاليل</p>
       </div>
-
-      <button class="btn">
-        عرض النتائج
-      </button>
-
-    </form>
+      <div class="form-section">
+        <h3><i class="fas fa-search"></i> استعلام عن النتيجة</h3>
+        <form method="POST" action="/result" onsubmit="return validatePhone()" id="phoneForm">
+          <div class="input-group">
+            <input type="text" name="phone" id="phoneInput" placeholder="أدخل رقم هاتفك هنا..." required autofocus>
+          </div>
+          <button type="submit" class="submit-btn">
+            <i class="fas fa-search"></i> عرض النتائج
+          </button>
+        </form>
+      </div>
+    </div>
+    <footer>
+      © 2025 معمل التحاليل (جون). جميع الحقوق محفوظة.
+    </footer>
   </div>
 
-</div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('phoneInput').focus();
+    });
 
-<footer>
-  © 2025 معمل التحاليل (جون). جميع الحقوق محفوظة.
-</footer>
+    function validatePhone() {
+      const input = document.getElementById('phoneInput').value.replace(/\D/g,'');
+      if(!/^[0-9]{10,11}$/.test(input)) {
+        showError("من فضلك أدخل رقم هاتف صحيح (10 أو 11 رقم)");
+        return false;
+      }
+      document.getElementById('phoneInput').value = input;
+      return true;
+    }
 
-</div>
-
-<script>
-
-function validatePhone(){
-  const input=document.getElementById('phoneInput').value.replace(/\D/g,'');
-
-  if(!/^[0-9]{10,11}$/.test(input)){
-    showError("رقم غير صحيح");
-    return false;
-  }
-
-  document.getElementById('phoneInput').value=input;
-  return true;
-}
-
-function showError(msg){
-  const div=document.createElement('div');
-  div.className='error';
-  div.innerText=msg;
-  document.body.appendChild(div);
-
-  setTimeout(()=>div.remove(),3000);
-}
-
-</script>
-
+    function showError(msg) {
+      const prev = document.querySelector('.error-message');
+      if(prev) prev.remove();
+      const div = document.createElement('div');
+      div.className='error-message';
+      div.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+      div.style.cssText = `
+        position:fixed; top:20px; left:50%; transform:translateX(-50%);
+        background: linear-gradient(135deg, #ff6a00, #ff512f);
+        color:white; padding:12px 20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.3);
+        display:flex; align-items:center; gap:8px; z-index:1000;
+      `;
+      document.body.appendChild(div);
+      setTimeout(()=>div.remove(),3000);
+    }
+  </script>
 </body>
 </html>
