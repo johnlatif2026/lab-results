@@ -6,282 +6,216 @@
   <title>لوحة تحكم المسؤول | تسجيل الدخول</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* جذور الألوان والتنسيق العام */
     :root {
       --primary-color: #6a11cb;
       --secondary-color: #2575fc;
       --accent-color: #ff512f;
-      --border-radius: 15px;
-      --transition: all 0.3s ease;
+      --success-color: #00b09b;
+      --border-radius: 20px;
+      --box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body {
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #000;
+      background: url('https://i.postimg.cc/QCr2nc2n/1773765522072.png') no-repeat center center/cover;
       position: relative;
       overflow: hidden;
     }
 
-    /* الخلفية بالصورة */
-    .background-image {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('https://i.postimg.cc/QCr2nc2n/1773765522072.png') no-repeat center center;
-      background-size: cover;
-      z-index: -1;
-      filter: brightness(0.7);
-    }
-
-    /* صندوق تسجيل الدخول */
     .login-container {
       width: 100%;
       max-width: 450px;
-      background: rgba(20, 20, 30, 0.75);
+      background: rgba(0,0,0,0.6);
       border-radius: var(--border-radius);
-      backdrop-filter: blur(15px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      box-shadow: var(--box-shadow);
+      backdrop-filter: blur(10px);
       overflow: hidden;
+      padding: 40px 30px;
       color: #fff;
-      display: flex;
-      flex-direction: column;
+      z-index: 1;
+      position: relative;
+      animation: slideUp 1s ease-out;
     }
 
-    .login-header {
-      padding: 40px 25px;
-      text-align: center;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(40px); }
+      to { opacity:1; transform: translateY(0); }
     }
 
+    .login-header { text-align: center; margin-bottom: 30px; }
     .login-header h1 {
       font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff, #e6e6e6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 10px;
-      color: #fff;
     }
+    .login-header p { font-size: 1.1rem; color: #ddd; }
 
-    .login-header p {
-      font-size: 1.1rem;
-      color: #ccc;
-    }
-
-    /* النموذج */
-    .login-form {
-      padding: 30px 25px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group {
-      margin-bottom: 25px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group label {
-      margin-bottom: 8px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 1rem;
-    }
-
+    .form-group { margin-bottom: 25px; position: relative; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1rem; }
     .form-group input {
-      padding: 15px;
+      width: 100%;
+      padding: 15px 50px 15px 15px;
       border-radius: var(--border-radius);
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.4);
       color: #fff;
       font-size: 1rem;
       transition: var(--transition);
     }
-
-    .form-group input::placeholder {
-      color: rgba(255,255,255,0.5);
-    }
-
-    .form-group input:focus {
-      border-color: var(--primary-color);
-      outline: none;
-      background: rgba(0,0,0,0.5);
-    }
-
-    /* أيقونات داخل الحقول */
-    .input-with-icon {
-      position: relative;
-    }
+    .form-group input:focus { border-color: var(--primary-color); outline:none; background: rgba(0,0,0,0.6); }
 
     .input-with-icon i {
       position: absolute;
       top: 50%;
       right: 15px;
       transform: translateY(-50%);
-      color: rgba(255,255,255,0.6);
-      font-size: 1.2rem;
-      transition: var(--transition);
+      color: rgba(255,255,255,0.7);
     }
 
-    /* زر تسجيل الدخول */
     .login-btn {
-      padding: 18px;
-      border-radius: var(--border-radius);
+      width: 100%;
+      padding: 15px;
+      background: var(--gradient);
       border: none;
-      font-size: 1.1rem;
-      font-weight: bold;
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: #fff;
+      border-radius: var(--border-radius);
+      font-size: 1.2rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: var(--transition);
+      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
-      margin-top: 10px;
+      transition: var(--transition);
     }
 
     .login-btn:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(106,17,203,0.5);
+      box-shadow: 0 8px 20px rgba(106, 17, 203, 0.4);
     }
 
-    /* الفوتر */
     .login-footer {
-      padding: 20px 25px;
       text-align: center;
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.6);
-      border-top: 1px solid rgba(255,255,255,0.1);
-      background: rgba(0,0,0,0.2);
+      margin-top: 25px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
     }
 
-    /* تأثير الجسيمات عند النقر */
+    @media(max-width: 576px) {
+      .login-container { padding: 30px 20px; }
+      .login-header h1 { font-size: 1.7rem; }
+      .form-group input { padding: 12px 45px; font-size: 0.95rem; }
+      .login-btn { font-size: 1rem; padding: 12px; }
+    }
+
+    /* تأثير الاهتزاز عند خطأ الإدخال */
+    @keyframes shake {
+      0%,100%{ transform:translateX(0); }
+      10%,30%,50%,70%,90%{ transform:translateX(-8px); }
+      20%,40%,60%,80%{ transform:translateX(8px); }
+    }
+
+    /* تأثير الجسيمات */
     .particle {
-      position: fixed;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 1000;
-      opacity: 0;
+      position: fixed; width: 4px; height: 4px; border-radius: 50%;
+      pointer-events: none; z-index: 1000; opacity: 0;
     }
-
     @keyframes particle-explode {
-      0% { opacity: 1; transform: translate(0,0) scale(1); }
-      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+      0%{ opacity:1; transform: translate(0,0) scale(1); }
+      100%{ opacity:0; transform: translate(var(--tx), var(--ty)) scale(0); }
     }
 
-    /* Responsive */
-    @media (max-width: 576px) {
-      .login-container {
-        max-width: 90%;
-      }
-
-      .login-header h1 {
-        font-size: 1.6rem;
-      }
-
-      .login-header p {
-        font-size: 1rem;
-      }
-
-      .form-group input {
-        padding: 12px;
-        font-size: 0.95rem;
-      }
-
-      .login-btn {
-        font-size: 1rem;
-        padding: 15px;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- الخلفية -->
-  <div class="background-image"></div>
-
-  <!-- صندوق تسجيل الدخول -->
   <div class="login-container">
     <div class="login-header">
       <h1><i class="fas fa-shield-alt"></i> لوحة تحكم المسؤول</h1>
       <p>إدارة نظام نتائج التحاليل الطبية</p>
     </div>
 
-    <form class="login-form" method="POST" action="/admin/login" id="loginForm">
-      <div class="form-group">
+    <form class="login-form" id="loginForm" method="POST" action="/admin/login">
+      <div class="form-group input-with-icon">
         <label for="username"><i class="fas fa-user-cog"></i> اسم المستخدم</label>
-        <div class="input-with-icon">
-          <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم المسؤول" required autofocus>
-          <i class="fas fa-user-tie"></i>
-        </div>
+        <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم المسؤول" required autofocus>
+        <i class="fas fa-user-tie"></i>
       </div>
 
-      <div class="form-group">
+      <div class="form-group input-with-icon">
         <label for="password"><i class="fas fa-key"></i> كلمة المرور</label>
-        <div class="input-with-icon">
-          <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور الخاصة بك" required>
-          <i class="fas fa-lock"></i>
-        </div>
+        <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور الخاصة بك" required>
+        <i class="fas fa-lock"></i>
       </div>
 
-      <button type="submit" class="login-btn" id="loginBtn">
-        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
-      </button>
+      <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
     </form>
 
     <div class="login-footer">
       <p>© 2025 نظام إدارة معمل التحاليل (جون)</p>
-      <p class="footer-note">جميع الحقوق محفوظة</p>
+      <p>جميع الحقوق محفوظة</p>
     </div>
   </div>
 
   <script>
-    // تأثير الجسيمات عند النقر على الزر
-    function createParticles(event) {
+    // اهتزاز الحقول الفارغة
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+
+    function createParticles(target) {
       const colors = ['#6a11cb', '#2575fc', '#ff512f', '#00b09b'];
-      const buttonRect = event.currentTarget.getBoundingClientRect();
-      const centerX = buttonRect.left + buttonRect.width / 2;
-      const centerY = buttonRect.top + buttonRect.height / 2;
-      
-      for (let i = 0; i < 30; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        const size = Math.random() * 6 + 2;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.left = `${centerX}px`;
-        particle.style.top = `${centerY}px`;
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 100 + 50;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance;
-        const duration = Math.random() * 1.5 + 0.5;
-        particle.style.setProperty('--tx', `${tx}px`);
-        particle.style.setProperty('--ty', `${ty}px`);
-        particle.style.animation = `particle-explode ${duration}s ease-out forwards`;
-        document.body.appendChild(particle);
-        setTimeout(() => particle.remove(), duration * 1000);
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+
+      for(let i=0;i<20;i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random()*5+2;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+        p.style.left = `${cx}px`;
+        p.style.top = `${cy}px`;
+        const angle = Math.random()*2*Math.PI;
+        const dist = Math.random()*100+50;
+        p.style.setProperty('--tx', `${Math.cos(angle)*dist}px`);
+        p.style.setProperty('--ty', `${Math.sin(angle)*dist}px`);
+        p.style.animation = `particle-explode ${Math.random()*1+0.5}s ease-out forwards`;
+        document.body.appendChild(p);
+        setTimeout(()=>p.remove(), 1500);
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const loginBtn = document.getElementById('loginBtn');
-      loginBtn.addEventListener('click', (e) => createParticles({currentTarget: e.currentTarget}));
+    loginForm.addEventListener('submit', function(e){
+      if(!usernameInput.value || !passwordInput.value){
+        e.preventDefault();
+        if(!usernameInput.value){
+          usernameInput.style.animation = 'shake 0.5s';
+          setTimeout(()=>usernameInput.style.animation='',500);
+        }
+        if(!passwordInput.value){
+          passwordInput.style.animation = 'shake 0.5s';
+          setTimeout(()=>passwordInput.style.animation='',500);
+        }
+        return false;
+      }
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+      createParticles(loginBtn);
     });
+
+    loginBtn.addEventListener('mouseenter', ()=>createParticles(loginBtn));
   </script>
 </body>
 </html>
