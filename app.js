@@ -190,6 +190,4 @@ app.post("/admin/notify", async (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ السيرفر شغال على http://localhost:${PORT}`);
-});
+module.exports = app;
