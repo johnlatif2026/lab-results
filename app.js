@@ -18,29 +18,40 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// ✅ حل مشكلة views على Vercel
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+// ✅ إنشاء فولدر uploads لو مش موجود
+if (!fs.existsSync(path.join(__dirname, "uploads"))) {
+  fs.mkdirSync(path.join(__dirname, "uploads"));
+}
 
 // إعدادات رفع الملفات
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+  destination: (req, file, cb) =>
+    cb(null, path.join(__dirname, "uploads")),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
 
 // إعدادات التطبيق
-app.set("view engine", "ejs");
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: "secret-key",
-  resave: false,
-  saveUninitialized: true,
-}));
+app.use(
+  session({
+    secret: "secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 // 🔥 دوال Firestore
 async function loadResults() {
   const snapshot = await db.collection("results").get();
-  return snapshot.docs.map(doc => doc.data());
+  return snapshot.docs.map((doc) => doc.data());
 }
 
 async function addResult(result) {
@@ -52,8 +63,11 @@ async function deleteResult(file) {
 }
 
 async function findResultsByPhone(phone) {
-  const snapshot = await db.collection("results").where("phone", "==", phone).get();
-  return snapshot.docs.map(doc => doc.data());
+  const snapshot = await db
+    .collection("results")
+    .where("phone", "==", phone)
+    .get();
+  return snapshot.docs.map((doc) => doc.data());
 }
 
 // إعداد البريد
@@ -74,9 +88,9 @@ app.post("/result", async (req, res) => {
   const phone = req.body.phone;
   const filteredResults = await findResultsByPhone(phone);
 
-  res.render("result", { 
+  res.render("result", {
     result: filteredResults,
-    phoneNumber: phone
+    phoneNumber: phone,
   });
 });
 
@@ -102,6 +116,7 @@ app.get("/admin", async (req, res) => {
 
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
+
   if (
     username === (process.env.ADMIN_USERNAME || "john") &&
     password === (process.env.ADMIN_PASSWORD || "latif")
@@ -113,12 +128,9 @@ app.post("/admin/login", (req, res) => {
   }
 });
 
-// ✅ تسجيل الخروج
+// تسجيل الخروج
 app.get("/admin/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.send("حدث خطأ أثناء تسجيل الخروج.");
-    }
+  req.session.destroy(() => {
     res.redirect("/admin");
   });
 });
@@ -126,28 +138,32 @@ app.get("/admin/logout", (req, res) => {
 app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const { name, phone, email, test, notes } = req.body; // إضافة notes
+  const { name, phone, email, test, notes } = req.body;
   const file = req.file.filename;
 
   const newResult = {
-    name,            // اسم المريض
-    test,            // اسم التحليل
-    phone,           // رقم الهاتف
+    name,
+    test,
+    phone,
     email,
-    notes: notes || "", // إضافة الملاحظات
+    notes: notes || "",
     file,
-    date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
+    date: new Date().toLocaleString("ar-EG", {
+      timeZone: "Africa/Cairo",
+    }),
   };
 
   await addResult(newResult);
 
-  const link = `http://lab-results-production.up.railway.app/`;
+  const link = `https://lab-result.vercel.app/`;
 
   const mailOptions = {
     from: process.env.EMAIL_ADDRESS,
     to: email,
     subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك زيارة الموقع والبحث باستخدام رقم هاتفك:\n${link}\n\n${notes ? `ملاحظات إضافية: ${notes}\n` : ''}`,
+    text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك زيارة الموقع والبحث باستخدام رقم هاتفك:\n${link}\n\n${
+      notes ? `ملاحظات إضافية: ${notes}\n` : ""
+    }`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
@@ -160,6 +176,7 @@ app.post("/admin/delete", async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const fileToDelete = req.body.file;
+
   await deleteResult(fileToDelete);
 
   const filePath = path.join(__dirname, "uploads", fileToDelete);
@@ -172,6 +189,7 @@ app.post("/admin/notify", async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const fileToNotify = req.body.file;
+
   const snapshot = await db.collection("results").doc(fileToNotify).get();
   const result = snapshot.data();
 
@@ -190,4 +208,5 @@ app.post("/admin/notify", async (req, res) => {
   });
 });
 
+// ❌ مهم: مفيش app.listen على Vercel
 module.exports = app;
