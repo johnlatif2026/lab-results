@@ -138,32 +138,28 @@ app.get("/admin/logout", (req, res) => {
 app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const { name, phone, email, test, notes } = req.body;
+  const { name, phone, email, test, notes } = req.body; // إضافة notes
   const file = req.file.filename;
 
   const newResult = {
-    name,
-    test,
-    phone,
+    name,            // اسم المريض
+    test,            // اسم التحليل
+    phone,           // رقم الهاتف
     email,
-    notes: notes || "",
+    notes: notes || "", // إضافة الملاحظات
     file,
-    date: new Date().toLocaleString("ar-EG", {
-      timeZone: "Africa/Cairo",
-    }),
+    date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
   };
 
   await addResult(newResult);
 
-  const link = `https://lab-result.vercel.app/`;
+  const link = `http://lab-result.vercel.app/`;
 
   const mailOptions = {
     from: process.env.EMAIL_ADDRESS,
     to: email,
     subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك زيارة الموقع والبحث باستخدام رقم هاتفك:\n${link}\n\n${
-      notes ? `ملاحظات إضافية: ${notes}\n` : ""
-    }`,
+    text: `مرحبًا ${name}،\n\nنتيجة التحليل الخاصة بك أصبحت جاهزة.\n\nيمكنك زيارة الموقع والبحث باستخدام رقم هاتفك:\n${link}\n\n${notes ? `ملاحظات إضافية: ${notes}\n` : ''}`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
@@ -176,7 +172,6 @@ app.post("/admin/delete", async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const fileToDelete = req.body.file;
-
   await deleteResult(fileToDelete);
 
   const filePath = path.join(__dirname, "uploads", fileToDelete);
@@ -189,7 +184,6 @@ app.post("/admin/notify", async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const fileToNotify = req.body.file;
-
   const snapshot = await db.collection("results").doc(fileToNotify).get();
   const result = snapshot.data();
 
