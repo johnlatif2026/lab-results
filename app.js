@@ -153,7 +153,7 @@ app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
 
   await addResult(newResult);
 
-  const link = `http://lab-result.vercel.app/`;
+  const link = `http://lab-results.up.railway.app`;
 
   const mailOptions = {
     from: process.env.EMAIL_ADDRESS,
