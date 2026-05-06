@@ -138,7 +138,7 @@ app.post("/admin/login", (req, res) => {
     password === (process.env.ADMIN_PASSWORD || "latif")
   ) {
     req.session.loggedIn = true;
-    res.redirect("/admin");
+    res.redirect("/admin/dashboard");
   } else {
     res.send("بيانات الدخول غير صحيحة.");
   }
