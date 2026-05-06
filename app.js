@@ -138,7 +138,7 @@ app.post("/admin/login", (req, res) => {
     password === (process.env.ADMIN_PASSWORD || "latif")
   ) {
     req.session.loggedIn = true;
-    res.redirect("/admin/dashboard");
+    res.redirect("/admin");  // ← هذا هو التغيير الوحيد المطلوب
   } else {
     res.send("بيانات الدخول غير صحيحة.");
   }
