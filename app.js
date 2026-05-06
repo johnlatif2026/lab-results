@@ -343,4 +343,38 @@ app.post("/admin/notify", async (req, res) => {
   }
 });
 
+app.get("/view/:id", async (req, res) => {
+  try {
+    const doc = await db.collection("results").doc(req.params.id).get();
+    const data = doc.data();
+    
+    if (!data || !data.file) {
+      return res.status(404).send("الملف غير موجود");
+    }
+    
+    // قم بجلب الملف وإرساله مباشرةً (Proxy)
+    const https = require('https');
+    const url = data.file;
+    
+    https.get(url, (response) => {
+      // تحقق من حالة الاستجابة
+      if (response.statusCode === 401) {
+        return res.status(401).send("ملف خاص. يرجى تمكين الوصول العام في Cloudinary");
+      }
+      
+      // أضف رأس التصفح الصحيح
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      response.pipe(res);
+    }).on('error', (err) => {
+      console.error("Proxy Error:", err);
+      res.status(500).send("خطأ في جلب الملف");
+    });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("حدث خطأ");
+  }
+});
+
 module.exports = app;
