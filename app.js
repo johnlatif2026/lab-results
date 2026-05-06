@@ -39,15 +39,13 @@ app.use(bodyParser.json());
 // Session
 const MemoryStore = require('memorystore')(session);
 
+// استبدل إعدادات Session بهذا
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret-key",
   resave: false,
-  saveUninitialized: false,
-  store: new MemoryStore({
-    checkPeriod: 86400000
-  }),
+  saveUninitialized: true,  // غير من false إلى true
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,  // خليها false للتجربة على Vercel (لأنها HTTP مؤقتًا)
     maxAge: 86400000
   }
 }));
@@ -122,24 +120,47 @@ app.get("/view/:id", async (req, res) => {
 
 // Admin
 app.get("/admin", async (req, res) => {
+  console.log("===== DEBUGGING SESSION =====");
+  console.log("Session ID:", req.session.id);
   console.log("Session loggedIn:", req.session.loggedIn);
+  console.log("Full session:", req.session);
+  console.log("==============================");
+  
   if (req.session.loggedIn) {
-    const results = await loadResults();
-    res.render("admin/dashboard", { results });  // ← أضف admin/
+    console.log("User is logged in, loading dashboard");
+    try {
+      const results = await loadResults();
+      console.log(`Loaded ${results.length} results`);
+      res.render("admin/dashboard", { results });
+    } catch (error) {
+      console.error("Error loading dashboard:", error);
+      res.status(500).send("Error loading dashboard: " + error.message);
+    }
   } else {
-    res.render("admin/login");  // ← أضف admin/
+    console.log("User not logged in, showing login page");
+    res.render("admin/login");
   }
 });
 
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
+  console.log("Login attempt:", username);
+  
   if (
     username === (process.env.ADMIN_USERNAME || "john") &&
     password === (process.env.ADMIN_PASSWORD || "latif")
   ) {
     req.session.loggedIn = true;
-    res.redirect("/admin");  // ← هذا هو التغيير الوحيد المطلوب
+    console.log("Login successful, session saved:", req.session);
+    
+    // حفظ الجلسة بشكل صريح قبل إعادة التوجيه
+    req.session.save((err) => {
+      if (err) console.error("Session save error:", err);
+      console.log("Session saved, redirecting to /admin");
+      res.redirect("/admin");
+    });
   } else {
+    console.log("Login failed");
     res.send("بيانات الدخول غير صحيحة.");
   }
 });
