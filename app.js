@@ -122,12 +122,12 @@ app.get("/view/:id", async (req, res) => {
 
 // Admin
 app.get("/admin", async (req, res) => {
-  console.log("Session loggedIn:", req.session.loggedIn); // عشان تتأكد
+  console.log("Session loggedIn:", req.session.loggedIn);
   if (req.session.loggedIn) {
     const results = await loadResults();
-    res.render("dashboard", { results });
+    res.render("admin/dashboard", { results });  // ← أضف admin/
   } else {
-    res.render("login");
+    res.render("admin/login");  // ← أضف admin/
   }
 });
 
