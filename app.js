@@ -5,6 +5,7 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
+const path = require("path");
 require("dotenv").config();
 
 const admin = require("firebase-admin");
@@ -24,30 +25,12 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Cloudinary Config
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// ✅ تحديد مسار views بطريقة مضمونة
+const viewsPath = path.join(__dirname, "views");
+console.log("Views path:", viewsPath); // عشان تتأكد في logs
 
-// Multer + Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "lab-results",
-    resource_type: "auto",
-    public_id: (req, file) => Date.now() + "-" + file.originalname,
-  },
-});
-
-const upload = multer({ storage });
-
-// EJS - باستخدام مجلد views
-const path = require("path");
-app.set("views", path.join(__dirname, "views"));
+app.set("views", viewsPath);
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -68,6 +51,25 @@ app.use(session({
     maxAge: 86400000
   }
 }));
+
+// Cloudinary Config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Multer + Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "lab-results",
+    resource_type: "auto",
+    public_id: (req, file) => Date.now() + "-" + file.originalname,
+  },
+});
+
+const upload = multer({ storage });
 
 // Firestore functions
 async function loadResults() {
@@ -120,6 +122,7 @@ app.get("/view/:id", async (req, res) => {
 
 // Admin
 app.get("/admin", async (req, res) => {
+  console.log("Session loggedIn:", req.session.loggedIn); // عشان تتأكد
   if (req.session.loggedIn) {
     const results = await loadResults();
     res.render("dashboard", { results });
