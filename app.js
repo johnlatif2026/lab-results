@@ -187,6 +187,7 @@ app.get("/admin/logout", (req, res) => {
 });
 
 // ✅ Upload route - المحسن بالكامل
+// Upload route - النسخة المعدلة
 app.post("/admin/upload", (req, res, next) => {
   // التحقق من الجلسة قبل معالجة الملف
   console.log("1. Checking session before multer:", req.session.loggedIn);
@@ -221,7 +222,16 @@ app.post("/admin/upload", (req, res, next) => {
     console.log("Uploading file for:", name);
     const fileUrl = req.file.path;
     const public_id = req.file.filename;
-    const id = public_id;
+    
+    // ✅ تنظيف الـ ID ليكون صالح لـ Firestore
+    // نأخذ الوقت والتاريخ فقط كـ ID نظيف
+    const cleanId = Date.now().toString(); // ID بسيط ونظيف
+    
+    // أو ممكن تستخدم اسم منظم: اسم_المريض_الوقت
+    // const cleanId = `${name.replace(/\s/g, '_')}_${Date.now()}`;
+
+    console.log("Generated clean ID:", cleanId);
+    console.log("Original filename:", req.file.originalname);
 
     const newResult = {
       name,
@@ -230,14 +240,16 @@ app.post("/admin/upload", (req, res, next) => {
       email,
       notes: notes || "",
       file: fileUrl,
-      public_id,
+      public_id: public_id, // نحتفظ بالاسم الأصلي للملف في Cloudinary
+      original_filename: req.file.originalname, // نخزن الاسم الأصلي
       date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
     };
 
-    await addResult(id, newResult);
-    console.log("Result added to Firestore");
+    // استخدام الـ ID النظيف
+    await addResult(cleanId, newResult);
+    console.log("Result added to Firestore with ID:", cleanId);
 
-    const link = `https://lab-result.vercel.app/`;
+    const link = `https://lab-results.vercel.app/`;
     const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
       to: email,
@@ -245,7 +257,7 @@ app.post("/admin/upload", (req, res, next) => {
       text: `مرحبًا ${name}\n\nيمكنك الاطلاع على النتيجة عبر الرابط:\n${link}\n\n${notes || ""}`,
     };
 
-    // إرسال الإيميل بدون await عشان ما يعلق
+    // إرسال الإيميل
     transporter.sendMail(mailOptions, (error) => {
       if (error) console.log("❌ Email Error:", error);
       else console.log("Email sent successfully to:", email);
@@ -269,7 +281,7 @@ app.post("/admin/delete", async (req, res) => {
   console.log("Delete - Session check:", req.session.loggedIn);
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const id = req.body.file;
+  const id = req.body.file; // ده دلوقتي هو الـ cleanId مش اسم الملف
 
   try {
     const doc = await db.collection("results").doc(id).get();
@@ -279,10 +291,11 @@ app.post("/admin/delete", async (req, res) => {
       await cloudinary.uploader.destroy(result.public_id, {
         resource_type: "raw",
       });
+      console.log("File deleted from Cloudinary:", result.public_id);
     }
 
     await deleteResult(id);
-    console.log("Result deleted:", id);
+    console.log("Result deleted from Firestore:", id);
     
     req.session.save((err) => {
       if (err) console.error("Session save error:", err);
@@ -290,22 +303,23 @@ app.post("/admin/delete", async (req, res) => {
     });
   } catch (error) {
     console.error("Delete error:", error);
-    res.status(500).send("حدث خطأ أثناء الحذف");
+    res.status(500).send("حدث خطأ أثناء الحذف: " + error.message);
   }
 });
 
 // Notify
+// Notify route - معدل
 app.post("/admin/notify", async (req, res) => {
   console.log("Notify - Session check:", req.session.loggedIn);
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const id = req.body.file;
+  const id = req.body.file; // الـ cleanId
   
   try {
     const snapshot = await db.collection("results").doc(id).get();
     const result = snapshot.data();
 
-    if (!result) return res.send("غير موجود");
+    if (!result) return res.send("النتيجة غير موجودة");
 
     const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
@@ -314,8 +328,10 @@ app.post("/admin/notify", async (req, res) => {
       text: `تم حذف نتيجتك.`,
     };
 
-    transporter.sendMail(mailOptions, () => {
-      console.log("Notification email sent");
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) console.log("Email error:", error);
+      else console.log("Notification email sent to:", result.email);
+      
       req.session.save((err) => {
         if (err) console.error("Session save error:", err);
         res.redirect("/admin");
@@ -323,7 +339,7 @@ app.post("/admin/notify", async (req, res) => {
     });
   } catch (error) {
     console.error("Notify error:", error);
-    res.status(500).send("حدث خطأ");
+    res.status(500).send("حدث خطأ: " + error.message);
   }
 });
 
