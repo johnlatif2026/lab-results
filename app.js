@@ -176,9 +176,11 @@ app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const { name, phone, email, test, notes } = req.body;
+
   const fileUrl = req.file.path;
   const public_id = req.file.filename;
-  const id = public_id;
+
+  const id = public_id; // نستخدمه كـ doc id
 
   const newResult = {
     name,
@@ -192,13 +194,14 @@ app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
   };
 
   await addResult(id, newResult);
-  const link = `https://lab-result.vercel.app/`;
 
-  const mailOptions = {
+  const link = `https://lab-results.vercel.app/`;
+
+const mailOptions = {
     from: process.env.EMAIL_ADDRESS,
     to: email,
     subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}\n\nنتيجتك جاهزة: ${link}\n${notes || ""}`,
+    text: `مرحبًا ${name}\n\nالنتيجة:\n${link}\n${notes || ""}`,
   };
 
   transporter.sendMail(mailOptions, (error) => {
@@ -212,14 +215,18 @@ app.post("/admin/delete", async (req, res) => {
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const id = req.body.file;
+
   const doc = await db.collection("results").doc(id).get();
   const result = doc.data();
 
   if (result?.public_id) {
-    await cloudinary.uploader.destroy(result.public_id, { resource_type: "raw" });
+    await cloudinary.uploader.destroy(result.public_id, {
+      resource_type: "raw",
+    });
   }
 
   await deleteResult(id);
+
   res.redirect("/admin");
 });
 
