@@ -28,27 +28,39 @@ const app = express();
 
 // ✅ تحديد مسار views بطريقة مضمونة
 const viewsPath = path.join(__dirname, "views");
-console.log("Views path:", viewsPath); // عشان تتأكد في logs
+console.log("Views path:", viewsPath);
 
 app.set("views", viewsPath);
 app.set("view engine", "ejs");
 
+// ✅ Body parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Session
+// ✅ Session configuration - محسنة
 const MemoryStore = require('memorystore')(session);
 
-// استبدل إعدادات Session بهذا
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret-key",
-  resave: false,
-  saveUninitialized: true,  // غير من false إلى true
+  resave: true,  // changed to true
+  saveUninitialized: true,
   cookie: {
-    secure: false,  // خليها false للتجربة على Vercel (لأنها HTTP مؤقتًا)
-    maxAge: 86400000
-  }
+    secure: false,
+    maxAge: 86400000,
+    httpOnly: true,
+    sameSite: 'lax'
+  },
+  unset: 'keep'  // منع حذف الجلسة
 }));
+
+// ✅ Middleware لحماية الجلسة
+app.use((req, res, next) => {
+  // تسجيل حالة الجلسة للـ admin routes
+  if (req.path.startsWith('/admin')) {
+    console.log(`[${req.method}] ${req.path} - Session ID: ${req.session.id}, LoggedIn: ${req.session.loggedIn}`);
+  }
+  next();
+});
 
 // Cloudinary Config
 cloudinary.config({
@@ -57,7 +69,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer + Cloudinary
+// ✅ Multer + Cloudinary مع إعدادات محسنة
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -67,7 +79,12 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB حد أقصى
+  }
+});
 
 // Firestore functions
 async function loadResults() {
@@ -118,12 +135,11 @@ app.get("/view/:id", async (req, res) => {
   res.redirect(data.file);
 });
 
-// Admin
+// Admin routes
 app.get("/admin", async (req, res) => {
   console.log("===== DEBUGGING SESSION =====");
   console.log("Session ID:", req.session.id);
   console.log("Session loggedIn:", req.session.loggedIn);
-  console.log("Full session:", req.session);
   console.log("==============================");
   
   if (req.session.loggedIn) {
@@ -153,7 +169,6 @@ app.post("/admin/login", (req, res) => {
     req.session.loggedIn = true;
     console.log("Login successful, session saved:", req.session);
     
-    // حفظ الجلسة بشكل صريح قبل إعادة التوجيه
     req.session.save((err) => {
       if (err) console.error("Session save error:", err);
       console.log("Session saved, redirecting to /admin");
@@ -171,85 +186,145 @@ app.get("/admin/logout", (req, res) => {
   });
 });
 
-// Upload
-app.post("/admin/upload", upload.single("pdf"), async (req, res) => {
-  if (!req.session.loggedIn) return res.redirect("/admin");
+// ✅ Upload route - المحسن بالكامل
+app.post("/admin/upload", (req, res, next) => {
+  // التحقق من الجلسة قبل معالجة الملف
+  console.log("1. Checking session before multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session check failed, redirecting to login");
+    return res.redirect("/admin");
+  }
+  next();
+}, upload.single("pdf"), async (req, res) => {
+  // التحقق مرة أخرى بعد multer
+  console.log("2. Checking session after multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session lost after multer! Redirecting to login");
+    return res.redirect("/admin");
+  }
 
-  const { name, phone, email, test, notes } = req.body;
+  try {
+    // التحقق من وجود الملف
+    if (!req.file) {
+      console.log("No file uploaded");
+      return res.status(400).send("لم يتم رفع ملف");
+    }
 
-  const fileUrl = req.file.path;
-  const public_id = req.file.filename;
+    const { name, phone, email, test, notes } = req.body;
+    
+    // التحقق من البيانات المطلوبة
+    if (!name || !phone || !email || !test) {
+      console.log("Missing required fields");
+      return res.status(400).send("جميع الحقول مطلوبة");
+    }
 
-  const id = public_id; // نستخدمه كـ doc id
+    console.log("Uploading file for:", name);
+    const fileUrl = req.file.path;
+    const public_id = req.file.filename;
+    const id = public_id;
 
-  const newResult = {
-    name,
-    test,
-    phone,
-    email,
-    notes: notes || "",
-    file: fileUrl,
-    public_id,
-    date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
-  };
+    const newResult = {
+      name,
+      test,
+      phone,
+      email,
+      notes: notes || "",
+      file: fileUrl,
+      public_id,
+      date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
+    };
 
-  await addResult(id, newResult);
+    await addResult(id, newResult);
+    console.log("Result added to Firestore");
 
-  const link = `https://lab-results.vercel.app/`;
+    const link = `https://lab-result.vercel.app/`;
+    const mailOptions = {
+      from: process.env.EMAIL_ADDRESS,
+      to: email,
+      subject: "نتيجة التحاليل الخاصة بك",
+      text: `مرحبًا ${name}\n\nيمكنك الاطلاع على النتيجة عبر الرابط:\n${link}\n\n${notes || ""}`,
+    };
 
-const mailOptions = {
-    from: process.env.EMAIL_ADDRESS,
-    to: email,
-    subject: "نتيجة التحاليل الخاصة بك",
-    text: `مرحبًا ${name}\n\nالنتيجة:\n${link}\n${notes || ""}`,
-  };
+    // إرسال الإيميل بدون await عشان ما يعلق
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) console.log("❌ Email Error:", error);
+      else console.log("Email sent successfully to:", email);
+    });
 
-  transporter.sendMail(mailOptions, (error) => {
-    if (error) console.log("❌ Email Error:", error);
-    res.redirect("/admin");
-  });
+    // حفظ الجلسة قبل التوجيه
+    req.session.save((err) => {
+      if (err) console.error("Session save error:", err);
+      console.log("3. Session saved, redirecting to /admin");
+      res.redirect("/admin");
+    });
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).send("حدث خطأ أثناء رفع الملف: " + error.message);
+  }
 });
 
 // Delete
 app.post("/admin/delete", async (req, res) => {
+  console.log("Delete - Session check:", req.session.loggedIn);
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const id = req.body.file;
 
-  const doc = await db.collection("results").doc(id).get();
-  const result = doc.data();
+  try {
+    const doc = await db.collection("results").doc(id).get();
+    const result = doc.data();
 
-  if (result?.public_id) {
-    await cloudinary.uploader.destroy(result.public_id, {
-      resource_type: "raw",
+    if (result?.public_id) {
+      await cloudinary.uploader.destroy(result.public_id, {
+        resource_type: "raw",
+      });
+    }
+
+    await deleteResult(id);
+    console.log("Result deleted:", id);
+    
+    req.session.save((err) => {
+      if (err) console.error("Session save error:", err);
+      res.redirect("/admin");
     });
+  } catch (error) {
+    console.error("Delete error:", error);
+    res.status(500).send("حدث خطأ أثناء الحذف");
   }
-
-  await deleteResult(id);
-
-  res.redirect("/admin");
 });
 
 // Notify
 app.post("/admin/notify", async (req, res) => {
+  console.log("Notify - Session check:", req.session.loggedIn);
   if (!req.session.loggedIn) return res.redirect("/admin");
 
   const id = req.body.file;
-  const snapshot = await db.collection("results").doc(id).get();
-  const result = snapshot.data();
+  
+  try {
+    const snapshot = await db.collection("results").doc(id).get();
+    const result = snapshot.data();
 
-  if (!result) return res.send("غير موجود");
+    if (!result) return res.send("غير موجود");
 
-  const mailOptions = {
-    from: process.env.EMAIL_ADDRESS,
-    to: result.email,
-    subject: "تم حذف النتيجة",
-    text: `تم حذف نتيجتك.`,
-  };
+    const mailOptions = {
+      from: process.env.EMAIL_ADDRESS,
+      to: result.email,
+      subject: "تم حذف النتيجة",
+      text: `تم حذف نتيجتك.`,
+    };
 
-  transporter.sendMail(mailOptions, () => {
-    res.redirect("/admin");
-  });
+    transporter.sendMail(mailOptions, () => {
+      console.log("Notification email sent");
+      req.session.save((err) => {
+        if (err) console.error("Session save error:", err);
+        res.redirect("/admin");
+      });
+    });
+  } catch (error) {
+    console.error("Notify error:", error);
+    res.status(500).send("حدث خطأ");
+  }
 });
 
 module.exports = app;
