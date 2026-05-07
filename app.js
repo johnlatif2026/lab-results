@@ -456,11 +456,22 @@ app.get("/view/:id", async (req, res) => {
 
     // 4. إعادة التوجيه أو تنزيل الملف
     if (req.query.download === 'true') {
-        // إضافة fl_attachment=true ليجبر Cloudinary على التنزيل
-        const downloadUrl = fileUrl.includes('res.cloudinary.com') 
-                            ? fileUrl + (fileUrl.includes('?') ? '&' : '?') + 'fl_attachment=true'
-                            : fileUrl;
-        return res.redirect(downloadUrl);
+
+    let downloadUrl = fileUrl;
+
+    // إضافة اسم الملف الحقيقي مع الامتداد
+    if (fileUrl.includes('res.cloudinary.com')) {
+
+        const originalName = data.original_filename || 'result.pdf';
+
+        downloadUrl =
+          fileUrl +
+          (fileUrl.includes('?') ? '&' : '?') +
+          `fl_attachment:${encodeURIComponent(originalName)}`;
+    }
+
+    return res.redirect(downloadUrl);
+}
     } else {
         // عرض في المتصفح
         return res.redirect(fileUrl);
