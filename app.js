@@ -288,48 +288,99 @@ app.post("/admin/upload", (req, res, next) => {
     }
 
     console.log("Uploading file for:", name);
-    const fileUrl = req.file.path;
-    const public_id = req.file.filename;
-    
-    // ✅ تنظيف الـ ID ليكون صالح لـ Firestore
-    // نأخذ الوقت والتاريخ فقط كـ ID نظيف
-    const cleanId = Date.now().toString(); // ID بسيط ونظيف
-    
-    // أو ممكن تستخدم اسم منظم: اسم_المريض_الوقت
-    // const cleanId = `${name.replace(/\s/g, '_')}_${Date.now()}`;
+// ✅ Upload route - النسخة النهائية الموحدة
+app.post("/admin/upload", (req, res, next) => {
+  // التحقق من الجلسة قبل معالجة الملف
+  console.log("1. Checking session before multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session check failed, redirecting to login");
+    return res.redirect("/admin");
+  }
+  next();
+}, upload.single("pdf"), async (req, res) => {
+  // التحقق مرة أخرى بعد multer
+  console.log("2. Checking session after multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session lost after multer! Redirecting to login");
+    return res.redirect("/admin");
+  }
 
-    console.log("Generated clean ID:", cleanId);
-    console.log("Original filename:", req.file.originalname);
+  try {
+    // التحقق من وجود الملف
+    if (!req.file) {
+      console.log("No file uploaded");
+      return res.status(400).send("لم يتم رفع ملف");
+    }
 
+    console.log("File uploaded successfully:", {
+      path: req.file.path,
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      size: req.file.size
+    });
+
+    const { name, phone, email, test, notes } = req.body;
+    
+    // التحقق من البيانات المطلوبة
+    if (!name || !phone || !email || !test) {
+      console.log("Missing required fields");
+      return res.status(400).send("جميع الحقول مطلوبة");
+    }
+
+    // التحقق من أن الرابط صالح
+    if (!req.file.path || !req.file.path.startsWith('http')) {
+      throw new Error('Invalid file URL from Cloudinary');
+    }
+
+    const cleanId = Date.now().toString();
+    
     const newResult = {
       name,
       test,
       phone,
       email,
       notes: notes || "",
-      file: fileUrl,
-      public_id: public_id, // نحتفظ بالاسم الأصلي للملف في Cloudinary
-      original_filename: req.file.originalname, // نخزن الاسم الأصلي
+      file: req.file.path,
+      public_id: req.file.filename,
+      original_filename: req.file.originalname,
+      file_size: req.file.size,
+      mime_type: req.file.mimetype,
       date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
     };
 
-    // استخدام الـ ID النظيف
     await addResult(cleanId, newResult);
     console.log("Result added to Firestore with ID:", cleanId);
 
-    const link = `https://lab-results.vercel.app/`;
+    // تحديث الرابط لاستخدام المسار الصحيح
+    const protocol = req.protocol === 'https' ? 'https' : 'http';
+    const host = req.get('host');
+    const link = `${protocol}://${host}/view/${cleanId}`;
+    
+    // إرسال الإيميل بصيغة HTML محسنة
     const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
       to: email,
       subject: "نتيجة التحاليل الخاصة بك",
-      text: `مرحبًا ${name}\n\nيمكنك الاطلاع على النتيجة عبر الرابط:\n${link}\n\n${notes || ""}`,
+      html: `
+        <h2>مرحباً ${name}</h2>
+        <p>تم إضافة نتيجة التحليل الخاصة بك إلى النظام.</p>
+        <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
+        <p><a href="${link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">عرض النتيجة</a></p>
+        <p>أو قم بنسخ هذا الرابط: ${link}</p>
+        ${notes ? `<p><strong>ملاحظات:</strong> ${notes}</p>` : ''}
+        <hr>
+        <p>مع تحيات مركز التحاليل الطبية</p>
+      `,
     };
 
-    // إرسال الإيميل
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) console.log("❌ Email Error:", error);
-      else console.log("Email sent successfully to:", email);
-    });
+    // إرسال الإيميل مع async/await
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("Email sent successfully to:", email);
+    } catch (emailError) {
+      console.error("Email error (but file uploaded):", emailError.message);
+      // لا نمنع الرفع بسبب خطأ في الإيميل
+    }
 
     // حفظ الجلسة قبل التوجيه
     req.session.save((err) => {
@@ -339,25 +390,31 @@ app.post("/admin/upload", (req, res, next) => {
     });
 
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).send("حدث خطأ أثناء رفع الملف: " + error.message);
+    console.error("Upload error details:", error);
+    res.status(500).send(`
+      <h1>حدث خطأ أثناء رفع الملف</h1>
+      <p>${error.message}</p>
+      <a href="/admin">العودة للوحة التحكم</a>
+    `);
   }
 });
 
 // Delete
+// Delete - معدل
 app.post("/admin/delete", async (req, res) => {
   console.log("Delete - Session check:", req.session.loggedIn);
   if (!req.session.loggedIn) return res.redirect("/admin");
 
-  const id = req.body.file; // ده دلوقتي هو الـ cleanId مش اسم الملف
+  const id = req.body.file;
 
   try {
     const doc = await db.collection("results").doc(id).get();
     const result = doc.data();
 
     if (result?.public_id) {
+      // استخدم "auto" بدلاً من "raw" لتتناسب مع إعدادات الرفع
       await cloudinary.uploader.destroy(result.public_id, {
-        resource_type: "raw",
+        resource_type: "auto",
       });
       console.log("File deleted from Cloudinary:", result.public_id);
     }
@@ -372,41 +429,6 @@ app.post("/admin/delete", async (req, res) => {
   } catch (error) {
     console.error("Delete error:", error);
     res.status(500).send("حدث خطأ أثناء الحذف: " + error.message);
-  }
-});
-
-// Notify
-app.post("/admin/notify", async (req, res) => {
-  console.log("Notify - Session check:", req.session.loggedIn);
-  if (!req.session.loggedIn) return res.redirect("/admin");
-
-  const id = req.body.file; // الـ cleanId
-  
-  try {
-    const snapshot = await db.collection("results").doc(id).get();
-    const result = snapshot.data();
-
-    if (!result) return res.send("النتيجة غير موجودة");
-
-    const mailOptions = {
-      from: process.env.EMAIL_ADDRESS,
-      to: result.email,
-      subject: "تم حذف النتيجة",
-      text: `تم حذف نتيجتك.`,
-    };
-
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) console.log("Email error:", error);
-      else console.log("Notification email sent to:", result.email);
-      
-      req.session.save((err) => {
-        if (err) console.error("Session save error:", err);
-        res.redirect("/admin");
-      });
-    });
-  } catch (error) {
-    console.error("Notify error:", error);
-    res.status(500).send("حدث خطأ: " + error.message);
   }
 });
 
