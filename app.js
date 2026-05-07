@@ -86,10 +86,13 @@ const storage = new CloudinaryStorage({
 });
 
 
-const multerMemory = multer({ 
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB حد أقصى
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024
+  }
 });
+
 // Firestore functions
 async function loadResults() {
   const snapshot = await db.collection("results").get();
