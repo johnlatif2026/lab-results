@@ -320,6 +320,7 @@ app.post("/admin/delete", async (req, res) => {
 });
 
 // View route
+// مسار عرض وتحميل الملفات
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
@@ -330,33 +331,40 @@ app.get("/view/:id", async (req, res) => {
     }
     
     let fileUrl = data.file;
+    console.log("الرابط الأصلي:", fileUrl);
     
-    if (fileUrl.includes('/image/upload/')) {
-      fileUrl = fileUrl.replace('/image/upload/', '/upload/');
+    // ✅ تصحيح الرابط لملفات PDF من Cloudinary
+    if (fileUrl.includes('res.cloudinary.com') && fileUrl.includes('/upload/') && !fileUrl.includes('/raw/')) {
+      fileUrl = fileUrl.replace('/upload/', '/raw/upload/');
+      console.log("الرابط بعد التصحيح:", fileUrl);
     }
     
+    // التحقق من وجود الملف قبل التوجيه
     try {
       const response = await axios.head(fileUrl);
       if (response.status === 200) {
         if (req.query.download === 'true') {
-          return res.redirect(fileUrl + '?download=1');
+          return res.redirect(fileUrl + '?fl_attachment=true');
+        } else {
+          return res.redirect(fileUrl);
         }
-        return res.redirect(fileUrl);
       } else {
-        throw new Error('File not found');
+        throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error("File check failed:", error.message);
+      console.error("فشل التحقق من الملف:", error.message);
       return res.status(404).send(`
-        <h1>الملف غير موجود</h1>
-        <p>عذراً، الملف الذي تبحث عنه غير موجود في الخادم.</p>
-        <p>الرابط: ${fileUrl}</p>
-        <a href="/">العودة للصفحة الرئيسية</a>
+        <h1>⚠️ تعذر العثور على الملف</h1>
+        <p>تم حفظ الملف في Cloudinary لكن الرابط يحتاج إلى تهيئة.</p>
+        <p><strong>الرابط الذي تمت محاولة الوصول إليه:</strong><br>
+        <code style="direction: ltr; display: block; word-break: break-all;">${fileUrl}</code></p>
+        <p><strong>نصيحة:</strong> الرابط الصحيح يجب أن يحتوي على <code style="direction: ltr;">/raw/upload/</code> بدلاً من <code style="direction: ltr;">/upload/</code> لملفات PDF.</p>
+        <a href="/">↩️ العودة للصفحة الرئيسية</a>
       `);
     }
     
   } catch (error) {
-    console.error("View error:", error);
+    console.error("خطأ في مسار العرض:", error);
     res.status(500).send("حدث خطأ: " + error.message);
   }
 });
