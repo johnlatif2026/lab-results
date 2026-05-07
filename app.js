@@ -102,7 +102,10 @@ async function deleteResult(id) {
 
 async function findResultsByPhone(phone) {
   const snapshot = await db.collection("results").where("phone", "==", phone).get();
-  return snapshot.docs.map(doc => doc.data());
+  return snapshot.docs.map(doc => ({ 
+    id: doc.id,     // ✅ أضف هذا
+    ...doc.data() 
+  }));
 }
 
 // Email
