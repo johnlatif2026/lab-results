@@ -75,7 +75,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "lab-results",
-    resource_type: "auto", // أو "auto"
+    resource_type: "raw", // أو "auto"
     type: 'upload', // <-- هذه الخاصية ستجعل الملف عامًا ويمكن الوصول إليه مباشرة
     public_id: (req, file) => Date.now() + "-" + file.originalname,
   },
