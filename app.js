@@ -343,56 +343,30 @@ app.post("/admin/notify", async (req, res) => {
 
 app.get("/view/:id", async (req, res) => {
   try {
-    // 1. جلب بيانات الملف من Firestore باستخدام الـ ID
     const doc = await db.collection("results").doc(req.params.id).get();
     const data = doc.data();
-
-    // 2. التحقق من وجود الملف
+    
     if (!data || !data.file) {
       return res.status(404).send("الملف غير موجود");
     }
-
-    // 3. جلب الملف من Cloudinary مباشرة من خلال السيرفر (حتى لو كان خاصًا)
-    //    السيرفر يمتلك الصلاحيات عبر الـ API Key، أما العميل فلا يمتلكها.
-    const response = await axios({
-      method: 'get',
-      url: data.file,
-      responseType: 'stream', // مهم جدًا للتعامل مع الملفات الكبيرة
-      // يمكنك إضافة headers هنا إذا كان Cloudinary يتطلبها، لكن في الغالب لا تحتاجها للملفات الخاصة.
-      // headers: { 'Authorization': `Bearer ${process.env.CLOUDINARY_API_KEY}` } 
-    });
-
-    // 4. التحقق من نجاح الجلب
-    if (response.status !== 200) {
-      return res.status(response.status).send(`فشل جلب الملف من Cloudinary (HTTP ${response.status})`);
-    }
-
-    // 5. إعداد رؤوس (Headers) الاستجابة لإعلام المتصفح بكيفية التعامل مع الملف
-    //    'inline' لعرضه في المتصفح، أو 'attachment' لتحميله.
-    const contentDisposition = req.query.download === 'true' ? 'attachment' : 'inline';
-    res.setHeader('Content-Type', response.headers['content-type'] || 'application/pdf');
-    res.setHeader('Content-Disposition', `${contentDisposition}; filename="${data.original_filename || 'result.pdf'}"`);
-
-    // 6. إرسال الملف للمستخدم
-    response.data.pipe(res);
-
-  } catch (error) {
-    console.error("Proxy Error Details:", {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url
+    
+    // ✅ إنشاء URL موقّع (signed URL) للوصول للملفات الخاصة
+    const signedUrl = cloudinary.url(data.public_id, {
+      resource_type: 'raw',
+      type: 'upload',
+      secure: true,
+      sign_url: true,
+      expires_at: Math.floor(Date.now() / 1000) + 300 // تنتهي بعد 5 دقائق
     });
     
-    // رسائل خطأ أكثر إفادة للمستخدم
-    if (error.response?.status === 401) {
-      res.status(401).send("خطأ في المصادقة (401): لا يمكن للسيرفر جلب الملف من Cloudinary. تحقق من صلاحيات API Key.");
-    } else if (error.response?.status === 404) {
-      res.status(404).send("الملف غير موجود على خوادم Cloudinary.");
-    } else {
-      res.status(500).send(`حدث خطأ أثناء جلب الملف: ${error.message}`);
-    }
+    console.log("Generated signed URL for:", data.public_id);
+    
+    // إعادة التوجيه إلى الرابط الموقع
+    res.redirect(signedUrl);
+    
+  } catch (error) {
+    console.error("Error in /view/:id:", error);
+    res.status(500).send("حدث خطأ: " + error.message);
   }
 });
-
 module.exports = app;
