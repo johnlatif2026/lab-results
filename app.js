@@ -74,7 +74,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "lab-results",
-    resource_type: "auto",
+    resource_type: "raw", // ✅ غيرها من "auto" إلى "raw"
     allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
     public_id: (req, file) => {
       const timestamp = Date.now();
@@ -329,54 +329,48 @@ app.get("/view/:id", async (req, res) => {
       return res.status(404).send("الملف غير موجود");
     }
     
-    let fileUrl = data.file;
-    console.log("🔗 الرابط الأصلي من قاعدة البيانات:", fileUrl);
+    let originalUrl = data.file;
+    let finalUrl = originalUrl;
     
-    // ✅ التصحيح الشامل لأي رابط من Cloudinary
-    if (fileUrl.includes('res.cloudinary.com')) {
-      // الخطوة 1: تحويل أي رابط يبدأ بـ 'image' أو 'video' إلى 'raw'
-      // مثال: .../image/upload/... -> .../raw/upload/...
-      fileUrl = fileUrl.replace(/\/(image|video)\/upload\//, '/raw/upload/');
-      
-      // الخطوة 2: إذا كان الرابط لا يحتوي على '/raw/' بعد التصحيح، نضيفه
-      if (!fileUrl.includes('/raw/upload/') && fileUrl.includes('/upload/')) {
-        fileUrl = fileUrl.replace('/upload/', '/raw/upload/');
+    // 🔧 المعالجة الذكية لأي رابط من Cloudinary
+    if (originalUrl.includes('res.cloudinary.com')) {
+      // إذا كان الرابط من نوع image أو video، نحوله إلى raw
+      if (originalUrl.includes('/image/upload/') || originalUrl.includes('/video/upload/')) {
+        finalUrl = originalUrl.replace(/\/(image|video)\/upload\//, '/raw/upload/');
+        console.log(`📝 تم تصحيح الرابط من ${originalUrl} إلى ${finalUrl}`);
       }
-      console.log("✅ الرابط بعد التصحيح النهائي:", fileUrl);
+      
+      // إذا لم يكن يحتوي على /raw/upload/ نهائياً، نضيفه
+      if (!finalUrl.includes('/raw/upload/') && finalUrl.includes('/upload/')) {
+        finalUrl = finalUrl.replace('/upload/', '/raw/upload/');
+        console.log(`📝 تم إضافة raw إلى الرابط: ${finalUrl}`);
+      }
     }
     
-    // التحقق من وجود الملف قبل التوجيه
+    // التحقق النهائي من الملف
     try {
-      const response = await axios.head(fileUrl, { timeout: 5000 });
+      const response = await axios.head(finalUrl);
       if (response.status === 200) {
         if (req.query.download === 'true') {
-          // إضافة معامل التحميل لملفات PDF
-          return res.redirect(fileUrl + '?fl_attachment=true');
-        } else {
-          return res.redirect(fileUrl);
+          return res.redirect(finalUrl + '?fl_attachment=true');
         }
-      } else {
-        throw new Error(`HTTP ${response.status}`);
+        return res.redirect(finalUrl);
       }
-    } catch (error) {
-      console.error("❌ فشل التحقق من الملف:", error.message);
-      return res.status(404).send(`
-        <h1>⚠️ تعذر فتح الملف</h1>
-        <p>الملف موجود في Cloudinary ولكن هناك خطأ في الرابط.</p>
-        <p><strong>📎 الرابط الأصلي المخزن:</strong><br>
-        <code style="direction: ltr; display: block; word-break: break-all;">${data.file}</code></p>
-        <p><strong>🔧 الرابط الذي تمت محاولة استخدامه:</strong><br>
-        <code style="direction: ltr; display: block; word-break: break-all;">${fileUrl}</code></p>
-        <hr>
-        <p><strong>✅ الحل المقترح:</strong></p>
-        <p>الرجاء <strong>رفع الملف مرة أخرى</strong>، فهذا الملف رُفع بنوع <code style="direction: ltr;">image</code> بينما هو PDF.</p>
-        <p>تأكد من أن إعدادات الرفع في الكود تحتوي على <code style="direction: ltr;">resource_type: "auto"</code> كما هو موجود بالفعل.</p>
-        <a href="/admin" style="display: inline-block; margin-top: 20px;">↩️ العودة للوحة التحكم</a>
-      `);
+    } catch (err) {
+      console.log(`⚠️ فشل الوصول إلى ${finalUrl}`);
     }
     
+    // إذا فشل الرابط المصحح، نعرض رسالة خطأ واضحة
+    return res.status(404).send(`
+      <h1>⚠️ لا يمكن الوصول إلى الملف</h1>
+      <p><strong>السبب:</strong> تم رفع هذا الملف بنوع غير صحيح (image) بينما هو ملف PDF.</p>
+      <p><strong>الحل:</strong> قم <strong>بحذف هذه النتيجة</strong> من لوحة التحكم، ثم <strong>أعد رفع الملف مرة أخرى</strong> بعد تعديل الكود.</p>
+      <p>تم تعديل إعدادات الرفع الآن إلى <code>resource_type: "raw"</code>، لذلك الملفات الجديدة ستعمل بشكل صحيح.</p>
+      <a href="/admin">↩️ العودة للوحة التحكم</a>
+    `);
+    
   } catch (error) {
-    console.error("❌ خطأ في مسار العرض:", error);
+    console.error(error);
     res.status(500).send("حدث خطأ: " + error.message);
   }
 });
