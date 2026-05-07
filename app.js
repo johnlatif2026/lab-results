@@ -248,11 +248,10 @@ app.post("/admin/upload",
         `);
       }
 
-      // ========== رفع الملف إلى Cloudinary بطريقة موثوقة ==========
-      console.log("☁️ 3. Uploading to Cloudinary...");
-      
-      // تحديد نوع الملف وتجهيز الخيارات
-      // تحديد نوع الملف وتجهيز الخيارات
+// ========== رفع الملف إلى Cloudinary ==========
+console.log("☁️ 3. Uploading to Cloudinary...");
+
+// تحديد نوع الملف
 const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
 const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
 const isPdf = fileExtension === 'pdf';
@@ -262,41 +261,42 @@ let resourceType = 'auto';
 if (isImage) resourceType = 'image';
 if (isPdf) resourceType = 'raw';
 
-// 🔥 التعديل الأهم: نضيف الامتداد .pdf صراحة في public_id
-let baseName = req.file.originalname.replace(/\.[^/.]+$/, ''); // إزالة الامتداد الأصلي
+// تحضير public_id مع إضافة الامتداد .pdf إذا لزم الأمر
+let baseName = req.file.originalname.replace(/\.[^/.]+$/, '');
 baseName = baseName.replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g, '_');
 let publicId = `${Date.now()}-${baseName}`;
 
-// إذا كان الملف PDF، نضيف .pdf في نهاية public_id
-if (isPdf) {
+// ✅ التأكد من أن الرابط ينتهي بـ .pdf للملفات PDF
+if (isPdf && !publicId.endsWith('.pdf')) {
   publicId = `${publicId}.pdf`;
 }
-      
-      // رفع الملف إلى Cloudinary باستخدام Promise
-      const uploadResult = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: "lab-results",
-            resource_type: resourceType,
-            access_mode: "public",      // ✅ مفتاح الحل: يجعل الملف عاماً
-            public_id: publicId,
-            // للملفات raw نحتاج تحديد allowed_formats
-            ...(resourceType === 'raw' && { allowed_formats: ['pdf', 'doc', 'docx'] })
-          },
-          (error, result) => {
-            if (error) {
-              console.error("❌ Cloudinary upload error:", error);
-              reject(error);
-            } else {
-              console.log("✅ Cloudinary upload success:", result.secure_url);
-              resolve(result);
-            }
-          }
-        );
-        
-        // إرسال بيانات الملف (buffer)
-        uploadStream.end(req.file.buffer);
-      });
+
+// رفع الملف
+const uploadResult = await new Promise((resolve, reject) => {
+  const uploadStream = cloudinary.uploader.upload_stream(
+    {
+      folder: "lab-results",
+      resource_type: resourceType,
+      access_mode: "public",
+      public_id: publicId,
+      ...(resourceType === 'raw' && { 
+        allowed_formats: ['pdf', 'doc', 'docx'],
+        format: 'pdf'  // ✅ نجبر Cloudinary على الحفاظ على صيغة PDF
+      })
+    },
+    (error, result) => {
+      if (error) {
+        console.error("❌ Cloudinary upload error:", error);
+        reject(error);
+      } else {
+        console.log("✅ Cloudinary upload success:", result.secure_url);
+        resolve(result);
+      }
+    }
+  );
+  
+  uploadStream.end(req.file.buffer);
+});
       
       // التحقق من نجاح الرفع
       if (!uploadResult || !uploadResult.secure_url) {
