@@ -319,8 +319,7 @@ app.post("/admin/delete", async (req, res) => {
   }
 });
 
-// View route
-// مسار عرض وتحميل الملفات
+// مسار عرض وتحميل الملفات (التصحيح النهائي)
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
@@ -331,19 +330,27 @@ app.get("/view/:id", async (req, res) => {
     }
     
     let fileUrl = data.file;
-    console.log("الرابط الأصلي:", fileUrl);
+    console.log("🔗 الرابط الأصلي من قاعدة البيانات:", fileUrl);
     
-    // ✅ تصحيح الرابط لملفات PDF من Cloudinary
-    if (fileUrl.includes('res.cloudinary.com') && fileUrl.includes('/upload/') && !fileUrl.includes('/raw/')) {
-      fileUrl = fileUrl.replace('/upload/', '/raw/upload/');
-      console.log("الرابط بعد التصحيح:", fileUrl);
+    // ✅ التصحيح الشامل لأي رابط من Cloudinary
+    if (fileUrl.includes('res.cloudinary.com')) {
+      // الخطوة 1: تحويل أي رابط يبدأ بـ 'image' أو 'video' إلى 'raw'
+      // مثال: .../image/upload/... -> .../raw/upload/...
+      fileUrl = fileUrl.replace(/\/(image|video)\/upload\//, '/raw/upload/');
+      
+      // الخطوة 2: إذا كان الرابط لا يحتوي على '/raw/' بعد التصحيح، نضيفه
+      if (!fileUrl.includes('/raw/upload/') && fileUrl.includes('/upload/')) {
+        fileUrl = fileUrl.replace('/upload/', '/raw/upload/');
+      }
+      console.log("✅ الرابط بعد التصحيح النهائي:", fileUrl);
     }
     
     // التحقق من وجود الملف قبل التوجيه
     try {
-      const response = await axios.head(fileUrl);
+      const response = await axios.head(fileUrl, { timeout: 5000 });
       if (response.status === 200) {
         if (req.query.download === 'true') {
+          // إضافة معامل التحميل لملفات PDF
           return res.redirect(fileUrl + '?fl_attachment=true');
         } else {
           return res.redirect(fileUrl);
@@ -352,19 +359,24 @@ app.get("/view/:id", async (req, res) => {
         throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error("فشل التحقق من الملف:", error.message);
+      console.error("❌ فشل التحقق من الملف:", error.message);
       return res.status(404).send(`
-        <h1>⚠️ تعذر العثور على الملف</h1>
-        <p>تم حفظ الملف في Cloudinary لكن الرابط يحتاج إلى تهيئة.</p>
-        <p><strong>الرابط الذي تمت محاولة الوصول إليه:</strong><br>
+        <h1>⚠️ تعذر فتح الملف</h1>
+        <p>الملف موجود في Cloudinary ولكن هناك خطأ في الرابط.</p>
+        <p><strong>📎 الرابط الأصلي المخزن:</strong><br>
+        <code style="direction: ltr; display: block; word-break: break-all;">${data.file}</code></p>
+        <p><strong>🔧 الرابط الذي تمت محاولة استخدامه:</strong><br>
         <code style="direction: ltr; display: block; word-break: break-all;">${fileUrl}</code></p>
-        <p><strong>نصيحة:</strong> الرابط الصحيح يجب أن يحتوي على <code style="direction: ltr;">/raw/upload/</code> بدلاً من <code style="direction: ltr;">/upload/</code> لملفات PDF.</p>
-        <a href="/">↩️ العودة للصفحة الرئيسية</a>
+        <hr>
+        <p><strong>✅ الحل المقترح:</strong></p>
+        <p>الرجاء <strong>رفع الملف مرة أخرى</strong>، فهذا الملف رُفع بنوع <code style="direction: ltr;">image</code> بينما هو PDF.</p>
+        <p>تأكد من أن إعدادات الرفع في الكود تحتوي على <code style="direction: ltr;">resource_type: "auto"</code> كما هو موجود بالفعل.</p>
+        <a href="/admin" style="display: inline-block; margin-top: 20px;">↩️ العودة للوحة التحكم</a>
       `);
     }
     
   } catch (error) {
-    console.error("خطأ في مسار العرض:", error);
+    console.error("❌ خطأ في مسار العرض:", error);
     res.status(500).send("حدث خطأ: " + error.message);
   }
 });
