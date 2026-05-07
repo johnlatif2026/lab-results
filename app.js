@@ -350,23 +350,18 @@ app.get("/view/:id", async (req, res) => {
       return res.status(404).send("الملف غير موجود");
     }
     
-    // ✅ إنشاء URL موقّع (signed URL) للوصول للملفات الخاصة
-    const signedUrl = cloudinary.url(data.public_id, {
-      resource_type: 'raw',
-      type: 'upload',
-      secure: true,
-      sign_url: true,
-      expires_at: Math.floor(Date.now() / 1000) + 300 // تنتهي بعد 5 دقائق
-    });
+    // حول الرابط من image لـ raw لو كان PDF
+    let fileUrl = data.file;
+    if (fileUrl.includes('/image/upload/')) {
+      fileUrl = fileUrl.replace('/image/upload/', '/raw/upload/');
+    }
     
-    console.log("Generated signed URL for:", data.public_id);
-    
-    // إعادة التوجيه إلى الرابط الموقع
-    res.redirect(signedUrl);
+    res.redirect(fileUrl);
     
   } catch (error) {
-    console.error("Error in /view/:id:", error);
-    res.status(500).send("حدث خطأ: " + error.message);
+    console.error(error);
+    res.status(500).send("حدث خطأ");
   }
 });
+
 module.exports = app;
