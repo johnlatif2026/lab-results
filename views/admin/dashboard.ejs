@@ -2,1671 +2,693 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>لوحة التحكم | إدارة نتائج التحاليل</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --primary-color: #6a11cb;
-      --secondary-color: #2575fc;
-      --accent-color: #ff512f;
-      --success-color: #00b09b;
-      --border-radius: 20px;
-      --box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      --gradient-success: linear-gradient(135deg, #00b09b, #96c93d);
-      --gradient-danger: linear-gradient(135deg, #ff512f, #dd2476);
-      --gradient-sidebar: linear-gradient(135deg, #0f3460, #16213e);
-    }
-    
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
-    
+
+    :root {
+      --bg-dark: #0a0f1c;
+      --bg-card: rgba(18, 25, 45, 0.85);
+      --primary: #4f46e5;
+      --primary-dark: #6366f1;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text-light: #f1f5f9;
+      --text-dim: #94a3b8;
+      --border-glow: rgba(79, 70, 229, 0.3);
+    }
+
     body {
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-      color: #ffffff;
-      line-height: 1.6;
+      background: radial-gradient(ellipse at 30% 40%, #0f172a, #020617);
+      font-family: 'Inter', 'Segoe UI', 'Tajawal', system-ui, sans-serif;
+      color: var(--text-light);
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 20px;
     }
 
-    /* خلفية متحركة */
-    .background-animation {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -2;
-      overflow: hidden;
+    /* حاوية مرنة بدون شريط جانبي ثابت (مناسب لكل الشاشات) */
+    .dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
-    .floating-shape {
-      position: absolute;
-      border-radius: 50%;
-      animation: float 30s infinite ease-in-out;
-      filter: blur(60px);
-      opacity: 0.08;
-    }
-
-    .floating-shape:nth-child(1) {
-      width: 600px;
-      height: 600px;
-      top: -300px;
-      right: -300px;
-      animation-delay: 0s;
-      background: var(--gradient);
-    }
-
-    .floating-shape:nth-child(2) {
-      width: 500px;
-      height: 500px;
-      bottom: -250px;
-      left: -250px;
-      animation-delay: 10s;
-      background: var(--gradient-success);
-    }
-
-    .floating-shape:nth-child(3) {
-      width: 400px;
-      height: 400px;
-      top: 60%;
-      left: 20%;
-      animation-delay: 20s;
-      background: var(--gradient-danger);
-    }
-
-    @keyframes float {
-      0%, 100% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-      }
-      25% {
-        transform: translate(50px, -50px) rotate(90deg) scale(1.15);
-      }
-      50% {
-        transform: translate(-50px, 50px) rotate(180deg) scale(0.85);
-      }
-      75% {
-        transform: translate(25px, -25px) rotate(270deg) scale(1.05);
-      }
-    }
-
-    /* موجات */
-    .wave {
-      position: fixed;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.015);
-      animation: wave 15s infinite ease-in-out;
-      z-index: -1;
-    }
-
-    .wave:nth-child(4) {
-      width: 800px;
-      height: 800px;
-      top: -400px;
-      right: -400px;
-      animation-delay: 0s;
-    }
-
-    .wave:nth-child(5) {
-      width: 700px;
-      height: 700px;
-      bottom: -350px;
-      left: -350px;
-      animation-delay: 5s;
-    }
-
-    @keyframes wave {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 0.015;
-      }
-      50% {
-        transform: scale(1.25);
-        opacity: 0.008;
-      }
-    }
-
-    /* نجوم */
-    .stars {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 5s infinite ease-in-out;
-    }
-
-    .star:nth-child(1) { top: 15%; left: 5%; width: 3px; height: 3px; animation-delay: 0s; }
-    .star:nth-child(2) { top: 35%; left: 90%; width: 2px; height: 2px; animation-delay: 1s; }
-    .star:nth-child(3) { top: 55%; left: 15%; width: 3px; height: 3px; animation-delay: 2s; }
-    .star:nth-child(4) { top: 75%; left: 80%; width: 2px; height: 2px; animation-delay: 3s; }
-    .star:nth-child(5) { top: 25%; left: 40%; width: 3px; height: 3px; animation-delay: 4s; }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.1; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.8); }
-    }
-    
-    .admin-container {
+    /* Header مميز */
+    .glass-header {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px 28px;
+      margin-bottom: 28px;
       display: flex;
-      min-height: 100vh;
-      position: relative;
-      z-index: 1;
-    }
-    
-    /* الشريط الجانبي المتقدم */
-    .sidebar {
-      width: 300px;
-      background: var(--gradient-sidebar);
-      color: white;
-      padding: 0;
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
-      position: relative;
-      z-index: 10;
-      border-left: 1px solid rgba(255, 255, 255, 0.2);
-      animation: slideInLeft 1s ease-out;
-      backdrop-filter: blur(10px);
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
     }
 
-    @keyframes slideInLeft {
-      from {
-        opacity: 0;
-        transform: translateX(100px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    
-    .sidebar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.08)"/></svg>');
-      background-size: cover;
-      pointer-events: none;
+    .logo-area h1 {
+      font-size: 1.8rem;
+      background: linear-gradient(135deg, #a5b4fc, #818cf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .sidebar::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--gradient);
-      animation: slideRight 3s infinite linear;
+    .logo-area i {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 20px;
+      color: #818cf8;
     }
-    
-    .sidebar-header {
-      padding: 35px 30px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      margin-bottom: 20px;
-      position: relative;
-      animation: fadeIn 1s ease-out 0.3s both;
+
+    .welcome-badge {
+      background: #1e293b;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-right: 3px solid var(--primary);
     }
-    
-    .sidebar-header h2 {
+
+    /* كروت الإحصائيات - شبكة ذكية */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card-modern {
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      padding: 24px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card-modern:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      background: rgba(30, 41, 59, 0.8);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #818cf8;
+    }
+
+    .stat-info h3 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .stat-info p {
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* بطاقة الرفع */
+    .upload-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border-radius: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 28px 30px;
+      margin-bottom: 40px;
+      transition: all 0.2s;
+    }
+
+    .section-title {
       font-size: 1.6rem;
       display: flex;
       align-items: center;
-      font-weight: 700;
-      color: #ffffff;
-      gap: 15px;
-    }
-    
-    .sidebar-header h2 i {
-      background: rgba(255, 255, 255, 0.2);
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 15px;
-      font-size: 1.4rem;
-      animation: rotate 10s infinite linear;
-    }
-
-    @keyframes rotate {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-    
-    .sidebar-menu {
-      list-style: none;
-      padding: 0 20px;
-    }
-    
-    .sidebar-menu li {
-      margin-bottom: 10px;
-      animation: fadeIn 1s ease-out 0.5s both;
-    }
-    
-    .sidebar-menu a {
-      display: flex;
-      align-items: center;
-      padding: 18px 22px;
-      color: rgba(255, 255, 255, 0.9);
-      text-decoration: none;
-      transition: var(--transition);
-      border-radius: var(--border-radius);
-      position: relative;
-      overflow: hidden;
-      font-weight: 600;
-      gap: 15px;
-    }
-    
-    .sidebar-menu a::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 5px;
-      height: 100%;
-      background: white;
-      transform: scaleY(0);
-      transition: transform 0.4s ease;
-    }
-    
-    .sidebar-menu a::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transform: translateX(-100%);
-      transition: transform 0.6s ease;
-    }
-    
-    .sidebar-menu a:hover, .sidebar-menu a.active {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-      transform: translateX(-10px) translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .sidebar-menu a:hover::before, .sidebar-menu a.active::before {
-      transform: scaleY(1);
-    }
-
-    .sidebar-menu a:hover::after {
-      transform: translateX(100%);
-    }
-    
-    .sidebar-menu a i {
-      font-size: 1.3rem;
-      width: 25px;
-      text-align: center;
-      transition: var(--transition);
-    }
-
-    .sidebar-menu a:hover i {
-      transform: scale(1.2) rotate(10deg);
-    }
-    
-    .sidebar-footer {
-      padding: 25px 30px;
-      margin-top: auto;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(5px);
-      animation: fadeIn 1s ease-out 0.7s both;
-    }
-    
-    .logout-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: var(--transition);
-      text-decoration: none;
-      font-weight: 600;
       gap: 12px;
-      position: relative;
-      overflow: hidden;
+      margin-bottom: 28px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(79, 70, 229, 0.4);
     }
 
-    .logout-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.6s;
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
     }
 
-    .logout-btn:hover::before {
-      left: 100%;
-    }
-    
-    .logout-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    .input-group {
+      margin-bottom: 8px;
     }
 
-    .logout-btn i {
-      transition: var(--transition);
-    }
-
-    .logout-btn:hover i {
-      transform: translateX(5px);
-    }
-    
-    /* المحتوى الرئيسي المتقدم */
-    .main-content {
-      flex: 1;
-      padding: 30px;
-      overflow-y: auto;
-      background: rgba(22, 33, 62, 0.85);
-      backdrop-filter: blur(10px);
-      animation: slideInRight 1s ease-out 0.2s both;
-    }
-
-    @keyframes slideInRight {
-      from {
-        opacity: 0;
-        transform: translateX(-50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    
-    .page-header {
-      background: rgba(45, 51, 59, 0.8);
-      padding: 35px 40px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      margin-bottom: 35px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      animation: fadeIn 1s ease-out 0.4s both;
-    }
-    
-    .page-header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 8px;
-      height: 100%;
-      background: var(--gradient);
-    }
-
-    .page-header::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--gradient-success);
-      animation: slideRight 3s infinite linear;
-    }
-    
-    .page-header h1 {
-      color: #ffffff;
-      font-size: 2rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .page-header h1 i {
-      color: var(--primary-color);
-      animation: pulse 2s infinite;
-    }
-    
-    .page-header > div {
-      background: var(--gradient);
-      color: white;
-      padding: 12px 25px;
-      border-radius: 30px;
-      font-weight: 600;
-      box-shadow: 0 6px 15px rgba(106, 17, 203, 0.4);
+    .input-group label {
       display: flex;
       align-items: center;
       gap: 10px;
-      animation: bounceIn 1s ease-out 0.6s both;
-    }
-
-    @keyframes bounceIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.3) translateY(20px);
-      }
-      50% {
-        transform: scale(1.05) translateY(-5px);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-    
-    .stats-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
-      margin-bottom: 40px;
-      animation: fadeIn 1s ease-out 0.6s both;
-    }
-    
-    .stat-card {
-      background: rgba(45, 51, 59, 0.8);
-      padding: 35px 30px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      text-align: center;
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-    
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 6px;
-    }
-    
-    .stat-card.blue::before {
-      background: var(--gradient);
-    }
-    
-    .stat-card.green::before {
-      background: var(--gradient-success);
-    }
-    
-    .stat-card.red::before {
-      background: var(--gradient-danger);
-    }
-
-    .stat-card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
-      transform: translateX(-100%);
-      transition: transform 0.8s ease;
-    }
-    
-    .stat-card:hover {
-      transform: translateY(-10px) scale(1.03);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .stat-card:hover::after {
-      transform: translateX(100%);
-    }
-    
-    .stat-card i {
-      font-size: 3.5rem;
-      margin-bottom: 25px;
-      display: inline-block;
-      padding: 20px;
-      border-radius: 20px;
-    }
-    
-    .stat-card.blue i {
-      color: var(--primary-color);
-      background: rgba(106, 17, 203, 0.2);
-    }
-    
-    .stat-card.green i {
-      color: var(--success-color);
-      background: rgba(0, 176, 155, 0.2);
-    }
-    
-    .stat-card.red i {
-      color: var(--accent-color);
-      background: rgba(255, 81, 47, 0.2);
-    }
-    
-    .stat-card h3 {
-      font-size: 2.8rem;
-      margin-bottom: 10px;
-      font-weight: 800;
-      color: #ffffff;
-      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    }
-    
-    .stat-card p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1.1rem;
       font-weight: 600;
+      margin-bottom: 10px;
+      color: #cbd5e1;
     }
 
-    /* نموذج الرفع المتقدم */
-    .upload-section {
-      background: rgba(45, 51, 59, 0.8);
-      padding: 40px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      margin-bottom: 40px;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      animation: fadeIn 1s ease-out 0.8s both;
-    }
-    
-    .upload-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
+    .input-group input, 
+    .input-group select, 
+    .input-group textarea {
       width: 100%;
-      height: 6px;
-      background: var(--gradient);
-    }
-
-    .upload-section::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--gradient-success);
-      animation: slideRight 3s infinite linear;
-    }
-    
-    .upload-section h2 {
-      color: #ffffff;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-      display: flex;
-      align-items: center;
-      font-size: 1.7rem;
-      gap: 15px;
-    }
-    
-    .upload-section h2 i {
-      background: var(--gradient);
+      padding: 14px 18px;
+      background: #111827;
+      border: 1px solid #2d3a5e;
+      border-radius: 24px;
       color: white;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 15px;
-      font-size: 1.4rem;
-    }
-    
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
-      margin-bottom: 30px;
-    }
-    
-    .form-group {
-      margin-bottom: 25px;
-      position: relative;
-      animation: fadeIn 1s ease-out 1s both;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 12px;
-      font-weight: 700;
-      color: #ffffff;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .form-group label i {
-      color: var(--secondary-color);
-    }
-    
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      padding: 18px 20px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--border-radius);
-      font-size: 1.1rem;
-      transition: var(--transition);
-      background: rgba(15, 52, 96, 0.6);
-      color: #ffffff;
-    }
-    
-    .form-group input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: var(--primary-color);
-      background: rgba(22, 33, 62, 0.8);
-      outline: none;
-      box-shadow: 0 0 0 5px rgba(106, 17, 203, 0.3);
-      transform: translateY(-3px);
-    }
-    
-    .upload-btn {
-      background: var(--gradient);
-      color: white;
-      border: none;
-      padding: 20px 45px;
-      border-radius: var(--border-radius);
-      font-size: 1.2rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      box-shadow: 0 8px 20px rgba(106, 17, 203, 0.4);
-      gap: 15px;
-      position: relative;
-      overflow: hidden;
-      animation: fadeIn 1s ease-out 1.2s both;
-    }
-
-    .upload-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.6s;
-    }
-
-    .upload-btn:hover::before {
-      left: 100%;
-    }
-    
-    .upload-btn:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 30px rgba(106, 17, 203, 0.5);
-      background: linear-gradient(135deg, #2575fc, #6a11cb);
-    }
-
-    .upload-btn i {
-      transition: var(--transition);
-      font-size: 1.3rem;
-    }
-
-    .upload-btn:hover i {
-      transform: translateY(-3px) rotate(10deg);
-    }
-    
-    /* جدول النتائج المتقدم */
-    .results-section {
-      background: rgba(45, 51, 59, 0.8);
-      padding: 40px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      animation: fadeIn 1s ease-out 1s both;
-    }
-    
-    .results-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 6px;
-      background: var(--gradient);
-    }
-
-    .results-section::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--gradient-success);
-      animation: slideRight 3s infinite linear;
-    }
-    
-    .results-section h2 {
-      color: #ffffff;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-      display: flex;
-      align-items: center;
-      font-size: 1.7rem;
-      gap: 15px;
-    }
-    
-    .results-section h2 i {
-      background: var(--gradient);
-      color: white;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 15px;
-      font-size: 1.4rem;
-    }
-    
-    .table-responsive {
-      overflow-x: auto;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: var(--border-radius);
-      overflow: hidden;
-    }
-    
-    thead {
-      background: var(--gradient);
-    }
-    
-    th {
-      padding: 22px 25px;
-      text-align: right;
-      color: white;
-      font-weight: 700;
-      font-size: 1.15rem;
-      position: relative;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    th::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 100%;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.3);
-    }
-    
-    tbody tr {
-      background: rgba(255, 255, 255, 0.05);
-      transition: var(--transition);
-      animation: slideInRow 0.5s ease-out forwards;
-      opacity: 0;
-    }
-
-    @keyframes slideInRow {
-      from {
-        opacity: 0;
-        transform: translateX(50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    tbody tr:nth-child(1) { animation-delay: 0.1s; }
-    tbody tr:nth-child(2) { animation-delay: 0.2s; }
-    tbody tr:nth-child(3) { animation-delay: 0.3s; }
-    tbody tr:nth-child(4) { animation-delay: 0.4s; }
-    tbody tr:nth-child(5) { animation-delay: 0.5s; }
-    tbody tr:nth-child(6) { animation-delay: 0.6s; }
-    
-    td {
-      padding: 22px 25px;
-      text-align: right;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      font-size: 1.05rem;
-    }
-    
-    tr:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-3px) scale(1.01);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 14px 28px;
-      border-radius: var(--border-radius);
-      font-weight: 700;
-      text-decoration: none;
-      transition: var(--transition);
       font-size: 1rem;
+      transition: 0.2s;
+    }
+
+    .input-group input:focus, 
+    .input-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+    }
+
+    .upload-btn-modern {
+      background: linear-gradient(95deg, #4f46e5, #7c3aed);
       border: none;
+      padding: 16px 28px;
+      border-radius: 40px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
       cursor: pointer;
+      transition: 0.2s;
+      margin-top: 16px;
+      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+    }
+
+    .upload-btn-modern:hover {
+      transform: scale(1.02);
+      background: linear-gradient(95deg, #6366f1, #8b5cf6);
+    }
+
+    /* جدول النتائج - متجاوب جداً */
+    .results-wrapper {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border-radius: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px 20px 28px;
+      overflow-x: auto;
+    }
+
+    .modern-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 12px;
+    }
+
+    .modern-table th {
+      text-align: right;
+      padding: 16px 20px;
+      background: #0f172a80;
+      border-radius: 20px;
+      font-weight: 600;
+      color: #a5b4fc;
+    }
+
+    .modern-table td {
+      background: #1e293b60;
+      padding: 18px 20px;
+      border-radius: 24px;
+      backdrop-filter: blur(4px);
+      transition: 0.2s;
+    }
+
+    .modern-table tr:hover td {
+      background: #2d3a5e80;
+      transform: scale(1.01);
+    }
+
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
       gap: 10px;
-      position: relative;
-      overflow: hidden;
-      min-width: 140px;
     }
 
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
+    .btn-mini {
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.85rem;
     }
 
-    .btn:hover::before {
-      left: 100%;
-    }
-    
     .btn-view {
-      background: var(--gradient);
+      background: #4f46e5;
       color: white;
-      box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
     }
-    
-    .btn-view:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px rgba(106, 17, 203, 0.5);
-      background: linear-gradient(135deg, #2575fc, #6a11cb);
-    }
-    
     .btn-delete {
-      background: var(--gradient-danger);
+      background: #dc2626;
       color: white;
-      box-shadow: 0 5px 15px rgba(255, 81, 47, 0.4);
     }
-    
-    .btn-delete:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px rgba(255, 81, 47, 0.5);
-      background: linear-gradient(135deg, #dd2476, #ff512f);
-    }
-    
     .btn-notify {
-      background: var(--gradient-success);
+      background: #10b981;
       color: white;
-      box-shadow: 0 5px 15px rgba(0, 176, 155, 0.4);
-    }
-    
-    .btn-notify:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px rgba(0, 176, 155, 0.5);
-      background: linear-gradient(135deg, #96c93d, #00b09b);
-    }
-    
-    .btn i {
-      font-size: 1.2rem;
-      transition: var(--transition);
     }
 
-    .btn:hover i {
-      transform: translateY(-3px) rotate(10deg);
+    .btn-mini:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
     }
-    
-    .no-results {
+
+    /* حالة عدم وجود نتائج */
+    .empty-state {
       text-align: center;
-      padding: 80px 40px;
-      background: rgba(15, 52, 96, 0.6);
-      border-radius: var(--border-radius);
-      margin: 30px 0;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      position: relative;
-      overflow: hidden;
-      animation: fadeIn 1s ease-out 1.2s both;
+      padding: 60px 20px;
+      background: #0f172a60;
+      border-radius: 48px;
+    }
+    .empty-state i {
+      font-size: 4rem;
+      color: #4f46e5;
+      margin-bottom: 20px;
     }
 
-    .no-results::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 6px;
-      background: var(--gradient-danger);
-      animation: slideRight 3s infinite linear;
-    }
-    
-    .no-results-icon {
-      font-size: 5.5rem;
-      margin-bottom: 30px;
-      display: inline-block;
-      animation: floatIcon 4s infinite ease-in-out;
-      color: rgba(255, 255, 255, 0.2);
-    }
-
-    @keyframes floatIcon {
-      0%, 100% {
-        transform: translateY(0) rotate(0deg);
-      }
-      50% {
-        transform: translateY(-25px) rotate(15deg);
-      }
-    }
-    
-    .no-results h3 {
-      color: #ffffff;
-      margin-bottom: 20px;
-      font-size: 2.2rem;
-      background: var(--gradient-danger);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .no-results p {
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 20px;
-      font-size: 1.2rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    /* تأثيرات للزر عند التمرير */
-    .upload-btn.scrolled {
+    /* إشعارات */
+    .toast-notify {
       position: fixed;
       bottom: 30px;
-      left: 30px;
-      z-index: 100;
-      box-shadow: 0 10px 25px rgba(106, 17, 203, 0.5);
-      animation: bounce 2s infinite;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      backdrop-filter: blur(16px);
+      padding: 12px 24px;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      font-weight: 500;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+      border-right: 4px solid var(--primary);
+      animation: fadeUp 0.3s ease;
     }
 
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-    
-    @media (max-width: 1200px) {
-      .sidebar {
-        width: 250px;
-      }
-      
-      .page-header {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
-      }
-      
-      .page-header::before {
-        width: 100%;
-        height: 8px;
-      }
-    }
-    
-    @media (max-width: 992px) {
-      .admin-container {
-        flex-direction: column;
-      }
-      
-      .sidebar {
-        width: 100%;
-        padding: 0;
-      }
-      
-      .sidebar-header {
-        text-align: center;
-        padding: 25px 20px;
-      }
-      
-      .sidebar-menu {
-        display: flex;
-        overflow-x: auto;
-        padding: 15px;
-      }
-      
-      .sidebar-menu li {
-        margin-bottom: 0;
-        flex-shrink: 0;
-      }
-      
-      .sidebar-menu a {
-        border-radius: 30px;
-        padding: 15px 25px;
-        white-space: nowrap;
-      }
-      
-      .sidebar-menu a::before,
-      .sidebar-menu a::after {
-        display: none;
-      }
-      
-      .sidebar-menu a:hover, .sidebar-menu a.active {
-        transform: translateY(-5px);
-      }
-      
-      .sidebar-footer {
-        position: relative;
-      }
-
-      .main-content {
-        padding: 20px;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-      
-      .action-buttons {
-        flex-direction: column;
-      }
-      
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .stats-cards {
-        grid-template-columns: 1fr;
-      }
-
-      .upload-section,
-      .results-section {
-        padding: 25px;
-      }
-
-      th, td {
-        padding: 15px 18px;
-      }
+    @keyframes fadeUp {
+      from { opacity: 0; bottom: 0; }
+      to { opacity: 1; bottom: 30px; }
     }
 
-    @media (max-width: 576px) {
-      .page-header h1 {
-        font-size: 1.6rem;
-      }
+    /* تجاوب كامل */
+    @media (max-width: 780px) {
+      body { padding: 12px; }
+      .glass-header { flex-direction: column; align-items: flex-start; }
+      .modern-table th, .modern-table td { padding: 12px 12px; font-size: 0.85rem; }
+      .action-group { flex-direction: column; }
+      .btn-mini { justify-content: center; }
+      .stat-card-modern { padding: 16px; }
+      .stat-icon { width: 48px; height: 48px; font-size: 22px; }
+      .stat-info h3 { font-size: 1.8rem; }
+      .upload-card { padding: 20px; }
+    }
 
-      .upload-btn {
-        width: 100%;
-        justify-content: center;
-      }
+    @media (max-width: 560px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .section-title { font-size: 1.3rem; }
+      .logo-area h1 { font-size: 1.3rem; }
+      .welcome-badge { font-size: 0.8rem; }
+    }
 
-      .stat-card h3 {
-        font-size: 2.3rem;
-      }
+    /* أنيميشن للجسيمات (محاكاة createParticles) */
+    .particle-effect {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      background: radial-gradient(circle, #a5b4fc, #4f46e5);
+      animation: particleBurst 0.6s ease-out forwards;
+      z-index: 9999;
+    }
 
-      .no-results {
-        padding: 50px 20px;
-      }
-
-      .no-results h3 {
-        font-size: 1.8rem;
-      }
+    @keyframes particleBurst {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(2.5); opacity: 0; }
     }
   </style>
 </head>
 <body>
-  <!-- خلفية متحركة -->
-  <div class="background-animation">
-    <div class="floating-shape"></div>
-    <div class="floating-shape"></div>
-    <div class="floating-shape"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
+<div class="dashboard">
+  <!-- Header جديد بدون sidebar قديم ولكن بنفس الروح -->
+  <div class="glass-header">
+    <div class="logo-area">
+      <h1><i class="fas fa-microscope"></i> لوحة التحكم المتقدمة</h1>
+    </div>
+    <div class="welcome-badge">
+      <i class="fas fa-user-md"></i> مرحباً، الدكتور جون
+      <i class="fas fa-chart-line"></i>
+    </div>
   </div>
 
-  <!-- النجوم -->
-  <div class="stars">
-    <div class="star"></div>
-    <div class="star"></div>
-    <div class="star"></div>
-    <div class="star"></div>
-    <div class="star"></div>
-  </div>
-
-  <div class="admin-container">
-    <!-- الشريط الجانبي المتقدم -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h2><i class="fas fa-cogs"></i> لوحة التحكم المتقدمة</h2>
-      </div>
-      
-      <ul class="sidebar-menu">
-        <li><a href="#" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
-      </ul>
-      
-      <div class="sidebar-footer">
-        <a href="/admin/logout" class="logout-btn">
-          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-        </a>
+  <!-- كروت الإحصائيات بنفس المتغيرات results.length, sentCount, pendingCount -->
+  <div class="stats-grid">
+    <div class="stat-card-modern">
+      <div class="stat-icon"><i class="fas fa-file-pdf"></i></div>
+      <div class="stat-info">
+        <h3 id="totalResultsCount"><%= results.length %></h3>
+        <p>إجمالي النتائج</p>
       </div>
     </div>
-    
-    <!-- المحتوى الرئيسي المتقدم -->
-    <div class="main-content">
-      <div class="page-header">
-        <h1><i class="fas fa-tachometer-alt"></i> لوحة التحكم الرئيسية</h1>
-        <div><i class="fas fa-user-shield"></i> مرحباً، جون</div>
+    <div class="stat-card-modern">
+      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-info">
+        <h3 id="sentCount">0</h3>
+        <p>النتائج المرسلة</p>
       </div>
-      
-      <div class="stats-cards">
-        <div class="stat-card blue">
-          <i class="fas fa-file-pdf"></i>
-          <h3><%= results.length %></h3>
-          <p>إجمالي النتائج</p>
-        </div>
-        
-        <div class="stat-card green">
-          <i class="fas fa-check-circle"></i>
-          <h3 id="sentCount">0</h3>
-          <p>النتائج المرسلة</p>
-        </div>
-        
-        <div class="stat-card red">
-          <i class="fas fa-clock"></i>
-          <h3 id="pendingCount">0</h3>
-          <p>في انتظار الإرسال</p>
-        </div>
-      </div>
-      
-      <div class="upload-section">
-        <h2><i class="fas fa-cloud-upload-alt"></i> رفع نتيجة جديدة</h2>
-        
-        <form action="/admin/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name"><i class="fas fa-user"></i> اسم المريض</label>
-              <input type="text" id="name" name="name" placeholder="أدخل اسم المريض الكامل" required>
-            </div>
-
-            <div class="form-group">
-              <label for="test"><i class="fas fa-flask"></i> نوع التحليل</label>
-              <input type="text" id="test" name="test" placeholder="أدخل نوع التحليل" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="phone"><i class="fas fa-phone"></i> رقم الهاتف</label>
-              <input type="text" id="phone" name="phone" placeholder="أدخل رقم الهاتف (10 أو 11 رقم)" required pattern="[0-9]{10,11}">
-            </div>
-            
-            <div class="form-group">
-              <label for="email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-              <input type="email" id="email" name="email" placeholder="example@domain.com" required>
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="pdf"><i class="fas fa-file-pdf"></i> رفع ملف PDF</label>
-              <input type="file" id="pdf" name="pdf" accept="application/pdf" required onchange="previewFileName(this)">
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="notes"><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
-              <textarea id="notes" name="notes" placeholder="أي ملاحظات إضافية حول النتيجة..." rows="3"></textarea>
-            </div>
-          </div>
-          
-          <button type="submit" class="upload-btn" id="uploadButton">
-            <i class="fas fa-cloud-upload-alt"></i> رفع النتيجة إلى النظام
-          </button>
-        </form>
-      </div>
-      
-      <div class="results-section">
-        <h2><i class="fas fa-list-alt"></i> قاعدة بيانات النتائج</h2>
-        
-        <div class="table-responsive">
-          <% if (results.length > 0) { %>
-            <table>
-              <thead>
-                <tr>
-                  <th>اسم المريض</th>
-                  <th>نوع التحليل</th>
-                  <th>رقم الهاتف</th>
-                  <th>البريد الإلكتروني</th>
-                  <th>الملف</th>
-                  <th>تاريخ الإضافة</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% results.forEach((r, index) => { %>
-                  <tr data-index="<%= index %>" id="row-<%= r.file %>">
-                    <td><strong><%= r.name %></strong></td>
-                    <td><span class="test-badge"><%= r.test %></span></td>
-                    <td><code><%= r.phone %></code></td>
-                    <td><small><%= r.email %></small></td>
-                    <td>
-                      <a href="/view/<%= r.id %>" target="_blank" class="btn btn-view" onclick="createParticles(event)">
-                        <i class="fas fa-eye"></i> معاينة
-                      </a>
-                    </td>
-                    <td><%= r.date %></td>
-                    <td>
-                      <div class="action-buttons">
-                        <button type="button" class="btn btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"
-                          حذف
-                        </button>
-                        
-                        <button type="button" class="btn btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')" id="notifyBtn-<%= r.id %>">
-                          <i class="fas fa-bell"></i> إشعار
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          <% } else { %>
-            <div class="no-results">
-              <div class="no-results-icon"><i class="fas fa-inbox"></i></div>
-              <h3>لا توجد نتائج مسجلة</h3>
-              <p>لم يتم رفع أي نتائج إلى النظام حتى الآن</p>
-              <p>استخدم نموذج الرفع أعلاه لإضافة أول نتيجة</p>
-            </div>
-          <% } %>
-        </div>
+    </div>
+    <div class="stat-card-modern">
+      <div class="stat-icon"><i class="fas fa-clock"></i></div>
+      <div class="stat-info">
+        <h3 id="pendingCount">0</h3>
+        <p>في انتظار الإرسال</p>
       </div>
     </div>
   </div>
 
-  <script>
-    // تأثير الجسيمات
-    function createParticles(event) {
-      const colors = ['#6a11cb', '#2575fc', '#ff512f', '#00b09b'];
-      const buttonRect = event.currentTarget.getBoundingClientRect();
-      const centerX = buttonRect.left + buttonRect.width / 2;
-      const centerY = buttonRect.top + buttonRect.height / 2;
-      
-      for (let i = 0; i < 25; i++) {
+  <!-- نموذج رفع نتيجة جديد (نفس الأيدي والفورم) -->
+  <div class="upload-card">
+    <div class="section-title">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <span>رفع نتيجة تحليل جديدة</span>
+    </div>
+    <form action="/admin/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+      <div class="form-grid">
+        <div class="input-group">
+          <label><i class="fas fa-user"></i> اسم المريض</label>
+          <input type="text" id="name" name="name" placeholder="أدخل الاسم الكامل" required>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-flask"></i> نوع التحليل</label>
+          <input type="text" id="test" name="test" placeholderمثال: صورة دم، وظائف كبد" required>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-phone"></i> رقم الهاتف</label>
+          <input type="text" id="phone" name="phone" placeholder="10 أو 11 رقم" pattern="[0-9]{10,11}" required>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+          <input type="email" id="email" name="email" placeholder="patient@example.com" required>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-file-pdf"></i> ملف PDF</label>
+          <input type="file" id="pdf" name="pdf" accept="application/pdf" required onchange="previewFileName(this)">
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="أي ملاحظات خاصة بالنتيجة..."></textarea>
+        </div>
+      </div>
+      <button type="submit" class="upload-btn-modern" id="uploadButton">
+        <i class="fas fa-cloud-upload-alt"></i> رفع النتيجة إلى النظام
+      </button>
+    </form>
+  </div>
+
+  <!-- جدول النتائج -->
+  <div class="results-wrapper">
+    <div class="section-title">
+      <i class="fas fa-database"></i>
+      <span>قاعدة بيانات النتائج</span>
+    </div>
+    <div class="table-responsive">
+      <% if (results.length > 0) { %>
+        <table class="modern-table">
+          <thead>
+            <tr><th>اسم المريض</th><th>نوع التحليل</th><th>رقم الهاتف</th><th>البريد الإلكتروني</th><th>الملف</th><th>تاريخ الإضافة</th><th>الإجراءات</th></tr>
+          </thead>
+          <tbody>
+            <% results.forEach((r, index) => { %>
+              <tr data-index="<%= index %>" id="row-<%= r.file %>">
+                <td><strong><%= r.name %></strong></td>
+                <td><span><%= r.test %></span></td>
+                <td><code><%= r.phone %></code></td>
+                <td><small><%= r.email %></small></td>
+                <td><a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view" onclick="createParticles(event)"><i class="fas fa-eye"></i> معاينة</a></td>
+                <td><%= r.date %></td>
+                <td>
+                  <div class="action-group">
+                    <button type="button" class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash-alt"></i> حذف</button>
+                    <button type="button" class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')" id="notifyBtn-<%= r.id %>"><i class="fas fa-bell"></i> إشعار</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="empty-state">
+          <i class="fas fa-folder-open"></i>
+          <h3>لا توجد نتائج مسجلة</h3>
+          <p>لم يتم رفع أي نتائج حتى الآن، استخدم النموذج أعلاه لإضافة أول نتيجة.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  //  نفس دوال createParticles, deleteResult, sendNotification, showNotification, updateStats, previewFileName
+  function createParticles(event) {
+    // منع التداخل مع الرابط
+    if(event && event.currentTarget) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      for(let i=0; i<18; i++) {
         const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.position = 'fixed';
-        particle.style.zIndex = '1000';
-        particle.style.pointerEvents = 'none';
-        particle.style.borderRadius = '50%';
-        
-        // حجم عشوائي
-        const size = Math.random() * 8 + 3;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        
-        // لون عشوائي
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.backgroundColor = color;
-        
-        // موقع البداية
-        particle.style.left = `${centerX}px`;
-        particle.style.top = `${centerY}px`;
-        
-        // حركة عشوائية
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 120 + 60;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance;
-        
-        const duration = Math.random() * 1.5 + 0.5;
-        particle.style.animation = `particle-explode ${duration}s ease-out forwards`;
-        particle.style.setProperty('--tx', `${tx}px`);
-        particle.style.setProperty('--ty', `${ty}px`);
-        
+        particle.classList.add('particle-effect');
+        const size = Math.random() * 10 + 4;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = (centerX + (Math.random() - 0.5) * 40) + 'px';
+        particle.style.top = (centerY + (Math.random() - 0.5) * 40) + 'px';
+        particle.style.background = `radial-gradient(circle, #c084fc, #4f46e5)`;
         document.body.appendChild(particle);
-        
-        // إزالة الجسيم
-        setTimeout(() => particle.remove(), duration * 1000);
+        setTimeout(() => particle.remove(), 600);
       }
     }
+  }
 
-    // معاينة اسم الملف
-    function previewFileName(input) {
-      if (input.files && input.files[0]) {
-        const fileName = input.files[0].name;
-        // يمكنك إضافة تأثير لعرض اسم الملف
-        console.log('تم اختيار الملف:', fileName);
-      }
+  function previewFileName(input) {
+    if(input.files && input.files[0]) {
+      console.log("تم اختيار ملف: " + input.files[0].name);
     }
+  }
 
-    // دالة الحذف باستخدام AJAX
-    async function deleteResult(filename, patientName) {
-      if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
-        return;
-      }
-      
-      const button = document.getElementById(`deleteBtn-${filename}`);
-      const originalHTML = button.innerHTML;
-      const row = document.getElementById(`row-${filename}`);
-      
-      // تغيير حالة الزر
-      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
-      button.disabled = true;
-      
-      // إضافة تأثير الجسيمات
-      createParticles({currentTarget: button});
-      
-      try {
-        // إرسال طلب الحذف باستخدام fetch API
-        const formData = new FormData();
-        formData.append('file', filename);
-        
-        const response = await fetch('/admin/delete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: `file=${encodeURIComponent(filename)}`
-        });
-        
-        if (response.ok) {
-          // عرض رسالة نجاح
-          showNotification('تم حذف النتيجة بنجاح!', 'success');
-          
-          // إضافة تأثير اختفاء للصف
-          if (row) {
-            row.style.opacity = '0.5';
-            row.style.transform = 'translateX(100px)';
-            
-            setTimeout(() => {
-              row.style.display = 'none';
-              updateStatsAfterDelete();
-            }, 500);
-          }
-        } else {
-          throw new Error('فشل في الحذف');
+  // تعريف دالة الحذف كما هي تمامًا مع إبقاء نفس السلوك
+  async function deleteResult(filename, patientName) {
+    if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+      return;
+    }
+    // لاحظ: الكود الأصلي يستخدم deleteBtn-${filename} لكن id في الصف الأصلي ليس محدد لكل زر، سنحاكي نفس المنطق مع إخفاء الصف
+    const row = document.getElementById(`row-${filename}`);
+    if (!row) {
+      showNotification("حدث خطأ أثناء تحديد العنصر", "error");
+      return;
+    }
+    const deleteButton = row.querySelector('.btn-delete');
+    const originalHTML = deleteButton ? deleteButton.innerHTML : 'حذف';
+    if(deleteButton) {
+      deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
+      deleteButton.disabled = true;
+    }
+    createParticles({currentTarget: deleteButton || row});
+
+    try {
+      const response = await fetch('/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `file=${encodeURIComponent(filename)}`
+      });
+      if(response.ok) {
+        showNotification('تم حذف النتيجة بنجاح!', 'success');
+        if(row) {
+          row.style.transition = '0.4s';
+          row.style.opacity = '0';
+          setTimeout(() => {
+            row.remove();
+            updateStatsAfterDelete();
+            const remainingRows = document.querySelectorAll('.modern-table tbody tr').length;
+            if(remainingRows === 0) {
+              location.reload(); // إعادة تحميل لإظهار حالة empty
+            }
+          }, 300);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        showNotification('حدث خطأ أثناء الحذف!', 'error');
-        
-        // استعادة حالة الزر
-        button.innerHTML = originalHTML;
-        button.disabled = false;
+      } else {
+        throw new Error('فشل الحذف');
+      }
+    } catch(error) {
+      console.error(error);
+      showNotification('حدث خطأ أثناء الحذف!', 'error');
+      if(deleteButton) {
+        deleteButton.innerHTML = originalHTML;
+        deleteButton.disabled = false;
       }
     }
+  }
 
-    // دالة إرسال الإشعار
-    async function sendNotification(filename, patientName) {
-      if (!confirm(`🔔 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض:\n${patientName}؟`)) {
-        return;
-      }
-      
-      const button = document.getElementById(`notifyBtn-${filename}`);
-      const originalHTML = button.innerHTML;
-      
-      // تغيير حالة الزر
-      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
-      button.disabled = true;
-      
-      // إضافة تأثير الجسيمات
-      createParticles({currentTarget: button});
-      
-      try {
-        // إرسال طلب الإشعار باستخدام fetch API
-        const response = await fetch('/admin/notify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: `file=${encodeURIComponent(filename)}`
-        });
-        
-        if (response.ok) {
-          showNotification('تم إرسال الإشعار بنجاح!', 'success');
-        } else {
-          throw new Error('فشل في إرسال الإشعار');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showNotification('حدث خطأ أثناء إرسال الإشعار!', 'error');
-      } finally {
-        // استعادة حالة الزر بعد 2 ثانية
-        setTimeout(() => {
-          button.innerHTML = originalHTML;
-          button.disabled = false;
-        }, 2000);
-      }
+  async function sendNotification(filename, patientName) {
+    if (!confirm(`🔔 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض:\n${patientName}؟`)) {
+      return;
     }
+    const row = document.getElementById(`row-${filename}`);
+    const notifyBtn = row ? row.querySelector('.btn-notify') : document.getElementById(`notifyBtn-${filename}`);
+    if(!notifyBtn) return;
+    const originalHTML = notifyBtn.innerHTML;
+    notifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+    notifyBtn.disabled = true;
+    createParticles({currentTarget: notifyBtn});
 
-    // دالة عرض الإشعارات
-    function showNotification(message, type = 'info') {
-      // إزالة أي إشعارات سابقة
-      const existingNotifications = document.querySelectorAll('.notification');
-      existingNotifications.forEach(n => n.remove());
-      
-      // إنشاء الإشعار
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
-      `;
-      
-      // إضافة الأنماط
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${type === 'success' ? 'var(--gradient-success)' : 'var(--gradient-danger)'};
-        color: white;
-        padding: 15px 25px;
-        border-radius: 10px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        animation: slideDown 0.5s ease-out;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-      `;
-      
-      document.body.appendChild(notification);
-      
-      // إزالة الإشعار تلقائياً بعد 5 ثواني
+    try {
+      const response = await fetch('/admin/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `file=${encodeURIComponent(filename)}`
+      });
+      if(response.ok) {
+        showNotification('📨 تم إرسال الإشعار بنجاح!', 'success');
+      } else {
+        throw new Error('فشل الإشعار');
+      }
+    } catch(err) {
+      showNotification('⚠️ فشل إرسال الإشعار، حاول مجددًا', 'error');
+    } finally {
       setTimeout(() => {
-        if (notification.parentNode) {
-          notification.style.animation = 'slideUp 0.5s ease-out forwards';
-          setTimeout(() => notification.remove(), 500);
-        }
-      }, 5000);
+        notifyBtn.innerHTML = originalHTML;
+        notifyBtn.disabled = false;
+      }, 1500);
     }
+  }
 
-    // دالة تحديث الإحصائيات بعد الحذف
-    function updateStatsAfterDelete() {
-      const totalElement = document.querySelector('.stat-card.blue h3');
-      if (totalElement) {
-        const currentTotal = parseInt(totalElement.textContent) || 0;
-        if (currentTotal > 0) {
-          totalElement.textContent = currentTotal - 1;
-        }
-      }
+  function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.toast-notify');
+    if(existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-notify';
+    const icon = type === 'success' ? '<i class="fas fa-check-circle" style="color:#10b981"></i>' : '<i class="fas fa-exclamation-triangle" style="color:#f97316"></i>';
+    toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="cursor:pointer; margin-right:12px;" onclick="this.parentElement.remove()"></i>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      if(toast && toast.remove) toast.remove();
+    }, 4500);
+  }
+
+  function updateStatsAfterDelete() {
+    let totalElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
+    if(totalElem) {
+      let current = parseInt(totalElem.innerText) || 0;
+      if(current > 0) totalElem.innerText = current - 1;
     }
+    updateStats(); // إعادة حساب المرسلة والمعلقة
+  }
 
-    // تحديث الإحصائيات
-    function updateStats() {
-      const total = <%= results.length %>;
-      const sent = Math.floor(total * 0.7); // مثال: 70% مرسلة
-      const pending = total - sent;
-      
-      document.getElementById('sentCount').textContent = sent;
-      document.getElementById('pendingCount').textContent = pending;
-    }
+  function updateStats() {
+    // محاكاة : نفس المنطق الأصلي يعتمد على results.length من الخادم
+    const totalElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
+    let total = 0;
+    if(totalElem) total = parseInt(totalElem.innerText) || 0;
+    // لو total == 0 ممكن نقرأها من عدد الصفوف الموجودة
+    const rowsCount = document.querySelectorAll('.modern-table tbody tr').length;
+    if(rowsCount > 0 && total === 0) total = rowsCount;
+    const sent = Math.floor(total * 0.7);
+    const pending = total - sent;
+    const sentSpan = document.getElementById('sentCount');
+    const pendingSpan = document.getElementById('pendingCount');
+    if(sentSpan) sentSpan.innerText = sent;
+    if(pendingSpan) pendingSpan.innerText = pending;
+  }
 
-    // تأثير عند التمرير
+  // إعادة تحديث الإحصائيات عند تحميل الصفحة
+  document.addEventListener('DOMContentLoaded', function() {
+    updateStats();
+
+    // نفس تأثير التمرير الموجود للإبقاء على الوظائف (لكننا لا نضيف class scrolled لأنه أسلوب قديم لكن نحافظ على نفس الفكرة)
+    const uploadBtn = document.getElementById('uploadButton');
     window.addEventListener('scroll', function() {
-      const uploadBtn = document.querySelector('#uploadButton');
-      if (uploadBtn && window.scrollY > 300) {
-        uploadBtn.classList.add('scrolled');
-      } else if (uploadBtn) {
-        uploadBtn.classList.remove('scrolled');
+      if(uploadBtn && window.scrollY > 300) {
+        uploadBtn.style.position = 'fixed';
+        uploadBtn.style.bottom = '20px';
+        uploadBtn.style.left = '20px';
+        uploadBtn.style.zIndex = '999';
+        uploadBtn.style.width = 'auto';
+        uploadBtn.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4)';
+      } else if(uploadBtn) {
+        uploadBtn.style.position = '';
+        uploadBtn.style.bottom = '';
+        uploadBtn.style.left = '';
       }
     });
 
-    // تحقق من نموذج الرفع
-    document.addEventListener('DOMContentLoaded', function() {
-      updateStats();
-      
-      const uploadForm = document.getElementById('uploadForm');
-      const uploadButton = document.getElementById('uploadButton');
-      
-      if (uploadForm) {
-        uploadForm.addEventListener('submit', function(e) {
-          const phoneInput = document.getElementById('phone');
-          const phonePattern = /^[0-9]{10,11}$/;
-          
-          if (!phonePattern.test(phoneInput.value)) {
-            e.preventDefault();
-            
-            // تأثير اهتزاز
-            phoneInput.style.animation = 'shake 0.5s';
-            phoneInput.style.borderColor = '#ff512f';
-            
-            setTimeout(() => {
-              phoneInput.style.animation = '';
-              phoneInput.style.borderColor = '';
-            }, 500);
-            
-            showNotification('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقمًا فقط', 'error');
-            phoneInput.focus();
-            return false;
-          }
-          
-          // تأثير التحميل
-          uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
-          uploadButton.disabled = true;
-          
-          // تأثير الجسيمات
-          createParticles({currentTarget: uploadButton});
-          
-          return true;
-        });
-      }
-      
-      // إضافة تأثير اهتزاز
-      if (!document.querySelector('#shakeStyle')) {
-        const shakeStyle = document.createElement('style');
-        shakeStyle.id = 'shakeStyle';
-        shakeStyle.textContent = `
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-            20%, 40%, 60%, 80% { transform: translateX(10px); }
-          }
-          @keyframes particle-explode {
-            0% {
-              opacity: 1;
-              transform: translate(0, 0) scale(1);
-            }
-            100% {
-              opacity: 0;
-              transform: translate(var(--tx), var(--ty)) scale(0);
-            }
-          }
-          @keyframes slideDown {
-            from { top: -100px; opacity: 0; }
-            to { top: 20px; opacity: 1; }
-          }
-          
-          @keyframes slideUp {
-            from { top: 20px; opacity: 1; }
-            to { top: -100px; opacity: 0; }
-          }
-          
-          .notification button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-            font-size: 1rem;
-            opacity: 0.7;
-            transition: opacity 0.3s;
-          }
-          
-          .notification button:hover {
-            opacity: 1;
-          }
-        `;
-        document.head.appendChild(shakeStyle);
-      }
-      
-      // تأثيرات للصفوف
-      const rows = document.querySelectorAll('tbody tr');
-      rows.forEach((row, index) => {
-        row.style.animationDelay = `${index * 0.1}s`;
-        
-        // تأثير عند المرور
-        row.addEventListener('mouseenter', function() {
-          createParticles({currentTarget: this});
-        });
+    // التحقق من صحة رقم الهاتف في النموذج كما هو مطلوب
+    const form = document.getElementById('uploadForm');
+    if(form) {
+      form.addEventListener('submit', function(e) {
+        const phoneInput = document.getElementById('phone');
+        const phonePattern = /^[0-9]{10,11}$/;
+        if(!phonePattern.test(phoneInput.value)) {
+          e.preventDefault();
+          phoneInput.style.border = '2px solid #ef4444';
+          showNotification('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقمًا فقط', 'error');
+          setTimeout(() => { phoneInput.style.border = ''; }, 1000);
+          phoneInput.focus();
+          return false;
+        }
+        const uploadButtonForm = document.getElementById('uploadButton');
+        if(uploadButtonForm) {
+          uploadButtonForm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+          uploadButtonForm.disabled = true;
+          createParticles({currentTarget: uploadButtonForm});
+        }
+        return true;
       });
-    });
+    }
 
-    // تأثير عند المرور على الأزرار
-    document.querySelectorAll('.btn').forEach(btn => {
+    // إضافة تأثير mouseenter على الأزرار لعمل createParticles
+    document.querySelectorAll('.btn-mini').forEach(btn => {
       btn.addEventListener('mouseenter', function(e) {
-        createParticles({currentTarget: this});
+        createParticles(e);
       });
     });
-  </script>
+  });
+</script>
 </body>
 </html>
