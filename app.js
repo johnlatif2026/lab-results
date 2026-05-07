@@ -459,7 +459,6 @@ app.get("/view/:id", async (req, res) => {
 
     let downloadUrl = fileUrl;
 
-    // إضافة اسم الملف الحقيقي مع الامتداد
     if (fileUrl.includes('res.cloudinary.com')) {
 
         const originalName = data.original_filename || 'result.pdf';
@@ -471,11 +470,10 @@ app.get("/view/:id", async (req, res) => {
     }
 
     return res.redirect(downloadUrl);
+
+} else {
+    return res.redirect(fileUrl);
 }
-    } else {
-        // عرض في المتصفح
-        return res.redirect(fileUrl);
-    }
 
   } catch (error) {
     console.error("خطأ في مسار /view/:id", error);
