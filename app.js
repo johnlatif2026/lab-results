@@ -71,13 +71,19 @@ cloudinary.config({
 });
 
 // ✅ Multer + Cloudinary مع إعدادات الرفع العام (public upload)
+// تغيير إعدادات storage في Cloudinary
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "lab-results",
-    resource_type: "raw", // أو "auto"
-    type: 'upload', // <-- هذه الخاصية ستجعل الملف عامًا ويمكن الوصول إليه مباشرة
-    public_id: (req, file) => Date.now() + "-" + file.originalname,
+    resource_type: "auto", // ← غيرها من "raw" إلى "auto"
+    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+    public_id: (req, file) => {
+      // إزالة المسافات والأحرف الخاصة من اسم الملف
+      const timestamp = Date.now();
+      const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      return `${timestamp}-${originalName}`;
+    },
   },
 });
 
@@ -185,95 +191,87 @@ app.get("/admin/logout", (req, res) => {
 });
 
 // ✅ Upload route - المحسن بالكامل
-// Upload route - النسخة المعدلة
 app.post("/admin/upload", (req, res, next) => {
-  // التحقق من الجلسة قبل معالجة الملف
-  console.log("1. Checking session before multer:", req.session.loggedIn);
   if (!req.session.loggedIn) {
-    console.log("Session check failed, redirecting to login");
     return res.redirect("/admin");
   }
   next();
 }, upload.single("pdf"), async (req, res) => {
-  // التحقق مرة أخرى بعد multer
-  console.log("2. Checking session after multer:", req.session.loggedIn);
   if (!req.session.loggedIn) {
-    console.log("Session lost after multer! Redirecting to login");
     return res.redirect("/admin");
   }
 
   try {
-    // التحقق من وجود الملف
     if (!req.file) {
-      console.log("No file uploaded");
       return res.status(400).send("لم يتم رفع ملف");
     }
 
+    console.log("File uploaded successfully:", {
+      path: req.file.path,
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      size: req.file.size
+    });
+
     const { name, phone, email, test, notes } = req.body;
     
-    // التحقق من البيانات المطلوبة
     if (!name || !phone || !email || !test) {
-      console.log("Missing required fields");
       return res.status(400).send("جميع الحقول مطلوبة");
     }
 
-    console.log("Uploading file for:", name);
-    const fileUrl = req.file.path;
-    const public_id = req.file.filename;
-    
-    // ✅ تنظيف الـ ID ليكون صالح لـ Firestore
-    // نأخذ الوقت والتاريخ فقط كـ ID نظيف
-    const cleanId = Date.now().toString(); // ID بسيط ونظيف
-    
-    // أو ممكن تستخدم اسم منظم: اسم_المريض_الوقت
-    // const cleanId = `${name.replace(/\s/g, '_')}_${Date.now()}`;
+    // التحقق من أن الرابط صالح
+    if (!req.file.path || !req.file.path.startsWith('http')) {
+      throw new Error('Invalid file URL from Cloudinary');
+    }
 
-    console.log("Generated clean ID:", cleanId);
-    console.log("Original filename:", req.file.originalname);
-
+    const cleanId = Date.now().toString();
+    
     const newResult = {
       name,
       test,
       phone,
       email,
       notes: notes || "",
-      file: fileUrl,
-      public_id: public_id, // نحتفظ بالاسم الأصلي للملف في Cloudinary
-      original_filename: req.file.originalname, // نخزن الاسم الأصلي
+      file: req.file.path, // الرابط المباشر من Cloudinary
+      public_id: req.file.filename,
+      original_filename: req.file.originalname,
+      file_size: req.file.size,
+      mime_type: req.file.mimetype,
       date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
     };
 
-    // استخدام الـ ID النظيف
     await addResult(cleanId, newResult);
-    console.log("Result added to Firestore with ID:", cleanId);
+    console.log("Result added with file URL:", req.file.path);
 
-    const link = `https://lab-results.vercel.app/`;
+    // إرسال الإيميل
+    const link = `https://${req.get('host')}/view/${cleanId}`;
     const mailOptions = {
       from: process.env.EMAIL_ADDRESS,
       to: email,
       subject: "نتيجة التحاليل الخاصة بك",
-      text: `مرحبًا ${name}\n\nيمكنك الاطلاع على النتيجة عبر الرابط:\n${link}\n\n${notes || ""}`,
+      html: `
+        <h2>مرحباً ${name}</h2>
+        <p>يمكنك الاطلاع على نتيجة التحليل الخاصة بك من خلال الرابط التالي:</p>
+        <p><a href="${link}">${link}</a></p>
+        ${notes ? `<p><strong>ملاحظات:</strong> ${notes}</p>` : ''}
+        <p>مع تحيات مركز التحاليل الطبية</p>
+      `,
     };
 
-    // إرسال الإيميل
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) console.log("❌ Email Error:", error);
-      else console.log("Email sent successfully to:", email);
-    });
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully");
 
-    // حفظ الجلسة قبل التوجيه
-    req.session.save((err) => {
-      if (err) console.error("Session save error:", err);
-      console.log("3. Session saved, redirecting to /admin");
-      res.redirect("/admin");
-    });
+    res.redirect("/admin");
 
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).send("حدث خطأ أثناء رفع الملف: " + error.message);
+    console.error("Upload error details:", error);
+    res.status(500).send(`
+      <h1>حدث خطأ أثناء رفع الملف</h1>
+      <p>${error.message}</p>
+      <a href="/admin">العودة للوحة التحكم</a>
+    `);
   }
 });
-
 // Delete
 app.post("/admin/delete", async (req, res) => {
   console.log("Delete - Session check:", req.session.loggedIn);
@@ -341,6 +339,7 @@ app.post("/admin/notify", async (req, res) => {
   }
 });
 
+// مسار مباشر لعرض الملفات من Cloudinary مع معالجة الأخطاء
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
@@ -350,17 +349,40 @@ app.get("/view/:id", async (req, res) => {
       return res.status(404).send("الملف غير موجود");
     }
     
-    // حول الرابط من image لـ raw لو كان PDF
     let fileUrl = data.file;
+    
+    // معالجة أنواع مختلفة من الروابط
     if (fileUrl.includes('/image/upload/')) {
       fileUrl = fileUrl.replace('/image/upload/', '/raw/upload/');
     }
     
-    res.redirect(fileUrl);
+    // التحقق من وجود الملف قبل التوجيه
+    try {
+      // اختبار ما إذا كان الملف موجوداً
+      const response = await axios.head(fileUrl);
+      if (response.status === 200) {
+        // إضافة معامل التحميل إذا طلب المستخدم
+        if (req.query.download === 'true') {
+          // توجيه مع إعدادات التحميل
+          return res.redirect(fileUrl + '?download=1&filename=' + encodeURIComponent(data.original_filename || 'result.pdf'));
+        }
+        return res.redirect(fileUrl);
+      } else {
+        throw new Error('File not found');
+      }
+    } catch (error) {
+      console.error("File check failed:", error.message);
+      return res.status(404).send(`
+        <h1>الملف غير موجود</h1>
+        <p>عذراً، الملف الذي تبحث عنه غير موجود في الخادم.</p>
+        <p>الرابط: ${fileUrl}</p>
+        <a href="/">العودة للصفحة الرئيسية</a>
+      `);
+    }
     
   } catch (error) {
-    console.error(error);
-    res.status(500).send("حدث خطأ");
+    console.error("View error:", error);
+    res.status(500).send("حدث خطأ: " + error.message);
   }
 });
 
