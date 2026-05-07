@@ -322,7 +322,6 @@ app.post("/admin/delete", async (req, res) => {
 
 // مسار عرض وتحميل الملفات (التصحيح النهائي)
 // مسار عرض وتحميل الملفات (حل شامل للمشكلة)
-// مسار عرض وتحميل الملفات - نسخة تجبر PDF على التحميل
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
@@ -333,38 +332,59 @@ app.get("/view/:id", async (req, res) => {
     }
 
     let fileUrl = data.file;
+    let resourceType = "raw"; // القيمة الافتراضية
+
+    // 1. تحديد نوع الملف من امتداده
+    const fileExtension = path.extname(data.original_filename || fileUrl).toLowerCase();
+    const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(fileExtension);
+    const isPDF = fileExtension === '.pdf';
     
-    // ✅ إذا كان الملف PDF وكان الطلب للعرض فقط
-    const isPDF = data.original_filename && data.original_filename.toLowerCase().endsWith('.pdf');
-    
-    if (isPDF && !req.query.download) {
-      // نقوم بتحويل الرابط ليضيف fl_attachment=false للتأكد من فتحه في المتصفح
-      if (fileUrl.includes('res.cloudinary.com')) {
-        // إضافة fl_attachment=false لعرض PDF في المتصفح
-        const separator = fileUrl.includes('?') ? '&' : '?';
-        fileUrl = `${fileUrl}${separator}fl_attachment=false`;
-      }
-      return res.redirect(fileUrl);
+    if (isImage) {
+        resourceType = "image";
+    } else if (isPDF || !isImage) { // إذا كان PDF أو نوع آخر (مثل docx) نعتبره raw
+        resourceType = "raw";
     }
-    
+
+    // 2. معالجة رابط Cloudinary ليتناسب مع نوع الملف.
+    // إذا كان الرابط من Cloudinary، نصحح مسار type في الرابط.
+    if (fileUrl.includes('res.cloudinary.com')) {
+        // نحدد النمط المطلوب: /image/upload/ أو /raw/upload/
+        const requiredTypePart = `/${resourceType}/upload/`;
+        
+        // نستبدل أي نوع موجود (image, video, raw) بالنوع الصحيح
+        fileUrl = fileUrl.replace(/\/(image|video|raw)\/upload\//, requiredTypePart);
+        
+        console.log(`✅ تم تصحيح رابط الملف. النوع: ${resourceType}, الرابط: ${fileUrl}`);
+    } else {
+        console.log(`ℹ️ الرابط ليس من Cloudinary، يتم تمريره كما هو.`);
+    }
+
+    // 3. التحقق من صحة الرابط النهائي (اختياري ولكنه مفيد للتأكد)
+    try {
+        await axios.head(fileUrl);
+    } catch (headError) {
+        console.warn(`⚠️ فشل التحقق من الرابط: ${fileUrl} - ${headError.message}`);
+        // لا نوقف التنفيذ هنا، ربما الرابط صحيح ولكن السيرفر لا يدعم HEAD requests
+    }
+
+    // 4. إعادة التوجيه أو تنزيل الملف
     if (req.query.download === 'true') {
-      // تحميل الملف
-      if (fileUrl.includes('res.cloudinary.com')) {
-        const separator = fileUrl.includes('?') ? '&' : '?';
-        fileUrl = `${fileUrl}${separator}fl_attachment=true`;
-      }
-      return res.redirect(fileUrl);
+        // إضافة fl_attachment=true ليجبر Cloudinary على التنزيل
+        const downloadUrl = fileUrl.includes('res.cloudinary.com') 
+                            ? fileUrl + (fileUrl.includes('?') ? '&' : '?') + 'fl_attachment=true'
+                            : fileUrl;
+        return res.redirect(downloadUrl);
+    } else {
+        // عرض في المتصفح
+        return res.redirect(fileUrl);
     }
-    
-    // العرض العادي
-    return res.redirect(fileUrl);
 
   } catch (error) {
     console.error("خطأ في مسار /view/:id", error);
     res.status(500).send(`
-      <h1>⚠️ حدث خطأ</h1>
-      <p>${error.message}</p>
-      <a href="/admin">↩️ العودة</a>
+        <h1>⚠️ حدث خطأ أثناء محاولة عرض الملف</h1>
+        <p>${error.message}</p>
+        <a href="/admin">↩️ العودة للوحة التحكم</a>
     `);
   }
 });
