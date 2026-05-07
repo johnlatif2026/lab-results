@@ -378,32 +378,92 @@ app.post("/admin/upload",
 
 // Delete route
 app.post("/admin/delete", async (req, res) => {
-  console.log("Delete - Session check:", req.session.loggedIn);
-  if (!req.session.loggedIn) return res.redirect("/admin");
-
-  const id = req.body.file;
-
   try {
-    const doc = await db.collection("results").doc(id).get();
-    const result = doc.data();
 
-    if (result?.public_id) {
-      await cloudinary.uploader.destroy(result.public_id, {
-        resource_type: "raw",
+    if (!req.session.loggedIn) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
       });
-      console.log("File deleted from Cloudinary:", result.public_id);
     }
 
+    const id = req.body.file;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing ID"
+      });
+    }
+
+    const doc = await db.collection("results").doc(id).get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Result not found"
+      });
+    }
+
+    const result = doc.data();
+
+    // حذف الملف من Cloudinary
+    if (result?.public_id) {
+
+      const resourceType =
+        result.resource_type === "image"
+          ? "image"
+          : "raw";
+
+      await cloudinary.uploader.destroy(result.public_id, {
+        resource_type: resourceType,
+      });
+
+      console.log("✅ File deleted from Cloudinary");
+    }
+
+    // حذف من Firestore
     await deleteResult(id);
-    console.log("Result deleted from Firestore:", id);
-    
-    req.session.save((err) => {
-      if (err) console.error("Session save error:", err);
-      res.redirect("/admin");
+
+    console.log("✅ Result deleted:", id);
+
+    // إرسال إشعار بريد
+    if (result.email) {
+
+      try {
+
+        await transporter.sendMail({
+          from: process.env.EMAIL_ADDRESS,
+          to: result.email,
+          subject: "تم حذف نتيجة التحليل",
+          html: `
+            <div dir="rtl" style="font-family:Tahoma">
+              <h2>مرحباً ${result.name}</h2>
+              <p>تم حذف نتيجة التحليل الخاصة بك من النظام.</p>
+              <p><strong>نوع التحليل:</strong> ${result.test}</p>
+            </div>
+          `
+        });
+
+        console.log("📧 Delete notification sent");
+
+      } catch(emailErr) {
+        console.error("Email error:", emailErr);
+      }
+    }
+
+    return res.json({
+      success: true
     });
+
   } catch (error) {
+
     console.error("Delete error:", error);
-    res.status(500).send("حدث خطأ أثناء الحذف: " + error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 });
 
