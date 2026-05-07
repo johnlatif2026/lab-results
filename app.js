@@ -320,58 +320,71 @@ app.post("/admin/delete", async (req, res) => {
 });
 
 // مسار عرض وتحميل الملفات (التصحيح النهائي)
+// مسار عرض وتحميل الملفات (حل شامل للمشكلة)
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
     const data = doc.data();
-    
+
     if (!data || !data.file) {
       return res.status(404).send("الملف غير موجود");
     }
+
+    let fileUrl = data.file;
+    let resourceType = "raw"; // القيمة الافتراضية
+
+    // 1. تحديد نوع الملف من امتداده
+    const fileExtension = path.extname(data.original_filename || fileUrl).toLowerCase();
+    const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(fileExtension);
+    const isPDF = fileExtension === '.pdf';
     
-    let originalUrl = data.file;
-    let finalUrl = originalUrl;
-    
-    // 🔧 المعالجة الذكية لأي رابط من Cloudinary
-    if (originalUrl.includes('res.cloudinary.com')) {
-      // إذا كان الرابط من نوع image أو video، نحوله إلى raw
-      if (originalUrl.includes('/image/upload/') || originalUrl.includes('/video/upload/')) {
-        finalUrl = originalUrl.replace(/\/(image|video)\/upload\//, '/raw/upload/');
-        console.log(`📝 تم تصحيح الرابط من ${originalUrl} إلى ${finalUrl}`);
-      }
-      
-      // إذا لم يكن يحتوي على /raw/upload/ نهائياً، نضيفه
-      if (!finalUrl.includes('/raw/upload/') && finalUrl.includes('/upload/')) {
-        finalUrl = finalUrl.replace('/upload/', '/raw/upload/');
-        console.log(`📝 تم إضافة raw إلى الرابط: ${finalUrl}`);
-      }
+    if (isImage) {
+        resourceType = "image";
+    } else if (isPDF || !isImage) { // إذا كان PDF أو نوع آخر (مثل docx) نعتبره raw
+        resourceType = "raw";
     }
-    
-    // التحقق النهائي من الملف
+
+    // 2. معالجة رابط Cloudinary ليتناسب مع نوع الملف.
+    // إذا كان الرابط من Cloudinary، نصحح مسار type في الرابط.
+    if (fileUrl.includes('res.cloudinary.com')) {
+        // نحدد النمط المطلوب: /image/upload/ أو /raw/upload/
+        const requiredTypePart = `/${resourceType}/upload/`;
+        
+        // نستبدل أي نوع موجود (image, video, raw) بالنوع الصحيح
+        fileUrl = fileUrl.replace(/\/(image|video|raw)\/upload\//, requiredTypePart);
+        
+        console.log(`✅ تم تصحيح رابط الملف. النوع: ${resourceType}, الرابط: ${fileUrl}`);
+    } else {
+        console.log(`ℹ️ الرابط ليس من Cloudinary، يتم تمريره كما هو.`);
+    }
+
+    // 3. التحقق من صحة الرابط النهائي (اختياري ولكنه مفيد للتأكد)
     try {
-      const response = await axios.head(finalUrl);
-      if (response.status === 200) {
-        if (req.query.download === 'true') {
-          return res.redirect(finalUrl + '?fl_attachment=true');
-        }
-        return res.redirect(finalUrl);
-      }
-    } catch (err) {
-      console.log(`⚠️ فشل الوصول إلى ${finalUrl}`);
+        await axios.head(fileUrl);
+    } catch (headError) {
+        console.warn(`⚠️ فشل التحقق من الرابط: ${fileUrl} - ${headError.message}`);
+        // لا نوقف التنفيذ هنا، ربما الرابط صحيح ولكن السيرفر لا يدعم HEAD requests
     }
-    
-    // إذا فشل الرابط المصحح، نعرض رسالة خطأ واضحة
-    return res.status(404).send(`
-      <h1>⚠️ لا يمكن الوصول إلى الملف</h1>
-      <p><strong>السبب:</strong> تم رفع هذا الملف بنوع غير صحيح (image) بينما هو ملف PDF.</p>
-      <p><strong>الحل:</strong> قم <strong>بحذف هذه النتيجة</strong> من لوحة التحكم، ثم <strong>أعد رفع الملف مرة أخرى</strong> بعد تعديل الكود.</p>
-      <p>تم تعديل إعدادات الرفع الآن إلى <code>resource_type: "raw"</code>، لذلك الملفات الجديدة ستعمل بشكل صحيح.</p>
-      <a href="/admin">↩️ العودة للوحة التحكم</a>
-    `);
-    
+
+    // 4. إعادة التوجيه أو تنزيل الملف
+    if (req.query.download === 'true') {
+        // إضافة fl_attachment=true ليجبر Cloudinary على التنزيل
+        const downloadUrl = fileUrl.includes('res.cloudinary.com') 
+                            ? fileUrl + (fileUrl.includes('?') ? '&' : '?') + 'fl_attachment=true'
+                            : fileUrl;
+        return res.redirect(downloadUrl);
+    } else {
+        // عرض في المتصفح
+        return res.redirect(fileUrl);
+    }
+
   } catch (error) {
-    console.error(error);
-    res.status(500).send("حدث خطأ: " + error.message);
+    console.error("خطأ في مسار /view/:id", error);
+    res.status(500).send(`
+        <h1>⚠️ حدث خطأ أثناء محاولة عرض الملف</h1>
+        <p>${error.message}</p>
+        <a href="/admin">↩️ العودة للوحة التحكم</a>
+    `);
   }
 });
 
