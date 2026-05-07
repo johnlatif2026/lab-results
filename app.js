@@ -190,200 +190,104 @@ app.get("/admin/logout", (req, res) => {
 });
 
 // ✅ Upload route - النسخة النهائية الموحدة
-app.post("/admin/upload", 
-  // 1. التحقق من الجلسة أولاً
-  (req, res, next) => {
-    console.log("🔐 1. Checking session before upload:", req.session.loggedIn);
-    if (!req.session.loggedIn) {
-      console.log("❌ Session check failed, redirecting to login");
-      return res.redirect("/admin");
+app.post("/admin/upload", (req, res, next) => {
+  console.log("1. Checking session before multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session check failed, redirecting to login");
+    return res.redirect("/admin");
+  }
+  next();
+}, upload.single("pdf"), async (req, res) => {
+  console.log("2. Checking session after multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session lost after multer! Redirecting to login");
+    return res.redirect("/admin");
+  }
+
+  try {
+    if (!req.file) {
+      console.log("No file uploaded");
+      return res.status(400).send("لم يتم رفع ملف");
     }
-    next();
-  },
-  
-  // 2. استقبال الملف في الذاكرة (بدون رفعه لـ Cloudinary فوراً)
-  multerMemory.single("pdf"),
-  
-  // 3. معالجة الملف ورفعه يدوياً لـ Cloudinary
-  async (req, res) => {
-    console.log("📁 2. Processing file upload...");
+
+    console.log("File uploaded successfully:", {
+      path: req.file.path,
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      size: req.file.size
+    });
+
+    const { name, phone, email, test, notes } = req.body;
     
-    // التحقق من الجلسة مرة أخرى بعد multer
-    if (!req.session.loggedIn) {
-      console.log("❌ Session lost after multer! Redirecting to login");
-      return res.redirect("/admin");
+    if (!name || !phone || !email || !test) {
+      console.log("Missing required fields");
+      return res.status(400).send("جميع الحقول مطلوبة");
     }
+
+    if (!req.file.path || !req.file.path.startsWith('http')) {
+      throw new Error('Invalid file URL from Cloudinary');
+    }
+const cleanId = Date.now().toString();
+    
+    const newResult = {
+      name,
+      test,
+      phone,
+      email,
+      notes: notes || "",
+      file: req.file.path,
+      public_id: req.file.filename,
+      original_filename: req.file.originalname,
+      file_size: req.file.size,
+      mime_type: req.file.mimetype,
+      date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
+    };
+
+    await addResult(cleanId, newResult);
+    console.log("Result added to Firestore with ID:", cleanId);
+
+    const protocol = req.protocol === 'https' ? 'https' : 'http';
+    const host = req.get('host');
+    const link = `${protocol}://${host}/view/${cleanId}`;
+    
+    const mailOptions = {
+      from: process.env.EMAIL_ADDRESS,
+      to: email,
+      subject: "نتيجة التحاليل الخاصة بك",
+      html: `
+        <h2>مرحباً ${name}</h2>
+        <p>تم إضافة نتيجة التحليل الخاصة بك إلى النظام.</p>
+        <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
+        <p><a href="${link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">عرض النتيجة</a></p>
+        <p>أو قم بنسخ هذا الرابط: ${link}</p>
+        ${notes ? `<p><strong>ملاحظات:</strong> ${notes}</p>` : ''}
+        <hr>
+        <p>مع تحيات مركز التحاليل الطبية</p>
+      `,
+    };
 
     try {
-      // التحقق من وجود ملف
-      if (!req.file) {
-        console.log("❌ No file uploaded");
-        return res.status(400).send(`
-          <script>
-            alert('❌ لم يتم رفع ملف. يرجى اختيار ملف PDF أو صورة.');
-            window.location.href = '/admin';
-          </script>
-        `);
-      }
-
-      console.log(`📄 File received: ${req.file.originalname}, Size: ${req.file.size} bytes, Type: ${req.file.mimetype}`);
-
-      // استخراج البيانات من النموذج
-      const { name, phone, email, test, notes } = req.body;
-      
-      if (!name || !phone || !email || !test) {
-        console.log("❌ Missing required fields");
-        return res.status(400).send(`
-          <script>
-            alert('❌ جميع الحقول مطلوبة (الاسم، الهاتف، البريد، نوع التحليل)');
-            window.location.href = '/admin';
-          </script>
-        `);
-      }
-
-      // التحقق من صحة رقم الهاتف
-      if (!/^[0-9]{10,11}$/.test(phone)) {
-        return res.status(400).send(`
-          <script>
-            alert('❌ رقم الهاتف غير صحيح. يجب أن يكون 10 أو 11 رقمًا.');
-            window.location.href = '/admin';
-          </script>
-        `);
-      }
-
-// ========== رفع الملف إلى Cloudinary ==========
-console.log("☁️ 3. Uploading to Cloudinary...");
-
-// تحديد نوع الملف
-const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
-const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
-const isPdf = fileExtension === 'pdf';
-
-// اختيار resource_type المناسب
-let resourceType = 'auto';
-if (isImage) resourceType = 'image';
-if (isPdf) resourceType = 'raw';
-
-// تحضير public_id مع إضافة الامتداد .pdf إذا لزم الأمر
-let baseName = req.file.originalname.replace(/\.[^/.]+$/, '');
-baseName = baseName.replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g, '_');
-let publicId = `${Date.now()}-${baseName}`;
-
-// ✅ التأكد من أن الرابط ينتهي بـ .pdf للملفات PDF
-if (isPdf && !publicId.endsWith('.pdf')) {
-  publicId = `${publicId}.pdf`;
-}
-
-// رفع الملف
-const uploadResult = await new Promise((resolve, reject) => {
-  const uploadStream = cloudinary.uploader.upload_stream(
-    {
-      folder: "lab-results",
-      resource_type: resourceType,
-      access_mode: "public",
-      public_id: publicId,
-      ...(resourceType === 'raw' && { 
-        allowed_formats: ['pdf', 'doc', 'docx'],
-        format: 'pdf'  // ✅ نجبر Cloudinary على الحفاظ على صيغة PDF
-      })
-    },
-    (error, result) => {
-      if (error) {
-        console.error("❌ Cloudinary upload error:", error);
-        reject(error);
-      } else {
-        console.log("✅ Cloudinary upload success:", result.secure_url);
-        resolve(result);
-      }
+      await transporter.sendMail(mailOptions);
+      console.log("Email sent successfully to:", email);
+    } catch (emailError) {
+      console.error("Email error (but file uploaded):", emailError.message);
     }
-  );
-  
-  uploadStream.end(req.file.buffer);
-});
-      
-      // التحقق من نجاح الرفع
-      if (!uploadResult || !uploadResult.secure_url) {
-        throw new Error("فشل رفع الملف إلى Cloudinary - لم يتم استلام رابط صحيح");
-      }
-      
-      console.log(`✅ File uploaded to Cloudinary: ${uploadResult.secure_url}`);
-      console.log(`   Resource type: ${uploadResult.resource_type}, Public ID: ${uploadResult.public_id}`);
-      
-      // ========== حفظ البيانات في Firestore ==========
-      const cleanId = Date.now().toString();
-      
-      const newResult = {
-        name: name.trim(),
-        test: test.trim(),
-        phone: phone.trim(),
-        email: email.trim().toLowerCase(),
-        notes: notes || "",
-        file: uploadResult.secure_url,           // الرابط العام الصحيح
-        public_id: uploadResult.public_id,
-        original_filename: req.file.originalname,
-        file_size: req.file.size,
-        mime_type: req.file.mimetype,
-        resource_type: uploadResult.resource_type, // حفظ نوع الملف للمساعدة لاحقاً
-        date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
-      };
-      
-      await addResult(cleanId, newResult);
-      console.log(`📝 Result saved to Firestore with ID: ${cleanId}`);
-      
-      // ========== إرسال البريد الإلكتروني ==========
-      const protocol = req.protocol === 'https' ? 'https' : 'http';
-      const host = req.get('host');
-      const link = `${protocol}://${host}/view/${cleanId}`;
-      
-      const mailOptions = {
-        from: process.env.EMAIL_ADDRESS,
-        to: email,
-        subject: `نتيجة التحليل - ${test}`,
-        html: `
-          <div dir="rtl" style="font-family: 'Tahoma', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-            <h2 style="color: #6a11cb;">مرحباً ${name}</h2>
-            <p>تم إضافة نتيجة التحليل الخاصة بك إلى النظام.</p>
-            <p><strong>نوع التحليل:</strong> ${test}</p>
-            <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
-            <p style="text-align: center;">
-              <a href="${link}" style="display: inline-block; background-color: #6a11cb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px;">📄 عرض النتيجة</a>
-            </p>
-            <p>أو قم بنسخ هذا الرابط: <a href="${link}">${link}</a></p>
-            ${notes ? `<p><strong>📝 ملاحظات:</strong> ${notes}</p>` : ''}
-            <hr style="margin: 20px 0;">
-            <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
-          </div>
-        `,
-      };
-      
-      // إرسال البريد (لا ننتظر النتيجة حتى لا نؤخر الرد)
-      transporter.sendMail(mailOptions).catch(emailError => {
-        console.error("📧 Email error (non-critical):", emailError.message);
-      });
-      
-      // ========== إعادة التوجيه مع رسالة نجاح ==========
-      req.session.save((err) => {
-        if (err) console.error("Session save error:", err);
-        console.log("✅ Upload completed successfully! Redirecting to /admin");
-        res.send(`
-          <script>
-            alert('✅ تم رفع النتيجة بنجاح للمريض: ${name}\\n📧 تم إرسال إشعار إلى البريد الإلكتروني.');
-            window.location.href = '/admin';
-          </script>
-        `);
-      });
-      
-    } catch (error) {
-      console.error("💥 Upload error details:", error);
-      res.status(500).send(`
-        <script>
-          alert('❌ حدث خطأ أثناء رفع الملف: ${error.message.replace(/'/g, "\\'")}\\n\\nيرجى المحاولة مرة أخرى أو التحقق من الملف.');
-          window.location.href = '/admin';
-        </script>
-      `);
-    }
+
+    req.session.save((err) => {
+      if (err) console.error("Session save error:", err);
+      console.log("3. Session saved, redirecting to /admin");
+      res.redirect("/admin");
+    });
+
+  } catch (error) {
+    console.error("Upload error details:", error);
+    res.status(500).send(`
+      <h1>حدث خطأ أثناء رفع الملف</h1>
+      <p>${error.message}</p>
+      <a href="/admin">العودة للوحة التحكم</a>
+    `);
   }
-);
+});
 
 // Delete route
 app.post("/admin/delete", async (req, res) => {
