@@ -257,11 +257,10 @@ app.post("/admin/upload",
       const isPdf = fileExtension === 'pdf';
       
       // اختيار resource_type المناسب
-let resourceType = 'raw';
+let resourceType = 'auto';
 
-if (isImage || isPdf) {
-  resourceType = 'image';
-}
+if (isImage) resourceType = 'image';
+if (isPdf) resourceType = 'raw';
       
       // تحضير public_id نظيف (بدون امتداد مزدوج)
       let baseName = req.file.originalname.replace(/\.[^/.]+$/, ''); // إزالة الامتداد
