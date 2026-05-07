@@ -74,7 +74,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "lab-results",
-    resource_type: "auto", // ✅ المفتاح: "auto" بدلاً من "raw"
+    resource_type: "raw", // ✅ المفتاح: "auto" بدلاً من "raw"
     access_mode: "public", // ✅ جعل الملف عاماً
     allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
     public_id: (req, file) => {
