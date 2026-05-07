@@ -1294,18 +1294,17 @@
                     <td><code><%= r.phone %></code></td>
                     <td><small><%= r.email %></small></td>
                     <td>
-                      <a href="/view/<%= r.file %>" target="_blank" class="btn btn-view" onclick="createParticles(event)">
+                      <a href="/view/<%= r.id %>" target="_blank" class="btn btn-view" onclick="createParticles(event)">
                         <i class="fas fa-eye"></i> معاينة
                       </a>
                     </td>
                     <td><%= r.date %></td>
                     <td>
                       <div class="action-buttons">
-                        <button type="button" class="btn btn-delete" onclick="deleteResult('<%= r.file %>', '<%= r.name %>')" id="deleteBtn-<%= r.file %>">
-                          <i class="fas fa-trash"></i> حذف
+                        <button type="button" class="btn btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"
                         </button>
                         
-                        <button type="button" class="btn btn-notify" onclick="sendNotification('<%= r.file %>', '<%= r.name %>')" id="notifyBtn-<%= r.file %>">
+                        <button type="button" class="btn btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')" id="notifyBtn-<%= r.id %>">
                           <i class="fas fa-bell"></i> إشعار
                         </button>
                       </div>
