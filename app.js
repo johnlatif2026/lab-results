@@ -389,7 +389,7 @@ app.post("/admin/delete", async (req, res) => {
 
     if (result?.public_id) {
       await cloudinary.uploader.destroy(result.public_id, {
-        resource_type: "auto",
+        resource_type: "raw",
       });
       console.log("File deleted from Cloudinary:", result.public_id);
     }
