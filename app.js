@@ -74,7 +74,7 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "lab-results",
-    resource_type: "auto",
+    resource_type: "raw",
     public_id: (req, file) => Date.now() + "-" + file.originalname,
   },
 });
@@ -126,13 +126,6 @@ app.post("/result", async (req, res) => {
     result: filteredResults,
     phoneNumber: phone
   });
-});
-
-app.get("/view/:id", async (req, res) => {
-  const doc = await db.collection("results").doc(req.params.id).get();
-  const data = doc.data();
-  if (!data) return res.send("Not found");
-  res.redirect(data.file);
 });
 
 // Admin routes
