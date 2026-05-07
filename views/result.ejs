@@ -544,20 +544,17 @@
                     </td>
                     <td><%= r.phone %></td>
                     <td>
-                      <div class="action-buttons">
-  <!-- عرض الملف عبر السيرفر -->
+<div class="action-buttons">
+  <!-- عرض الملف -->
   <a href="/view/<%= r.id %>" target="_blank" class="btn btn-view">
-  <i class="fas fa-eye"></i> عرض
-</a>
-  <!-- تحميل الملف عبر السيرفر -->
-<a href="/view/<%= r.id %>?download=true" class="btn btn-download">
-  <i class="fas fa-download"></i> تحميل
-</a>
+    <i class="fas fa-eye"></i> عرض
+  </a>
+  
+  <!-- تحميل الملف -->
+  <a href="/view/<%= r.id %>?download=true" class="btn btn-download">
+    <i class="fas fa-download"></i> تحميل
+  </a>
 </div>
-                        <a href="<%= r.file %>" target="_blank" class="btn btn-view">
-                          <i class="fas fa-eye"></i> عرض
-                        </a>
-                      </div>
                     </td>
                   </tr>
                 <% }) %>
