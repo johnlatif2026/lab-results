@@ -256,22 +256,94 @@ app.post("/admin/upload", (req, res, next) => {
         ${notes ? `<p><strong>ملاحظات:</strong> ${notes}</p>` : ''}
         <p>مع تحيات مركز التحاليل الطبية</p>
       `,
+app.post("/admin/upload", (req, res, next) => {
+  // التحقق من الجلسة قبل معالجة الملف
+  console.log("1. Checking session before multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session check failed, redirecting to login");
+    return res.redirect("/admin");
+  }
+  next();
+}, upload.single("pdf"), async (req, res) => {
+  // التحقق مرة أخرى بعد multer
+  console.log("2. Checking session after multer:", req.session.loggedIn);
+  if (!req.session.loggedIn) {
+    console.log("Session lost after multer! Redirecting to login");
+    return res.redirect("/admin");
+  }
+
+  try {
+    // التحقق من وجود الملف
+    if (!req.file) {
+      console.log("No file uploaded");
+      return res.status(400).send("لم يتم رفع ملف");
+    }
+
+    const { name, phone, email, test, notes } = req.body;
+    
+    // التحقق من البيانات المطلوبة
+    if (!name || !phone || !email || !test) {
+      console.log("Missing required fields");
+      return res.status(400).send("جميع الحقول مطلوبة");
+    }
+
+    console.log("Uploading file for:", name);
+    const fileUrl = req.file.path;
+    const public_id = req.file.filename;
+    
+    // ✅ تنظيف الـ ID ليكون صالح لـ Firestore
+    // نأخذ الوقت والتاريخ فقط كـ ID نظيف
+    const cleanId = Date.now().toString(); // ID بسيط ونظيف
+    
+    // أو ممكن تستخدم اسم منظم: اسم_المريض_الوقت
+    // const cleanId = `${name.replace(/\s/g, '_')}_${Date.now()}`;
+
+    console.log("Generated clean ID:", cleanId);
+    console.log("Original filename:", req.file.originalname);
+
+    const newResult = {
+      name,
+      test,
+      phone,
+      email,
+      notes: notes || "",
+      file: fileUrl,
+      public_id: public_id, // نحتفظ بالاسم الأصلي للملف في Cloudinary
+      original_filename: req.file.originalname, // نخزن الاسم الأصلي
+      date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully");
+    // استخدام الـ ID النظيف
+    await addResult(cleanId, newResult);
+    console.log("Result added to Firestore with ID:", cleanId);
 
-    res.redirect("/admin");
+    const link = `https://lab-results.vercel.app/`;
+    const mailOptions = {
+      from: process.env.EMAIL_ADDRESS,
+      to: email,
+      subject: "نتيجة التحاليل الخاصة بك",
+      text: `مرحبًا ${name}\n\nيمكنك الاطلاع على النتيجة عبر الرابط:\n${link}\n\n${notes || ""}`,
+    };
+
+    // إرسال الإيميل
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) console.log("❌ Email Error:", error);
+      else console.log("Email sent successfully to:", email);
+    });
+
+    // حفظ الجلسة قبل التوجيه
+    req.session.save((err) => {
+      if (err) console.error("Session save error:", err);
+      console.log("3. Session saved, redirecting to /admin");
+      res.redirect("/admin");
+    });
 
   } catch (error) {
-    console.error("Upload error details:", error);
-    res.status(500).send(`
-      <h1>حدث خطأ أثناء رفع الملف</h1>
-      <p>${error.message}</p>
-      <a href="/admin">العودة للوحة التحكم</a>
-    `);
+    console.error("Upload error:", error);
+    res.status(500).send("حدث خطأ أثناء رفع الملف: " + error.message);
   }
 });
+
 // Delete
 app.post("/admin/delete", async (req, res) => {
   console.log("Delete - Session check:", req.session.loggedIn);
@@ -304,7 +376,6 @@ app.post("/admin/delete", async (req, res) => {
 });
 
 // Notify
-// Notify route - معدل
 app.post("/admin/notify", async (req, res) => {
   console.log("Notify - Session check:", req.session.loggedIn);
   if (!req.session.loggedIn) return res.redirect("/admin");
