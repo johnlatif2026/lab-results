@@ -468,12 +468,9 @@ app.post("/admin/delete", async (req, res) => {
   }
 });
 
-// مسار عرض وتحميل الملفات (التصحيح النهائي)
-// مسار عرض وتحميل الملفات (حل شامل للمشكلة)
+// مسار عرض وتحميل الملفات (الحل النهائي والشامل)
 app.get("/view/:id", async (req, res) => {
-
   try {
-
     const doc = await db.collection("results").doc(req.params.id).get();
 
     if (!doc.exists) {
@@ -487,30 +484,72 @@ app.get("/view/:id", async (req, res) => {
     }
 
     const fileUrl = data.file;
-
-    // تحميل
-    if (req.query.download === 'true') {
-
-      const filename =
-        data.original_filename || "result.pdf";
-
-      const downloadUrl =
-        fileUrl +
-        (fileUrl.includes("?") ? "&" : "?") +
-        `fl_attachment:${encodeURIComponent(filename)}`;
-
-      return res.redirect(downloadUrl);
+    const isDownload = req.query.download === 'true';
+    
+    // تحديد اسم الملف للتحميل
+    let filename = data.original_filename || "result.pdf";
+    // التأكد من أن الامتداد صحيح (لنفترض PDF إن لم نعرفه)
+    if (!filename.match(/\.(pdf|jpg|jpeg|png|doc|docx)$/i)) {
+      filename += '.pdf'; // أضف امتداد PDF كاحتياطي
     }
 
-    // عرض مباشر
-    return res.redirect(fileUrl);
+    // ========== الطريقة الصحيحة: جلب الملف من Cloudinary وتمريره للمتصفح ==========
+    // استخدام axios لجلب الملف كـ buffer (مصفوفة بايتات)
+    const response = await axios({
+      method: 'get',
+      url: fileUrl,
+      responseType: 'stream', // مهم جداً: نتعامل مع الملف كـ Stream
+      headers: {
+        'User-Agent': 'Mozilla/5.0' // تجنب بعض مشاكل Cloudinary
+      }
+    });
+
+    // تحديد نوع المحتوى (Content-Type) بناءً على امتداد الملف
+    let contentType = 'application/octet-stream'; // نوع عام
+    const fileExtension = filename.split('.').pop().toLowerCase();
+    
+    switch (fileExtension) {
+      case 'pdf':
+        contentType = 'application/pdf';
+        break;
+      case 'jpg':
+      case 'jpeg':
+        contentType = 'image/jpeg';
+        break;
+      case 'png':
+        contentType = 'image/png';
+        break;
+      case 'doc':
+        contentType = 'application/msword';
+        break;
+      case 'docx':
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+      default:
+        contentType = 'application/octet-stream';
+    }
+
+    // إعداد رؤوس الاستجابة (Headers)
+    if (isDownload) {
+      // إذا كان طلب تحميل: force download
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+    } else {
+      // إذا كان طلب عرض: inline (حاول العرض في المتصفح)
+      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"`);
+    }
+    
+    res.setHeader('Content-Type', contentType);
+    
+    // تمرير الـ Stream من Cloudinary إلى المتصفح
+    response.data.pipe(res);
 
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).send("حدث خطأ أثناء عرض الملف");
+    console.error("❌ Error in /view/:id:", error.message);
+    // في حالة فشل جلب الملف من Cloudinary
+    if (error.response && error.response.status === 404) {
+      return res.status(404).send("الملف غير موجود على الخادم");
+    }
+    res.status(500).send("حدث خطأ أثناء معالجة الملف: " + error.message);
   }
 });
-
 module.exports = app;
