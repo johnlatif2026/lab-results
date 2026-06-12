@@ -34,13 +34,11 @@
       padding: 20px;
     }
 
-    /* حاوية مرنة بدون شريط جانبي ثابت (مناسب لكل الشاشات) */
     .dashboard {
       max-width: 1400px;
       margin: 0 auto;
     }
 
-    /* Header مميز */
     .glass-header {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(12px);
@@ -85,7 +83,6 @@
       border-right: 3px solid var(--primary);
     }
 
-    /* كروت الإحصائيات - شبكة ذكية */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -135,7 +132,6 @@
       font-weight: 500;
     }
 
-    /* بطاقة الرفع */
     .upload-card {
       background: var(--bg-card);
       backdrop-filter: blur(12px);
@@ -217,7 +213,6 @@
       background: linear-gradient(95deg, #6366f1, #8b5cf6);
     }
 
-    /* جدول النتائج - متجاوب جداً */
     .results-wrapper {
       background: var(--bg-card);
       backdrop-filter: blur(12px);
@@ -292,7 +287,6 @@
       filter: brightness(1.05);
     }
 
-    /* حالة عدم وجود نتائج */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -305,7 +299,6 @@
       margin-bottom: 20px;
     }
 
-    /* إشعارات */
     .toast-notify {
       position: fixed;
       bottom: 30px;
@@ -325,12 +318,19 @@
       animation: fadeUp 0.3s ease;
     }
 
+    .toast-success {
+      border-right-color: #10b981;
+    }
+    
+    .toast-error {
+      border-right-color: #ef4444;
+    }
+
     @keyframes fadeUp {
       from { opacity: 0; bottom: 0; }
       to { opacity: 1; bottom: 30px; }
     }
 
-    /* تجاوب كامل */
     @media (max-width: 780px) {
       body { padding: 12px; }
       .glass-header { flex-direction: column; align-items: flex-start; }
@@ -350,7 +350,6 @@
       .welcome-badge { font-size: 0.8rem; }
     }
 
-    /* أنيميشن للجسيمات (محاكاة createParticles) */
     .particle-effect {
       position: fixed;
       pointer-events: none;
@@ -368,7 +367,6 @@
 </head>
 <body>
 <div class="dashboard">
-  <!-- Header جديد بدون sidebar قديم ولكن بنفس الروح -->
   <div class="glass-header">
     <div class="logo-area">
       <h1><i class="fas fa-microscope"></i> لوحة التحكم المتقدمة</h1>
@@ -376,10 +374,28 @@
     <div class="welcome-badge">
       <i class="fas fa-user-md"></i> مرحباً، الدكتور جون
       <i class="fas fa-chart-line"></i>
+      <a href="/admin/logout" style="color: #f87171; margin-right: 15px; text-decoration: none;">
+        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
+      </a>
     </div>
   </div>
 
-  <!-- كروت الإحصائيات بنفس المتغيرات results.length, sentCount, pendingCount -->
+  <!-- عرض رسالة النجاح من الـ query string -->
+  <% if (successMessage) { %>
+    <div class="toast-notify toast-success" style="top: 20px; bottom: auto;">
+      <i class="fas fa-check-circle"></i> 
+      <span><%= successMessage %></span>
+      <i class="fas fa-times-circle" style="cursor: pointer; margin-right: 12px;" onclick="this.parentElement.remove()"></i>
+    </div>
+    <script>
+      setTimeout(() => {
+        const toast = document.querySelector('.toast-notify');
+        if (toast) toast.remove();
+      }, 4000);
+    </script>
+  <% } %>
+
+  <!-- كروت الإحصائيات -->
   <div class="stats-grid">
     <div class="stat-card-modern">
       <div class="stat-icon"><i class="fas fa-file-pdf"></i></div>
@@ -404,7 +420,7 @@
     </div>
   </div>
 
-  <!-- نموذج رفع نتيجة جديد (نفس الأيدي والفورم) -->
+  <!-- نموذج رفع نتيجة -->
   <div class="upload-card">
     <div class="section-title">
       <i class="fas fa-cloud-upload-alt"></i>
@@ -418,7 +434,7 @@
         </div>
         <div class="input-group">
           <label><i class="fas fa-flask"></i> نوع التحليل</label>
-          <input type="text" id="test" name="test" placeholderمثال: صورة دم، وظائف كبد" required>
+          <input type="text" id="test" name="test" placeholder="مثال: صورة دم، وظائف كبد" required>
         </div>
         <div class="input-group">
           <label><i class="fas fa-phone"></i> رقم الهاتف</label>
@@ -429,8 +445,8 @@
           <input type="email" id="email" name="email" placeholder="patient@example.com" required>
         </div>
         <div class="input-group">
-          <label><i class="fas fa-file-pdf"></i> ملف PDF</label>
-          <input type="file" id="pdf" name="pdf" accept="application/pdf" required onchange="previewFileName(this)">
+          <label><i class="fas fa-file-pdf"></i> ملف النتيجة</label>
+          <input type="file" id="pdf" name="pdf" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required onchange="previewFileName(this)">
         </div>
         <div class="input-group">
           <label><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
@@ -457,7 +473,8 @@
           </thead>
           <tbody>
             <% results.forEach((r, index) => { %>
-              <tr data-index="<%= index %>" id="row-<%= r.file %>">
+              <!-- المهم: id="row-<%= r.id %>" وليس r.file -->
+              <tr data-index="<%= index %>" id="row-<%= r.id %>">
                 <td><strong><%= r.name %></strong></td>
                 <td><span><%= r.test %></span></td>
                 <td><code><%= r.phone %></code></td>
@@ -466,8 +483,12 @@
                 <td><%= r.date %></td>
                 <td>
                   <div class="action-group">
-                    <button type="button" class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash-alt"></i> حذف</button>
-                    <button type="button" class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')" id="notifyBtn-<%= r.id %>"><i class="fas fa-bell"></i> إشعار</button>
+                    <button type="button" class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')">
+                      <i class="fas fa-trash-alt"></i> حذف
+                    </button>
+                    <button type="button" class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')" id="notifyBtn-<%= r.id %>">
+                      <i class="fas fa-bell"></i> إشعار
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -486,22 +507,19 @@
 </div>
 
 <script>
-  //  نفس دوال createParticles, deleteResult, sendNotification, showNotification, updateStats, previewFileName
   function createParticles(event) {
-    // منع التداخل مع الرابط
     if(event && event.currentTarget) {
       const rect = event.currentTarget.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      for(let i=0; i<18; i++) {
+      for(let i=0; i<12; i++) {
         const particle = document.createElement('div');
         particle.classList.add('particle-effect');
-        const size = Math.random() * 10 + 4;
+        const size = Math.random() * 8 + 4;
         particle.style.width = size + 'px';
         particle.style.height = size + 'px';
         particle.style.left = (centerX + (Math.random() - 0.5) * 40) + 'px';
         particle.style.top = (centerY + (Math.random() - 0.5) * 40) + 'px';
-        particle.style.background = `radial-gradient(circle, #c084fc, #4f46e5)`;
         document.body.appendChild(particle);
         setTimeout(() => particle.remove(), 600);
       }
@@ -514,157 +532,136 @@
     }
   }
 
-// دالة الحذف المحسنة
-async function deleteResult(id, patientName) {
-  console.log("Delete called with id:", id, "patient:", patientName);
-  
-  if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
-    return;
-  }
-
-  // البحث عن الصف المراد حذفه
-  const row = document.getElementById(`row-${id}`);
-  if (!row) {
-    console.error("Row not found for id:", id);
-    showNotification("حدث خطأ: لم يتم العثور على العنصر", "error");
-    return;
-  }
-
-  // تعطيل زر الحذف وإظهار حالة التحميل
-  const deleteButton = row.querySelector('.btn-delete');
-  const originalHTML = deleteButton ? deleteButton.innerHTML : 'حذف';
-  if (deleteButton) {
-    deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
-    deleteButton.disabled = true;
-  }
-
-  try {
-    console.log("Sending delete request for id:", id);
+  // دالة الحذف - id هو المعرف الصحيح من Firestore
+  async function deleteResult(id, patientName) {
+    console.log("Delete called with id:", id);
     
-    // إرسال طلب الحذف
-    const response = await fetch('/admin/delete', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: `file=${encodeURIComponent(id)}`
-    });
+    if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+      return;
+    }
 
-    console.log("Response status:", response.status);
-    
-    // قراءة الاستجابة
-    let result;
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      result = await response.json();
-    } else {
-      const text = await response.text();
-      console.log("Non-JSON response:", text);
+    // البحث عن الصف باستخدام id الصحيح
+    const row = document.getElementById(`row-${id}`);
+    if (!row) {
+      console.error("Row not found for id:", id);
+      showNotification("لم يتم العثور على العنصر", "error");
+      return;
+    }
+
+    const deleteButton = row.querySelector('.btn-delete');
+    const originalHTML = deleteButton ? deleteButton.innerHTML : 'حذف';
+    if (deleteButton) {
+      deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
+      deleteButton.disabled = true;
+    }
+
+    try {
+      const response = await fetch('/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `file=${encodeURIComponent(id)}`
+      });
+
       if (response.ok) {
-        result = { success: true };
+        showNotification(`✅ تم حذف نتيجة المريض: ${patientName} بنجاح`, 'success');
+        row.style.transition = 'all 0.3s ease';
+        row.style.opacity = '0';
+        setTimeout(() => {
+          row.remove();
+          updateStatsAfterDelete();
+          const remainingRows = document.querySelectorAll('.modern-table tbody tr').length;
+          if (remainingRows === 0) {
+            location.reload();
+          }
+        }, 300);
       } else {
-        result = { success: false, message: text };
+        const error = await response.text();
+        throw new Error(error);
+      }
+    } catch(error) {
+      console.error('Delete error:', error);
+      showNotification('❌ حدث خطأ أثناء الحذف', 'error');
+      if (deleteButton) {
+        deleteButton.innerHTML = originalHTML;
+        deleteButton.disabled = false;
       }
     }
+  }
 
-    if (response.ok && result.success) {
-      showNotification(`✅ تم حذف نتيجة المريض: ${patientName} بنجاح`, 'success');
-      
-      // تأثير اختفاء الصف
-      row.style.transition = 'all 0.3s ease';
-      row.style.opacity = '0';
-      row.style.transform = 'translateX(-20px)';
-      
-      setTimeout(() => {
-        row.remove();
-        updateStatsAfterDelete();
-        
-        // إذا لم يبق أي صف، أعد تحميل الصفحة
-        const remainingRows = document.querySelectorAll('.modern-table tbody tr').length;
-        if (remainingRows === 0) {
-          location.reload();
-        }
-      }, 300);
-    } else {
-      throw new Error(result.message || 'فشل الحذف');
+  async function sendNotification(id, patientName) {
+    if (!confirm(`🔔 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض:\n${patientName}؟`)) {
+      return;
     }
-  } catch(error) {
-    console.error('Delete error:', error);
-    showNotification(`❌ حدث خطأ أثناء الحذف: ${error.message}`, 'error');
     
-    // إعادة تفعيل الزر
-    if (deleteButton) {
-      deleteButton.innerHTML = originalHTML;
-      deleteButton.disabled = false;
+    const row = document.getElementById(`row-${id}`);
+    const notifyBtn = row ? row.querySelector('.btn-notify') : document.getElementById(`notifyBtn-${id}`);
+    if(!notifyBtn) return;
+    
+    const originalHTML = notifyBtn.innerHTML;
+    notifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+    notifyBtn.disabled = true;
+
+    try {
+      const response = await fetch('/admin/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `file=${encodeURIComponent(id)}`
+      });
+      if(response.ok) {
+        showNotification('📨 تم إرسال الإشعار بنجاح!', 'success');
+      } else {
+        throw new Error('فشل الإشعار');
+      }
+    } catch(err) {
+      showNotification('⚠️ فشل إرسال الإشعار، حاول مجددًا', 'error');
+    } finally {
+      setTimeout(() => {
+        notifyBtn.innerHTML = originalHTML;
+        notifyBtn.disabled = false;
+      }, 1500);
     }
   }
-}
 
-// دالة عرض الإشعارات
-function showNotification(message, type = 'success') {
-  const existing = document.querySelector('.toast-notify');
-  if (existing) existing.remove();
-  
-  const toast = document.createElement('div');
-  toast.className = 'toast-notify';
-  const icon = type === 'success' ? 
-    '<i class="fas fa-check-circle" style="color: #10b981;"></i>' : 
-    '<i class="fas fa-exclamation-triangle" style="color: #f97316;"></i>';
-  toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="cursor: pointer; margin-right: 12px;" onclick="this.parentElement.remove()"></i>`;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    if (toast && toast.remove) toast.remove();
-  }, 4500);
-}
-
-// دالة تحديث الإحصائيات بعد الحذف
-function updateStatsAfterDelete() {
-  const totalResultsElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
-  if (totalResultsElem) {
-    let currentTotal = parseInt(totalResultsElem.innerText) || 0;
-    if (currentTotal > 0) {
-      totalResultsElem.innerText = currentTotal - 1;
-    }
+  function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.toast-notify');
+    if(existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notify ' + (type === 'success' ? 'toast-success' : 'toast-error');
+    const icon = type === 'success' ? 
+      '<i class="fas fa-check-circle" style="color:#10b981"></i>' : 
+      '<i class="fas fa-exclamation-triangle" style="color:#f97316"></i>';
+    toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="cursor:pointer; margin-right:12px;" onclick="this.parentElement.remove()"></i>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      if(toast && toast.remove) toast.remove();
+    }, 4500);
   }
-  updateStats();
-}
 
-// دالة تحديث الإحصائيات
-function updateStats() {
-  const rows = document.querySelectorAll('.modern-table tbody tr').length;
-  const sent = Math.floor(rows * 0.7);
-  const pending = rows - sent;
-  
-  const sentSpan = document.getElementById('sentCount');
-  const pendingSpan = document.getElementById('pendingCount');
-  
-  if (sentSpan) sentSpan.innerText = sent;
-  if (pendingSpan) pendingSpan.innerText = pending;
-}
+  function updateStatsAfterDelete() {
+    const totalElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
+    if(totalElem) {
+      let current = parseInt(totalElem.innerText) || 0;
+      if(current > 0) totalElem.innerText = current - 1;
+    }
+    updateStats();
+  }
 
-  // إعادة تحديث الإحصائيات عند تحميل الصفحة
+  function updateStats() {
+    const rows = document.querySelectorAll('.modern-table tbody tr').length;
+    const sent = Math.floor(rows * 0.7);
+    const pending = rows - sent;
+    
+    const sentSpan = document.getElementById('sentCount');
+    const pendingSpan = document.getElementById('pendingCount');
+    
+    if(sentSpan) sentSpan.innerText = sent;
+    if(pendingSpan) pendingSpan.innerText = pending;
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     updateStats();
 
-    // نفس تأثير التمرير الموجود للإبقاء على الوظائف (لكننا لا نضيف class scrolled لأنه أسلوب قديم لكن نحافظ على نفس الفكرة)
-    const uploadBtn = document.getElementById('uploadButton');
-    window.addEventListener('scroll', function() {
-      if(uploadBtn && window.scrollY > 300) {
-        uploadBtn.style.position = 'fixed';
-        uploadBtn.style.bottom = '20px';
-        uploadBtn.style.left = '20px';
-        uploadBtn.style.zIndex = '999';
-        uploadBtn.style.width = 'auto';
-        uploadBtn.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4)';
-      } else if(uploadBtn) {
-        uploadBtn.style.position = '';
-        uploadBtn.style.bottom = '';
-        uploadBtn.style.left = '';
-      }
-    });
-
-    // التحقق من صحة رقم الهاتف في النموذج كما هو مطلوب
     const form = document.getElementById('uploadForm');
     if(form) {
       form.addEventListener('submit', function(e) {
@@ -678,17 +675,15 @@ function updateStats() {
           phoneInput.focus();
           return false;
         }
-        const uploadButtonForm = document.getElementById('uploadButton');
-        if(uploadButtonForm) {
-          uploadButtonForm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
-          uploadButtonForm.disabled = true;
-          createParticles({currentTarget: uploadButtonForm});
+        const uploadBtn = document.getElementById('uploadButton');
+        if(uploadBtn) {
+          uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+          uploadBtn.disabled = true;
         }
         return true;
       });
     }
 
-    // إضافة تأثير mouseenter على الأزرار لعمل createParticles
     document.querySelectorAll('.btn-mini').forEach(btn => {
       btn.addEventListener('mouseenter', function(e) {
         createParticles(e);
