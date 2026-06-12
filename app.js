@@ -69,27 +69,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ✅ Multer + Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "lab-results",
-    resource_type: "raw", // ✅ المفتاح: "auto" بدلاً من "raw"
-    access_mode: "public", // ✅ جعل الملف عاماً
-    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
-    public_id: (req, file) => {
-      const timestamp = Date.now();
-      const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-      return `${timestamp}-${originalName}`;
-    },
-  },
-});
-
-
 const multerMemory = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 } // 10 MB حد أقصى
 });
+
 // Firestore functions
 async function loadResults() {
   const snapshot = await db.collection("results").get();
@@ -139,7 +123,7 @@ app.post("/result", async (req, res) => {
 app.get("/admin", async (req, res) => {
   console.log("===== DEBUGGING SESSION =====");
   console.log("Session ID:", req.session.id);
-  console.log("Session logedIn:", req.session.loggedIn);
+  console.log("Session loggedIn:", req.session.loggedIn);
   console.log("==============================");
   
   if (req.session.loggedIn) {
@@ -147,7 +131,14 @@ app.get("/admin", async (req, res) => {
     try {
       const results = await loadResults();
       console.log(`Loaded ${results.length} results`);
-      res.render("admin/dashboard", { results });
+      
+      // قراءة رسالة النجاح من query string
+      const successMessage = req.query.success || null;
+      
+      res.render("admin/dashboard", { 
+        results,
+        successMessage 
+      });
     } catch (error) {
       console.error("Error loading dashboard:", error);
       res.status(500).send("Error loading dashboard: " + error.message);
@@ -186,11 +177,11 @@ app.get("/admin/logout", (req, res) => {
   });
 });
 
-// ✅ Upload route - النسخة النهائية الموحدة
+// ✅ Upload route - النسخة المعدلة (بدون فقدان الجلسة)
 app.post("/admin/upload", 
   // 1. التحقق من الجلسة أولاً
   (req, res, next) => {
-    console.log("🔐 1. Checking session before upload:", req.session.loggedIn);
+    console.log("🔐 Session before upload - ID:", req.session.id, "LoggedIn:", req.session.loggedIn);
     if (!req.session.loggedIn) {
       console.log("❌ Session check failed, redirecting to login");
       return res.redirect("/admin");
@@ -198,12 +189,12 @@ app.post("/admin/upload",
     next();
   },
   
-  // 2. استقبال الملف في الذاكرة (بدون رفعه لـ Cloudinary فوراً)
+  // 2. استقبال الملف في الذاكرة
   multerMemory.single("pdf"),
   
-  // 3. معالجة الملف ورفعه يدوياً لـ Cloudinary
+  // 3. معالجة الملف ورفعه
   async (req, res) => {
-    console.log("📁 2. Processing file upload...");
+    console.log("📁 Processing file upload...");
     
     // التحقق من الجلسة مرة أخرى بعد multer
     if (!req.session.loggedIn) {
@@ -223,7 +214,7 @@ app.post("/admin/upload",
         `);
       }
 
-      console.log(`📄 File received: ${req.file.originalname}, Size: ${req.file.size} bytes, Type: ${req.file.mimetype}`);
+      console.log(`📄 File received: ${req.file.originalname}, Size: ${req.file.size} bytes`);
 
       // استخراج البيانات من النموذج
       const { name, phone, email, test, notes } = req.body;
@@ -248,34 +239,28 @@ app.post("/admin/upload",
         `);
       }
 
-      // ========== رفع الملف إلى Cloudinary بطريقة موثوقة ==========
-      console.log("☁️ 3. Uploading to Cloudinary...");
+      // ========== رفع الملف إلى Cloudinary ==========
+      console.log("☁️ Uploading to Cloudinary...");
       
-      // تحديد نوع الملف وتجهيز الخيارات
       const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
       const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
       const isPdf = fileExtension === 'pdf';
       
-      // اختيار resource_type المناسب
-let resourceType = 'auto';
-
-if (isImage) resourceType = 'image';
-if (isPdf) resourceType = 'raw';
+      let resourceType = 'auto';
+      if (isImage) resourceType = 'image';
+      if (isPdf) resourceType = 'raw';
       
-      // تحضير public_id نظيف (بدون امتداد مزدوج)
-      let baseName = req.file.originalname.replace(/\.[^/.]+$/, ''); // إزالة الامتداد
-      baseName = baseName.replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g, '_'); // تنظيف الأحرف (يدعم العربية)
+      let baseName = req.file.originalname.replace(/\.[^/.]+$/, '');
+      baseName = baseName.replace(/[^a-zA-Z0-9\u0600-\u06FF\-_]/g, '_');
       const publicId = `${Date.now()}-${baseName}`;
       
-      // رفع الملف إلى Cloudinary باستخدام Promise
       const uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder: "lab-results",
             resource_type: resourceType,
-            access_mode: "public",      // ✅ مفتاح الحل: يجعل الملف عاماً
+            access_mode: "public",
             public_id: publicId,
-            // للملفات raw نحتاج تحديد allowed_formats
             ...(resourceType === 'raw' && { allowed_formats: ['pdf', 'doc', 'docx'] })
           },
           (error, result) => {
@@ -288,18 +273,14 @@ if (isPdf) resourceType = 'raw';
             }
           }
         );
-        
-        // إرسال بيانات الملف (buffer)
         uploadStream.end(req.file.buffer);
       });
       
-      // التحقق من نجاح الرفع
       if (!uploadResult || !uploadResult.secure_url) {
-        throw new Error("فشل رفع الملف إلى Cloudinary - لم يتم استلام رابط صحيح");
+        throw new Error("فشل رفع الملف إلى Cloudinary");
       }
       
       console.log(`✅ File uploaded to Cloudinary: ${uploadResult.secure_url}`);
-      console.log(`   Resource type: ${uploadResult.resource_type}, Public ID: ${uploadResult.public_id}`);
       
       // ========== حفظ البيانات في Firestore ==========
       const cleanId = Date.now().toString();
@@ -310,12 +291,12 @@ if (isPdf) resourceType = 'raw';
         phone: phone.trim(),
         email: email.trim().toLowerCase(),
         notes: notes || "",
-        file: uploadResult.secure_url,           // الرابط العام الصحيح
+        file: uploadResult.secure_url,
         public_id: uploadResult.public_id,
         original_filename: req.file.originalname,
         file_size: req.file.size,
         mime_type: req.file.mimetype,
-        resource_type: uploadResult.resource_type, // حفظ نوع الملف للمساعدة لاحقاً
+        resource_type: uploadResult.resource_type,
         date: new Date().toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })
       };
       
@@ -348,28 +329,23 @@ if (isPdf) resourceType = 'raw';
         `,
       };
       
-      // إرسال البريد (لا ننتظر النتيجة حتى لا نؤخر الرد)
       transporter.sendMail(mailOptions).catch(emailError => {
-        console.error("📧 Email error (non-critical):", emailError.message);
+        console.error("📧 Email error:", emailError.message);
       });
       
-      // ========== إعادة التوجيه مع رسالة نجاح ==========
+      // ========== إعادة التوجيه مع رسالة نجاح (بدون فقدان الجلسة) ==========
       req.session.save((err) => {
         if (err) console.error("Session save error:", err);
-        console.log("✅ Upload completed successfully! Redirecting to /admin");
-        res.send(`
-          <script>
-            alert('✅ تم رفع النتيجة بنجاح للمريض: ${name}\\n📧 تم إرسال إشعار إلى البريد الإلكتروني.');
-            window.location.href = '/admin';
-          </script>
-        `);
+        console.log("✅ Upload completed! Redirecting to /admin");
+        // استخدام redirect بدلاً من script للحفاظ على الجلسة
+        res.redirect('/admin?success=' + encodeURIComponent(`تم رفع النتيجة بنجاح للمريض: ${name}`));
       });
       
     } catch (error) {
-      console.error("💥 Upload error details:", error);
+      console.error("💥 Upload error:", error);
       res.status(500).send(`
         <script>
-          alert('❌ حدث خطأ أثناء رفع الملف: ${error.message.replace(/'/g, "\\'")}\\n\\nيرجى المحاولة مرة أخرى أو التحقق من الملف.');
+          alert('❌ حدث خطأ أثناء رفع الملف: ${error.message.replace(/'/g, "\\'")}');
           window.location.href = '/admin';
         </script>
       `);
@@ -377,15 +353,14 @@ if (isPdf) resourceType = 'raw';
   }
 );
 
-// Delete route
+// Delete route - نسخة محسنة
 app.post("/admin/delete", async (req, res) => {
   console.log("🗑️ Delete request received");
   console.log("Request body:", req.body);
   
   try {
-    // التحقق من صلاحيات الجلسة
     if (!req.session.loggedIn) {
-      console.log("❌ Unauthorized - session not logged in");
+      console.log("❌ Unauthorized");
       return res.status(401).json({
         success: false,
         message: "غير مصرح بهذا الإجراء"
@@ -396,16 +371,13 @@ app.post("/admin/delete", async (req, res) => {
     console.log(`File ID to delete: ${id}`);
 
     if (!id) {
-      console.log("❌ No ID provided");
       return res.status(400).json({
         success: false,
         message: "لم يتم إرسال معرف الملف"
       });
     }
 
-    // جلب البيانات من Firestore
     const doc = await db.collection("results").doc(id).get();
-    console.log(`Document exists: ${doc.exists}`);
 
     if (!doc.exists) {
       return res.status(404).json({
@@ -415,73 +387,60 @@ app.post("/admin/delete", async (req, res) => {
     }
 
     const result = doc.data();
-    console.log(`Patient: ${result.name}, Email: ${result.email}`);
-    console.log(`Cloudinary public_id: ${result.public_id}, resource_type: ${result.resource_type}`);
+    console.log(`Patient: ${result.name}`);
 
-    // حذف الملف من Cloudinary إذا كان موجوداً
+    // حذف الملف من Cloudinary
     if (result.public_id) {
       try {
         const resourceType = result.resource_type === "image" ? "image" : "raw";
-        console.log(`☁️ Deleting from Cloudinary: ${result.public_id} as ${resourceType}`);
+        console.log(`☁️ Deleting from Cloudinary: ${result.public_id}`);
         
-        const cloudinaryResult = await cloudinary.uploader.destroy(result.public_id, {
+        await cloudinary.uploader.destroy(result.public_id, {
           resource_type: resourceType,
         });
-        
-        console.log(`Cloudinary result:`, cloudinaryResult);
-        
-        if (cloudinaryResult.result !== 'ok') {
-          console.warn(`⚠️ Warning: Cloudinary deletion returned: ${cloudinaryResult.result}`);
-        } else {
-          console.log("✅ File deleted from Cloudinary successfully");
-        }
+        console.log("✅ File deleted from Cloudinary");
       } catch (cloudinaryError) {
-        console.error("❌ Cloudinary deletion error:", cloudinaryError.message);
-        // نستمر في الحذف من Firestore حتى لو فشل حذف Cloudinary
+        console.error("❌ Cloudinary error:", cloudinaryError.message);
       }
-    } else {
-      console.log("ℹ️ No public_id found, skipping Cloudinary deletion");
     }
 
     // حذف من Firestore
     await db.collection("results").doc(id).delete();
-    console.log("✅ Result deleted from Firestore successfully");
+    console.log("✅ Result deleted from Firestore");
 
-    // إرسال إشعار بريد إلكتروني (لا ننتظر النتيجة حتى لا نؤخر الرد)
+    // إرسال إشعار بريد
     if (result.email) {
       transporter.sendMail({
         from: process.env.EMAIL_ADDRESS,
         to: result.email,
         subject: "تم حذف نتيجة التحليل",
         html: `
-          <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div dir="rtl" style="font-family: Tahoma, sans-serif; padding: 20px;">
             <h2 style="color: #dc2626;">مرحباً ${result.name}</h2>
             <p>تم حذف نتيجة التحليل الخاصة بك من النظام.</p>
             <p><strong>نوع التحليل:</strong> ${result.test}</p>
-            <p>إذا كان لديك أي استفسار، يرجى التواصل مع المركز الطبي.</p>
             <hr>
-            <p style="color: #666; font-size: 12px;">هذا إشعار آلي، يرجى عدم الرد عليه.</p>
+            <p style="color: #666; font-size: 12px;">هذا إشعار آلي</p>
           </div>
         `
       }).catch(emailErr => console.error("❌ Email error:", emailErr.message));
     }
 
-    // إعادة رد نجاح
     return res.status(200).json({
       success: true,
       message: "تم حذف النتيجة بنجاح"
     });
 
   } catch (error) {
-    console.error("💥 Delete route error:", error);
+    console.error("💥 Delete error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "حدث خطأ داخلي في الخادم"
+      message: error.message
     });
   }
 });
 
-// مسار عرض وتحميل الملفات (الحل النهائي والشامل)
+// مسار عرض وتحميل الملفات
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
@@ -499,26 +458,21 @@ app.get("/view/:id", async (req, res) => {
     const fileUrl = data.file;
     const isDownload = req.query.download === 'true';
     
-    // تحديد اسم الملف للتحميل
     let filename = data.original_filename || "result.pdf";
-    // التأكد من أن الامتداد صحيح (لنفترض PDF إن لم نعرفه)
     if (!filename.match(/\.(pdf|jpg|jpeg|png|doc|docx)$/i)) {
-      filename += '.pdf'; // أضف امتداد PDF كاحتياطي
+      filename += '.pdf';
     }
 
-    // ========== الطريقة الصحيحة: جلب الملف من Cloudinary وتمريره للمتصفح ==========
-    // استخدام axios لجلب الملف كـ buffer (مصفوفة بايتات)
     const response = await axios({
       method: 'get',
       url: fileUrl,
-      responseType: 'stream', // مهم جداً: نتعامل مع الملف كـ Stream
+      responseType: 'stream',
       headers: {
-        'User-Agent': 'Mozilla/5.0' // تجنب بعض مشاكل Cloudinary
+        'User-Agent': 'Mozilla/5.0'
       }
     });
 
-    // تحديد نوع المحتوى (Content-Type) بناءً على امتداد الملف
-    let contentType = 'application/octet-stream'; // نوع عام
+    let contentType = 'application/octet-stream';
     const fileExtension = filename.split('.').pop().toLowerCase();
     
     switch (fileExtension) {
@@ -538,31 +492,24 @@ app.get("/view/:id", async (req, res) => {
       case 'docx':
         contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
         break;
-      default:
-        contentType = 'application/octet-stream';
     }
 
-    // إعداد رؤوس الاستجابة (Headers)
     if (isDownload) {
-      // إذا كان طلب تحميل: force download
       res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
     } else {
-      // إذا كان طلب عرض: inline (حاول العرض في المتصفح)
       res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"`);
     }
     
     res.setHeader('Content-Type', contentType);
-    
-    // تمرير الـ Stream من Cloudinary إلى المتصفح
     response.data.pipe(res);
 
   } catch (error) {
     console.error("❌ Error in /view/:id:", error.message);
-    // في حالة فشل جلب الملف من Cloudinary
     if (error.response && error.response.status === 404) {
       return res.status(404).send("الملف غير موجود على الخادم");
     }
     res.status(500).send("حدث خطأ أثناء معالجة الملف: " + error.message);
   }
 });
+
 module.exports = app;
