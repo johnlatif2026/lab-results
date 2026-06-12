@@ -379,91 +379,104 @@ if (isPdf) resourceType = 'raw';
 
 // Delete route
 app.post("/admin/delete", async (req, res) => {
+  console.log("🗑️ Delete request received");
+  console.log("Request body:", req.body);
+  
   try {
-
+    // التحقق من صلاحيات الجلسة
     if (!req.session.loggedIn) {
+      console.log("❌ Unauthorized - session not logged in");
       return res.status(401).json({
         success: false,
-        message: "Unauthorized"
+        message: "غير مصرح بهذا الإجراء"
       });
     }
 
     const id = req.body.file;
+    console.log(`File ID to delete: ${id}`);
 
     if (!id) {
+      console.log("❌ No ID provided");
       return res.status(400).json({
         success: false,
-        message: "Missing ID"
+        message: "لم يتم إرسال معرف الملف"
       });
     }
 
+    // جلب البيانات من Firestore
     const doc = await db.collection("results").doc(id).get();
+    console.log(`Document exists: ${doc.exists}`);
 
     if (!doc.exists) {
       return res.status(404).json({
         success: false,
-        message: "Result not found"
+        message: "النتيجة غير موجودة"
       });
     }
 
     const result = doc.data();
+    console.log(`Patient: ${result.name}, Email: ${result.email}`);
+    console.log(`Cloudinary public_id: ${result.public_id}, resource_type: ${result.resource_type}`);
 
-    // حذف الملف من Cloudinary
-    if (result?.public_id) {
-
-      const resourceType =
-        result.resource_type === "image"
-          ? "image"
-          : "raw";
-
-      await cloudinary.uploader.destroy(result.public_id, {
-        resource_type: resourceType,
-      });
-
-      console.log("✅ File deleted from Cloudinary");
+    // حذف الملف من Cloudinary إذا كان موجوداً
+    if (result.public_id) {
+      try {
+        const resourceType = result.resource_type === "image" ? "image" : "raw";
+        console.log(`☁️ Deleting from Cloudinary: ${result.public_id} as ${resourceType}`);
+        
+        const cloudinaryResult = await cloudinary.uploader.destroy(result.public_id, {
+          resource_type: resourceType,
+        });
+        
+        console.log(`Cloudinary result:`, cloudinaryResult);
+        
+        if (cloudinaryResult.result !== 'ok') {
+          console.warn(`⚠️ Warning: Cloudinary deletion returned: ${cloudinaryResult.result}`);
+        } else {
+          console.log("✅ File deleted from Cloudinary successfully");
+        }
+      } catch (cloudinaryError) {
+        console.error("❌ Cloudinary deletion error:", cloudinaryError.message);
+        // نستمر في الحذف من Firestore حتى لو فشل حذف Cloudinary
+      }
+    } else {
+      console.log("ℹ️ No public_id found, skipping Cloudinary deletion");
     }
 
     // حذف من Firestore
-    await deleteResult(id);
+    await db.collection("results").doc(id).delete();
+    console.log("✅ Result deleted from Firestore successfully");
 
-    console.log("✅ Result deleted:", id);
-
-    // إرسال إشعار بريد
+    // إرسال إشعار بريد إلكتروني (لا ننتظر النتيجة حتى لا نؤخر الرد)
     if (result.email) {
-
-      try {
-
-        await transporter.sendMail({
-          from: process.env.EMAIL_ADDRESS,
-          to: result.email,
-          subject: "تم حذف نتيجة التحليل",
-          html: `
-            <div dir="rtl" style="font-family:Tahoma">
-              <h2>مرحباً ${result.name}</h2>
-              <p>تم حذف نتيجة التحليل الخاصة بك من النظام.</p>
-              <p><strong>نوع التحليل:</strong> ${result.test}</p>
-            </div>
-          `
-        });
-
-        console.log("📧 Delete notification sent");
-
-      } catch(emailErr) {
-        console.error("Email error:", emailErr);
-      }
+      transporter.sendMail({
+        from: process.env.EMAIL_ADDRESS,
+        to: result.email,
+        subject: "تم حذف نتيجة التحليل",
+        html: `
+          <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #dc2626;">مرحباً ${result.name}</h2>
+            <p>تم حذف نتيجة التحليل الخاصة بك من النظام.</p>
+            <p><strong>نوع التحليل:</strong> ${result.test}</p>
+            <p>إذا كان لديك أي استفسار، يرجى التواصل مع المركز الطبي.</p>
+            <hr>
+            <p style="color: #666; font-size: 12px;">هذا إشعار آلي، يرجى عدم الرد عليه.</p>
+          </div>
+        `
+      }).catch(emailErr => console.error("❌ Email error:", emailErr.message));
     }
 
-    return res.json({
-      success: true
+    // إعادة رد نجاح
+    return res.status(200).json({
+      success: true,
+      message: "تم حذف النتيجة بنجاح"
     });
 
   } catch (error) {
-
-    console.error("Delete error:", error);
-
+    console.error("💥 Delete route error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "حدث خطأ داخلي في الخادم"
     });
   }
 });
