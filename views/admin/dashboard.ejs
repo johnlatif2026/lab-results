@@ -514,128 +514,134 @@
     }
   }
 
-  // تعريف دالة الحذف كما هي تمامًا مع إبقاء نفس السلوك
-  async function deleteResult(filename, patientName) {
-    if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
-      return;
-    }
-    // لاحظ: الكود الأصلي يستخدم deleteBtn-${filename} لكن id في الصف الأصلي ليس محدد لكل زر، سنحاكي نفس المنطق مع إخفاء الصف
-    const row = document.getElementById(`row-${filename}`);
-    if (!row) {
-      showNotification("حدث خطأ أثناء تحديد العنصر", "error");
-      return;
-    }
-    const deleteButton = row.querySelector('.btn-delete');
-    const originalHTML = deleteButton ? deleteButton.innerHTML : 'حذف';
-    if(deleteButton) {
-      deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
-      deleteButton.disabled = true;
-    }
-    createParticles({currentTarget: deleteButton || row});
-
-    try {
-      const response = await fetch('/admin/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `file=${encodeURIComponent(filename)}`
-      });
-      if(response.ok) {
-        showNotification('تم حذف النتيجة بنجاح!', 'success');
-        if(row) {
-          row.style.transition = '0.4s';
-          row.style.opacity = '0';
-          setTimeout(() => {
-            row.remove();
-            updateStatsAfterDelete();
-            const remainingRows = document.querySelectorAll('.modern-table tbody tr').length;
-            if(remainingRows === 0) {
-              location.reload(); // إعادة تحميل لإظهار حالة empty
-            }
-          }, 300);
-        }
-      } else {
-        throw new Error('فشل الحذف');
-      }
-    } catch(error) {
-      console.error(error);
-      showNotification('حدث خطأ أثناء الحذف!', 'error');
-      if(deleteButton) {
-        deleteButton.innerHTML = originalHTML;
-        deleteButton.disabled = false;
-      }
-    }
+// دالة الحذف المحسنة
+async function deleteResult(id, patientName) {
+  console.log("Delete called with id:", id, "patient:", patientName);
+  
+  if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+    return;
   }
 
-  async function sendNotification(filename, patientName) {
-    if (!confirm(`🔔 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض:\n${patientName}؟`)) {
-      return;
-    }
-    const row = document.getElementById(`row-${filename}`);
-    const notifyBtn = row ? row.querySelector('.btn-notify') : document.getElementById(`notifyBtn-${filename}`);
-    if(!notifyBtn) return;
-    const originalHTML = notifyBtn.innerHTML;
-    notifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
-    notifyBtn.disabled = true;
-    createParticles({currentTarget: notifyBtn});
+  // البحث عن الصف المراد حذفه
+  const row = document.getElementById(`row-${id}`);
+  if (!row) {
+    console.error("Row not found for id:", id);
+    showNotification("حدث خطأ: لم يتم العثور على العنصر", "error");
+    return;
+  }
 
-    try {
-      const response = await fetch('/admin/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `file=${encodeURIComponent(filename)}`
-      });
-      if(response.ok) {
-        showNotification('📨 تم إرسال الإشعار بنجاح!', 'success');
+  // تعطيل زر الحذف وإظهار حالة التحميل
+  const deleteButton = row.querySelector('.btn-delete');
+  const originalHTML = deleteButton ? deleteButton.innerHTML : 'حذف';
+  if (deleteButton) {
+    deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
+    deleteButton.disabled = true;
+  }
+
+  try {
+    console.log("Sending delete request for id:", id);
+    
+    // إرسال طلب الحذف
+    const response = await fetch('/admin/delete', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `file=${encodeURIComponent(id)}`
+    });
+
+    console.log("Response status:", response.status);
+    
+    // قراءة الاستجابة
+    let result;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      console.log("Non-JSON response:", text);
+      if (response.ok) {
+        result = { success: true };
       } else {
-        throw new Error('فشل الإشعار');
+        result = { success: false, message: text };
       }
-    } catch(err) {
-      showNotification('⚠️ فشل إرسال الإشعار، حاول مجددًا', 'error');
-    } finally {
+    }
+
+    if (response.ok && result.success) {
+      showNotification(`✅ تم حذف نتيجة المريض: ${patientName} بنجاح`, 'success');
+      
+      // تأثير اختفاء الصف
+      row.style.transition = 'all 0.3s ease';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-20px)';
+      
       setTimeout(() => {
-        notifyBtn.innerHTML = originalHTML;
-        notifyBtn.disabled = false;
-      }, 1500);
+        row.remove();
+        updateStatsAfterDelete();
+        
+        // إذا لم يبق أي صف، أعد تحميل الصفحة
+        const remainingRows = document.querySelectorAll('.modern-table tbody tr').length;
+        if (remainingRows === 0) {
+          location.reload();
+        }
+      }, 300);
+    } else {
+      throw new Error(result.message || 'فشل الحذف');
+    }
+  } catch(error) {
+    console.error('Delete error:', error);
+    showNotification(`❌ حدث خطأ أثناء الحذف: ${error.message}`, 'error');
+    
+    // إعادة تفعيل الزر
+    if (deleteButton) {
+      deleteButton.innerHTML = originalHTML;
+      deleteButton.disabled = false;
     }
   }
+}
 
-  function showNotification(message, type = 'success') {
-    const existing = document.querySelector('.toast-notify');
-    if(existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast-notify';
-    const icon = type === 'success' ? '<i class="fas fa-check-circle" style="color:#10b981"></i>' : '<i class="fas fa-exclamation-triangle" style="color:#f97316"></i>';
-    toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="cursor:pointer; margin-right:12px;" onclick="this.parentElement.remove()"></i>`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      if(toast && toast.remove) toast.remove();
-    }, 4500);
-  }
+// دالة عرض الإشعارات
+function showNotification(message, type = 'success') {
+  const existing = document.querySelector('.toast-notify');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-notify';
+  const icon = type === 'success' ? 
+    '<i class="fas fa-check-circle" style="color: #10b981;"></i>' : 
+    '<i class="fas fa-exclamation-triangle" style="color: #f97316;"></i>';
+  toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="cursor: pointer; margin-right: 12px;" onclick="this.parentElement.remove()"></i>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    if (toast && toast.remove) toast.remove();
+  }, 4500);
+}
 
-  function updateStatsAfterDelete() {
-    let totalElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
-    if(totalElem) {
-      let current = parseInt(totalElem.innerText) || 0;
-      if(current > 0) totalElem.innerText = current - 1;
+// دالة تحديث الإحصائيات بعد الحذف
+function updateStatsAfterDelete() {
+  const totalResultsElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
+  if (totalResultsElem) {
+    let currentTotal = parseInt(totalResultsElem.innerText) || 0;
+    if (currentTotal > 0) {
+      totalResultsElem.innerText = currentTotal - 1;
     }
-    updateStats(); // إعادة حساب المرسلة والمعلقة
   }
+  updateStats();
+}
 
-  function updateStats() {
-    // محاكاة : نفس المنطق الأصلي يعتمد على results.length من الخادم
-    const totalElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
-    let total = 0;
-    if(totalElem) total = parseInt(totalElem.innerText) || 0;
-    // لو total == 0 ممكن نقرأها من عدد الصفوف الموجودة
-    const rowsCount = document.querySelectorAll('.modern-table tbody tr').length;
-    if(rowsCount > 0 && total === 0) total = rowsCount;
-    const sent = Math.floor(total * 0.7);
-    const pending = total - sent;
-    const sentSpan = document.getElementById('sentCount');
-    const pendingSpan = document.getElementById('pendingCount');
-    if(sentSpan) sentSpan.innerText = sent;
-    if(pendingSpan) pendingSpan.innerText = pending;
-  }
+// دالة تحديث الإحصائيات
+function updateStats() {
+  const rows = document.querySelectorAll('.modern-table tbody tr').length;
+  const sent = Math.floor(rows * 0.7);
+  const pending = rows - sent;
+  
+  const sentSpan = document.getElementById('sentCount');
+  const pendingSpan = document.getElementById('pendingCount');
+  
+  if (sentSpan) sentSpan.innerText = sent;
+  if (pendingSpan) pendingSpan.innerText = pending;
+}
 
   // إعادة تحديث الإحصائيات عند تحميل الصفحة
   document.addEventListener('DOMContentLoaded', function() {
