@@ -27,7 +27,7 @@ const db = admin.firestore();
 
 const app = express();
 
-// ✅ تحديد مسار views بطريقة مضمونة
+// ✅ تحديد مسار views
 const viewsPath = path.join(__dirname, "views");
 console.log("Views path:", viewsPath);
 
@@ -47,12 +47,26 @@ app.use(session({
   saveUninitialized: true,
   cookie: {
     secure: false,
-    maxAge: 86400000,
+    maxAge: 8 * 60 * 60 * 1000, // 8 ساعات
     httpOnly: true,
     sameSite: 'lax'
   },
   unset: 'keep'
 }));
+
+// ✅ Middleware لتجديد الجلسة تلقائياً (يمنع انتهائها)
+app.use((req, res, next) => {
+  if (req.session && req.session.loggedIn) {
+    // تجديد الجلسة لكل request نشط
+    req.session.touch();
+    
+    // إضافة متغير محلي للتحقق من حالة الدخول في الـ views
+    res.locals.isAdmin = true;
+  } else {
+    res.locals.isAdmin = false;
+  }
+  next();
+});
 
 // ✅ Middleware لحماية الجلسة
 app.use((req, res, next) => {
@@ -121,30 +135,24 @@ app.post("/result", async (req, res) => {
 
 // Admin routes
 app.get("/admin", async (req, res) => {
-  console.log("===== DEBUGGING SESSION =====");
-  console.log("Session ID:", req.session.id);
-  console.log("Session loggedIn:", req.session.loggedIn);
-  console.log("==============================");
+  console.log("🔐 Admin route accessed - Session ID:", req.session?.id, "LoggedIn:", req.session?.loggedIn);
   
-  if (req.session.loggedIn) {
-    console.log("User is logged in, loading dashboard");
+  if (req.session && req.session.loggedIn) {
     try {
       const results = await loadResults();
-      console.log(`Loaded ${results.length} results`);
+      console.log(`✅ Loaded ${results.length} results`);
       
-      // قراءة رسالة النجاح من query string
-      const successMessage = req.query.success || null;
-      
+      // لا نمرر successMessage من query string لأننا سنستخدم localStorage
       res.render("admin/dashboard", { 
         results,
-        successMessage 
+        successMessage: null  // إلغاء استخدام query string
       });
     } catch (error) {
       console.error("Error loading dashboard:", error);
       res.status(500).send("Error loading dashboard: " + error.message);
     }
   } else {
-    console.log("User not logged in, showing login page");
+    console.log("🔐 Not logged in, showing login page");
     res.render("admin/login");
   }
 });
@@ -177,66 +185,57 @@ app.get("/admin/logout", (req, res) => {
   });
 });
 
-// ✅ Upload route - النسخة المعدلة (بدون فقدان الجلسة)
+// ✅ UPLOAD ROUTE - النسخة النهائية المستقرة
 app.post("/admin/upload", 
   // 1. التحقق من الجلسة أولاً
-  (req, res, next) => {
-    console.log("🔐 Session before upload - ID:", req.session.id, "LoggedIn:", req.session.loggedIn);
+  async (req, res, next) => {
+    console.log("🔐 [1] Session check - ID:", req.session.id, "LoggedIn:", req.session.loggedIn);
+    
+    // تحديث الجلسة لتجديد وقتها
+    req.session.touch();
+    
     if (!req.session.loggedIn) {
-      console.log("❌ Session check failed, redirecting to login");
+      console.log("❌ Not logged in, redirecting to login");
       return res.redirect("/admin");
     }
     next();
   },
   
-  // 2. استقبال الملف في الذاكرة
+  // 2. معالجة الملف (استخدام multer memory storage)
   multerMemory.single("pdf"),
   
-  // 3. معالجة الملف ورفعه
+  // 3. معالجة البيانات
   async (req, res) => {
-    console.log("📁 Processing file upload...");
+    console.log("📁 [2] Processing upload, Session ID:", req.session.id);
     
     // التحقق من الجلسة مرة أخرى بعد multer
-    if (!req.session.loggedIn) {
-      console.log("❌ Session lost after multer! Redirecting to login");
-      return res.redirect("/admin");
+    if (!req.session || !req.session.loggedIn) {
+      console.log("❌ [3] Session lost! Redirecting to login");
+      return res.redirect("/admin?error=session_expired");
     }
 
     try {
+      // تحديث الجلسة قبل أي عملية
+      req.session.touch();
+      
       // التحقق من وجود ملف
       if (!req.file) {
         console.log("❌ No file uploaded");
-        return res.status(400).send(`
-          <script>
-            alert('❌ لم يتم رفع ملف. يرجى اختيار ملف PDF أو صورة.');
-            window.location.href = '/admin';
-          </script>
-        `);
+        return res.redirect("/admin?error=no_file");
       }
 
-      console.log(`📄 File received: ${req.file.originalname}, Size: ${req.file.size} bytes`);
+      console.log(`📄 File: ${req.file.originalname}, Size: ${req.file.size}`);
 
-      // استخراج البيانات من النموذج
+      // استخراج البيانات
       const { name, phone, email, test, notes } = req.body;
       
       if (!name || !phone || !email || !test) {
-        console.log("❌ Missing required fields");
-        return res.status(400).send(`
-          <script>
-            alert('❌ جميع الحقول مطلوبة (الاسم، الهاتف، البريد، نوع التحليل)');
-            window.location.href = '/admin';
-          </script>
-        `);
+        return res.redirect("/admin?error=missing_fields");
       }
 
-      // التحقق من صحة رقم الهاتف
-      if (!/^[0-9]{10,11}$/.test(phone)) {
-        return res.status(400).send(`
-          <script>
-            alert('❌ رقم الهاتف غير صحيح. يجب أن يكون 10 أو 11 رقمًا.');
-            window.location.href = '/admin';
-          </script>
-        `);
+      // التحقق من رقم الهاتف
+      if (!/^[0-9]{10,11}$/.test(phone.replace(/\D/g, ''))) {
+        return res.redirect("/admin?error=invalid_phone");
       }
 
       // ========== رفع الملف إلى Cloudinary ==========
@@ -265,10 +264,10 @@ app.post("/admin/upload",
           },
           (error, result) => {
             if (error) {
-              console.error("❌ Cloudinary upload error:", error);
+              console.error("❌ Cloudinary error:", error);
               reject(error);
             } else {
-              console.log("✅ Cloudinary upload success:", result.secure_url);
+              console.log("✅ Cloudinary success:", result.secure_url);
               resolve(result);
             }
           }
@@ -276,13 +275,7 @@ app.post("/admin/upload",
         uploadStream.end(req.file.buffer);
       });
       
-      if (!uploadResult || !uploadResult.secure_url) {
-        throw new Error("فشل رفع الملف إلى Cloudinary");
-      }
-      
-      console.log(`✅ File uploaded to Cloudinary: ${uploadResult.secure_url}`);
-      
-      // ========== حفظ البيانات في Firestore ==========
+      // ========== حفظ في Firestore ==========
       const cleanId = Date.now().toString();
       
       const newResult = {
@@ -301,54 +294,59 @@ app.post("/admin/upload",
       };
       
       await addResult(cleanId, newResult);
-      console.log(`📝 Result saved to Firestore with ID: ${cleanId}`);
+      console.log(`✅ Saved to Firestore: ${cleanId}`);
       
-      // ========== إرسال البريد الإلكتروني ==========
+      // ========== إرسال البريد ==========
       const protocol = req.protocol === 'https' ? 'https' : 'http';
       const host = req.get('host');
       const link = `${protocol}://${host}/view/${cleanId}`;
       
-      const mailOptions = {
+      transporter.sendMail({
         from: process.env.EMAIL_ADDRESS,
         to: email,
         subject: `نتيجة التحليل - ${test}`,
         html: `
-          <div dir="rtl" style="font-family: 'Tahoma', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+          <div dir="rtl" style="font-family: Tahoma; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
             <h2 style="color: #6a11cb;">مرحباً ${name}</h2>
-            <p>تم إضافة نتيجة التحليل الخاصة بك إلى النظام.</p>
+            <p>تم إضافة نتيجة التحليل الخاصة بك.</p>
             <p><strong>نوع التحليل:</strong> ${test}</p>
-            <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
             <p style="text-align: center;">
-              <a href="${link}" style="display: inline-block; background-color: #6a11cb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px;">📄 عرض النتيجة</a>
+              <a href="${link}" style="display: inline-block; background: #6a11cb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px;">📄 عرض النتيجة</a>
             </p>
-            <p>أو قم بنسخ هذا الرابط: <a href="${link}">${link}</a></p>
             ${notes ? `<p><strong>📝 ملاحظات:</strong> ${notes}</p>` : ''}
-            <hr style="margin: 20px 0;">
+            <hr>
             <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
           </div>
-        `,
-      };
+        `
+      }).catch(err => console.error("📧 Email error:", err.message));
       
-      transporter.sendMail(mailOptions).catch(emailError => {
-        console.error("📧 Email error:", emailError.message);
-      });
+      // ========== إعادة التوجيه مع الحفاظ على الجلسة ==========
+      console.log("✅ Upload complete! Redirecting to /admin");
       
-      // ========== إعادة التوجيه مع رسالة نجاح (بدون فقدان الجلسة) ==========
+      // استخدام save للتأكد من بقاء الجلسة
       req.session.save((err) => {
         if (err) console.error("Session save error:", err);
-        console.log("✅ Upload completed! Redirecting to /admin");
-        // استخدام redirect بدلاً من script للحفاظ على الجلسة
-        res.redirect('/admin?success=' + encodeURIComponent(`تم رفع النتيجة بنجاح للمريض: ${name}`));
+        
+        // استخدام JavaScript redirect مع localStorage
+        res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <script>
+              // تخزين رسالة النجاح في localStorage
+              localStorage.setItem('uploadSuccess', 'تم رفع النتيجة بنجاح للمريض: ${name.replace(/'/g, "\\'")}');
+              // التوجيه إلى /admin
+              window.location.href = '/admin';
+            </script>
+          </head>
+          <body>جاري التوجيه...</body>
+          </html>
+        `);
       });
       
     } catch (error) {
       console.error("💥 Upload error:", error);
-      res.status(500).send(`
-        <script>
-          alert('❌ حدث خطأ أثناء رفع الملف: ${error.message.replace(/'/g, "\\'")}');
-          window.location.href = '/admin';
-        </script>
-      `);
+      res.redirect("/admin?error=" + encodeURIComponent(error.message));
     }
   }
 );
