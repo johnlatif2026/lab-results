@@ -6,6 +6,73 @@
   <title>نتائج التحاليل الطبية</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* ========================================
+       CSS VARIABLES FOR THEMING
+    ======================================== */
+    :root {
+      /* Light Mode Colors */
+      --bg-primary: #f0f4f9;
+      --bg-card: #ffffff;
+      --bg-patient-card: #ffffff;
+      --bg-notes: #fefce8;
+      --bg-notes-empty: #f8fafc;
+      --bg-empty-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --text-notes: #422006;
+      --text-notes-empty: #94a3b8;
+      --border-color: #eef2f6;
+      --border-notes: #eab308;
+      --border-notes-empty: #cbd5e1;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 10px 25px -8px rgba(0, 0, 0, 0.15);
+      --gradient-start: #1e3c72;
+      --gradient-end: #2a5298;
+      --badge-bg: #f1f5f9;
+      --badge-text: #334155;
+      --result-badge-bg: #10b981;
+      --test-badge-bg: #e0f2fe;
+      --test-badge-text: #0369a1;
+      --btn-view-bg: #1e3c72;
+      --btn-download-bg: #10b981;
+      --btn-search-bg: #1e3c72;
+      --footer-text: #94a3b8;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Colors */
+      --bg-primary: #0f172a;
+      --bg-card: #1e293b;
+      --bg-patient-card: #1e293b;
+      --bg-notes: #422006;
+      --bg-notes-empty: #1e293b;
+      --bg-empty-card: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-notes: #fef3c7;
+      --text-notes-empty: #94a3b8;
+      --border-color: #334155;
+      --border-notes: #f59e0b;
+      --border-notes-empty: #475569;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 25px -8px rgba(0, 0, 0, 0.4);
+      --gradient-start: #0f172a;
+      --gradient-end: #1e3c72;
+      --badge-bg: #334155;
+      --badge-text: #cbd5e1;
+      --result-badge-bg: #059669;
+      --test-badge-bg: #1e3a5f;
+      --test-badge-text: #7dd3fc;
+      --btn-view-bg: #1e3c72;
+      --btn-download-bg: #059669;
+      --btn-search-bg: #1e3c72;
+      --footer-text: #64748b;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,9 +81,36 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tajawal', sans-serif;
-      background: #f0f4f9;
+      background: var(--bg-primary);
       min-height: 100vh;
       padding: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 40px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
     .container {
@@ -24,15 +118,41 @@
       margin: 0 auto;
     }
 
-    /* كارت الهيدر */
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .theme-toggle,
+      .back-btn,
+      .result-actions,
+      .footer,
+      .whatsapp-float {
+        display: none !important;
+      }
+      .header-card,
+      .patient-info-card,
+      .result-card,
+      .notes-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+      }
+      .result-card {
+        break-inside: avoid;
+      }
+    }
+
+    /* Header Card */
     .header-card {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
       border-radius: 32px;
       padding: 25px;
       margin-bottom: 20px;
       color: white;
       position: relative;
-      box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-lg);
     }
 
     .back-btn {
@@ -53,6 +173,7 @@
 
     .back-btn:hover {
       background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-3px);
     }
 
     .header-card h1 {
@@ -66,19 +187,20 @@
       opacity: 0.85;
     }
 
-    /* معلومات المريض */
+    /* Patient Info Card */
     .patient-info-card {
-      background: white;
+      background: var(--bg-patient-card);
       border-radius: 28px;
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
     }
 
     .patient-name {
       font-size: 1.3rem;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-primary);
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -93,19 +215,20 @@
     }
 
     .detail-badge {
-      background: #f1f5f9;
+      background: var(--badge-bg);
       padding: 6px 14px;
       border-radius: 30px;
       font-size: 0.8rem;
-      color: #334155;
+      color: var(--badge-text);
       display: flex;
       align-items: center;
       gap: 6px;
+      transition: all 0.2s;
     }
 
     .result-badge {
       display: inline-block;
-      background: #10b981;
+      background: var(--result-badge-bg);
       color: white;
       padding: 6px 14px;
       border-radius: 30px;
@@ -113,31 +236,32 @@
       margin-top: 12px;
     }
 
-    /* قسم الملاحظات */
+    /* Notes Card */
     .notes-card {
-      background: #fefce8;
-      border-right: 4px solid #eab308;
+      background: var(--bg-notes);
+      border-right: 4px solid var(--border-notes);
       border-radius: 20px;
       padding: 16px;
       margin-bottom: 20px;
+      transition: all 0.3s ease;
     }
 
     .notes-header {
       display: flex;
       align-items: center;
       gap: 10px;
-      color: #854d0e;
+      color: var(--border-notes);
       margin-bottom: 10px;
       font-weight: 600;
     }
 
     .notes-content {
-      color: #422006;
+      color: var(--text-notes);
       font-size: 0.9rem;
       line-height: 1.5;
     }
 
-    /* كروت النتائج - تصميم موبايل أولاً */
+    /* Results List */
     .results-list {
       display: flex;
       flex-direction: column;
@@ -146,17 +270,17 @@
     }
 
     .result-card {
-      background: white;
+      background: var(--bg-card);
       border-radius: 24px;
       padding: 18px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      transition: all 0.2s;
-      border: 1px solid #eef2f6;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s ease;
+      border: 1px solid var(--border-color);
     }
 
     .result-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
     }
 
     .result-title {
@@ -171,21 +295,21 @@
     .result-name {
       font-weight: 700;
       font-size: 1rem;
-      color: #1e293b;
+      color: var(--text-primary);
     }
 
     .result-test {
-      background: #e0f2fe;
+      background: var(--test-badge-bg);
       padding: 4px 12px;
       border-radius: 30px;
       font-size: 0.7rem;
-      color: #0369a1;
+      color: var(--test-badge-text);
     }
 
     .result-phone {
       font-family: monospace;
       font-size: 0.8rem;
-      color: #64748b;
+      color: var(--text-secondary);
       margin-bottom: 12px;
       direction: ltr;
       text-align: left;
@@ -213,50 +337,56 @@
       gap: 8px;
       transition: all 0.2s;
       cursor: pointer;
+      border: none;
     }
 
     .btn-view {
-      background: #1e3c72;
+      background: var(--btn-view-bg);
       color: white;
     }
 
     .btn-download {
-      background: #10b981;
+      background: var(--btn-download-bg);
       color: white;
     }
 
     .btn-view:hover, .btn-download:hover {
       transform: translateY(-2px);
-      filter: brightness(1.05);
+      filter: brightness(1.1);
     }
 
-    /* حالة عدم وجود نتائج */
+    .btn-view:active, .btn-download:active {
+      transform: translateY(0);
+    }
+
+    /* Empty State */
     .empty-card {
-      background: white;
+      background: var(--bg-empty-card);
       border-radius: 32px;
       padding: 50px 30px;
       text-align: center;
+      box-shadow: var(--shadow-sm);
     }
 
     .empty-card i {
       font-size: 4rem;
-      color: #cbd5e1;
+      color: var(--text-muted);
       margin-bottom: 16px;
     }
 
     .empty-card h3 {
-      color: #475569;
+      color: var(--text-primary);
       margin-bottom: 12px;
     }
 
     .empty-card p {
-      color: #94a3b8;
+      color: var(--text-secondary);
       font-size: 0.9rem;
       margin-bottom: 24px;
     }
 
     .search-again-btn {
-      background: #1e3c72;
+      background: var(--btn-search-bg);
       color: white;
       padding: 12px 24px;
       border-radius: 60px;
@@ -264,16 +394,45 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      transition: all 0.2s;
     }
 
-    /* تذييل */
+    .search-again-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    /* Footer */
     .footer {
       text-align: center;
       padding: 20px;
-      color: #94a3b8;
+      color: var(--footer-text);
       font-size: 0.7rem;
     }
 
+    .footer a {
+      color: var(--gradient-end);
+      text-decoration: none;
+    }
+
+    .footer-links {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: var(--footer-text);
+      text-decoration: none;
+      font-size: 0.7rem;
+    }
+
+    .footer-links a:hover {
+      color: var(--gradient-end);
+    }
+
+    /* Responsive */
     @media (max-width: 550px) {
       body {
         padding: 16px;
@@ -286,10 +445,44 @@
         flex-direction: column;
         align-items: flex-start;
       }
+      .theme-toggle {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
+      .theme-toggle span {
+        display: none;
+      }
+      .back-btn {
+        top: 15px;
+        right: 15px;
+        padding: 6px 12px;
+        font-size: 0.7rem;
+      }
+      .header-card h1 {
+        font-size: 1.2rem;
+        padding-left: 50px;
+      }
+    }
+
+    /* Focus visible for accessibility */
+    .btn:focus-visible,
+    .back-btn:focus-visible,
+    .theme-toggle:focus-visible,
+    .search-again-btn:focus-visible {
+      outline: 2px solid var(--gradient-end);
+      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع المظلم">
+    <i class="fas fa-moon"></i>
+    <span>الوضع المظلم</span>
+  </button>
+
   <div class="container">
     <div class="header-card">
       <a href="/" class="back-btn">
@@ -302,10 +495,10 @@
     <% if (Array.isArray(result) && result.length > 0) { 
       const patient = result[0];
     %>
-      <!-- معلومات المريض -->
+      <!-- Patient Information -->
       <div class="patient-info-card">
         <div class="patient-name">
-          <i class="fas fa-user-circle" style="color: #1e3c72;"></i>
+          <i class="fas fa-user-circle" style="color: var(--gradient-end);"></i>
           <%= patient.name %>
         </div>
         <div class="patient-details">
@@ -322,7 +515,7 @@
         </div>
       </div>
 
-      <!-- الملاحظات -->
+      <!-- Notes Section -->
       <% if (patient.notes && patient.notes.trim() !== '') { %>
         <div class="notes-card">
           <div class="notes-header">
@@ -332,16 +525,16 @@
           <div class="notes-content"><%= patient.notes %></div>
         </div>
       <% } else { %>
-        <div class="notes-card" style="background: #f8fafc; border-right-color: #cbd5e1;">
-          <div class="notes-header" style="color: #64748b;">
+        <div class="notes-card" style="background: var(--bg-notes-empty); border-right-color: var(--border-notes-empty);">
+          <div class="notes-header" style="color: var(--text-muted);">
             <i class="fas fa-pen"></i>
             <span>ملاحظات إضافية</span>
           </div>
-          <div class="notes-content" style="color: #94a3b8;">لا توجد ملاحظات مرفقة</div>
+          <div class="notes-content" style="color: var(--text-notes-empty);">لا توجد ملاحظات مرفقة</div>
         </div>
       <% } %>
 
-      <!-- كروت النتائج -->
+      <!-- Results Cards -->
       <div class="results-list">
         <% result.forEach((r, index) => { %>
           <div class="result-card">
@@ -367,7 +560,7 @@
       </div>
 
     <% } else { %>
-      <!-- لا توجد نتائج -->
+      <!-- Empty State -->
       <div class="empty-card">
         <i class="fas fa-search"></i>
         <h3>لا توجد نتائج متاحة</h3>
@@ -380,7 +573,51 @@
 
     <div class="footer">
       <p>© 2025 معمل التحاليل (جون) - خدمة آمنة وسريعة</p>
+      <div class="footer-links">
+        <a href="/privacy">سياسة الخصوصية</a>
+      </div>
     </div>
   </div>
+
+  <!-- Include WhatsApp Button -->
+  <%- include('partials/whatsapp-button.ejs') %>
+
+  <script>
+    // ========================================
+    // THEME MANAGEMENT
+    // ========================================
+    (function() {
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      
+      let currentTheme = localStorage.getItem('theme') || 'light';
+      
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          html.setAttribute('data-theme', 'dark');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>الوضع الفاتح</span>';
+          }
+          localStorage.setItem('theme', 'dark');
+        } else {
+          html.removeAttribute('data-theme');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>الوضع المظلم</span>';
+          }
+          localStorage.setItem('theme', 'light');
+        }
+        currentTheme = theme;
+      }
+      
+      setTheme(currentTheme);
+      
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          setTheme(newTheme);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
