@@ -414,6 +414,7 @@
   </div>
 
 <script>
+<script>
   // Helper functions
   function showNotification(message, type = 'success') {
     const existing = document.querySelector('.toast-notify');
@@ -449,7 +450,12 @@
   async function deleteResult(id, patientName) {
     if (!confirm(`⚠️ حذف نتيجة ${patientName}؟`)) return;
     try {
-      const res = await fetch('/admin/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `file=${id}` });
+      const res = await fetch('/admin/delete', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+        body: `file=${id}` 
+      });
       if (res.ok) { showNotification(`✅ حذف ${patientName}`); document.getElementById(`row-${id}`)?.remove(); }
       else throw new Error();
     } catch(e) { showNotification('❌ فشل الحذف', 'error'); }
@@ -460,7 +466,12 @@
     if (!confirm(`📧 إرسال إيميل للمريض ${patientName}؟`)) return;
     showNotification(`📧 جاري إرسال الإيميل إلى ${patientName}...`);
     try {
-      const res = await fetch('/api/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, name: patientName, resultId: id }) });
+      const res = await fetch('/api/send-email', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ to: email, name: patientName, resultId: id }) 
+      });
       const data = await res.json();
       if (res.ok) showNotification(`✅ تم إرسال الإيميل إلى ${patientName}`);
       else showNotification(`❌ فشل: ${data.error}`, 'error');
@@ -473,7 +484,12 @@
     const btn = event?.target; const original = btn?.innerHTML;
     if(btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true; }
     try {
-      const res = await fetch('/api/notify-patient', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resultId: id }) });
+      const res = await fetch('/api/notify-patient', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ resultId: id }) 
+      });
       const data = await res.json();
       if (res.ok && data.ok) showNotification(`✅ تم الإرسال لـ ${data.delivered} جهاز`);
       else showNotification(`❌ ${data.error || 'فشل'}`, 'error');
@@ -489,7 +505,12 @@
     if (!phone || !message) { showNotification('⚠️ املأ الحقول', 'error'); return; }
     resultDiv.innerHTML = '<span style="color:#0088cc;">⏳ جاري...</span>';
     try {
-      const res = await fetch('/api/send-telegram', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, message }) });
+      const res = await fetch('/api/send-telegram', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ phone, message }) 
+      });
       const data = await res.json();
       if (res.ok && data.ok) { resultDiv.innerHTML = `<span style="color:#10b981;">✅ تم: وصل لـ ${data.delivered} جهاز</span>`; showNotification(`✅ تم الإرسال لـ ${data.delivered}`); }
       else { resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; showNotification(data.error, 'error'); }
@@ -501,7 +522,12 @@
     const phone = document.getElementById('newTelegramNumber')?.value.trim();
     if (!phone) { showNotification('⚠️ أدخل رقم', 'error'); return; }
     try {
-      const res = await fetch('/api/numbers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+      const res = await fetch('/api/numbers', { 
+        method: 'POST', 
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ phone }) 
+      });
       if (res.ok) { showNotification(`✅ تم إضافة ${phone}`); document.getElementById('newTelegramNumber').value = ''; loadTelegramNumbers(); }
       else showNotification('فشل', 'error');
     } catch(e) { showNotification('خطأ', 'error'); }
@@ -510,7 +536,10 @@
   window.deleteTelegramNumber = async (phone) => {
     if (!confirm(`حذف ${phone}؟`)) return;
     try {
-      const res = await fetch(`/api/numbers/${encodeURIComponent(phone)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/numbers/${encodeURIComponent(phone)}`, { 
+        method: 'DELETE',
+        credentials: 'include'
+      });
       if (res.ok) { showNotification(`✅ حذف ${phone}`); document.getElementById(`tg-row-${phone}`)?.remove(); }
       else showNotification('فشل', 'error');
     } catch(e) { showNotification('خطأ', 'error'); }
@@ -518,9 +547,10 @@
 
   async function loadTelegramNumbers() {
     try {
-      const res = await fetch('/api/numbers'); const data = await res.json();
+      const res = await fetch('/api/numbers', { credentials: 'include' }); 
+      const data = await res.json();
       const items = data.items || []; const tbody = document.getElementById('telegramNumbersBody');
-      if(tbody) tbody.innerHTML = items.length ? items.map(i => `<tr id="tg-row-${i.phone}"><td>${i.phone}</td><td>${i.createdAt || '—'}</td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('${i.phone}')">حذف</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td></tr>';
+      if(tbody) tbody.innerHTML = items.length ? items.map(i => `<tr id="tg-row-${i.phone}"><td>${i.phone}</td><td>${i.createdAt || '—'}</td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('${i.phone}')">حذف</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">لا توجد أرقام<\/td><\/tr>';
     } catch(e) { console.error(e); }
   }
   document.getElementById('refreshTelegramNumbers')?.addEventListener('click', loadTelegramNumbers);
@@ -596,6 +626,7 @@
     try {
       const res = await fetch('/api/send-email-manual', { 
         method: 'POST', 
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ to, name, subject, body }) 
       });
@@ -603,11 +634,11 @@
       if (res.ok) { 
         resultDiv.innerHTML = '<span style="color:#10b981;">✅ تم الإرسال بنجاح</span>'; 
         showNotification('✅ تم إرسال الإيميل');
-        // تفريغ الحقول
         document.getElementById('manualEmailName').value = '';
         document.getElementById('manualEmailAddress').value = '';
         document.getElementById('manualEmailSubject').value = '';
         document.getElementById('manualEmailBody').value = '';
+        loadEmailLogs(); // تحديث السجل
       } else { 
         resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; 
         showNotification(data.error, 'error');
@@ -633,19 +664,24 @@
     try {
       const res = await fetch('/api/send-bulk-email', { 
         method: 'POST', 
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ recipients: recipientsList, subject, body }) 
       });
+      
+      if (res.status === 401) {
+        resultDiv.innerHTML = '<span style="color:#dc2626;">❌ انتهت الجلسة، يرجى إعادة تحميل الصفحة</span>';
+        showNotification('❌ انتهت الجلسة، يرجى إعادة تحميل الصفحة', 'error');
+        return;
+      }
+      
       const data = await res.json();
       if (res.ok) { 
         resultDiv.innerHTML = `<span style="color:#10b981;">✅ تم الإرسال إلى ${data.sent} من ${data.total} مستلم</span>`; 
         showNotification(`✅ تم إرسال ${data.sent} إيميل`);
-        // تفريغ الحقول بعد الإرسال
         document.getElementById('bulkEmailSubject').value = '';
         document.getElementById('bulkEmailBody').value = '';
-        // اختياري: تفريغ قائمة المستلمين بعد الإرسال (فك التعليق لو عاوز)
-        // recipientsList = [];
-        // updateRecipientsDisplay();
+        loadEmailLogs(); // تحديث السجل
       } else { 
         resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; 
         showNotification(data.error, 'error');
@@ -659,13 +695,13 @@
   // تحميل سجل الإيميلات
   async function loadEmailLogs() {
     try {
-      const res = await fetch('/api/email-logs');
+      const res = await fetch('/api/email-logs', { credentials: 'include' });
       const data = await res.json();
       const logs = data.logs || [];
       const tbody = document.getElementById('emailLogsBody');
       if(tbody) {
         if(logs.length) tbody.innerHTML = logs.map(log => `<tr><td>${escapeHtml(log.to)}</td><td>${escapeHtml(log.subject)}</td><td>${log.date ? new Date(log.date).toLocaleString() : '—'}</td><td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td></tr>`).join('');
-        else tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">لا توجد إيميلات مرسلة بعد</td></tr>';
+        else tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">لا توجد إيميلات مرسلة بعد<\/td><\/tr>';
       }
     } catch(e) { console.error(e); }
   }
@@ -694,6 +730,13 @@
       showNotification(`تم تحميل قالب: ${t.subject}`, 'success');
     }
   };
+
+  // ========== Heartbeat عشان يحافظ على الجلسة نشطة ==========
+  setInterval(async () => {
+    try {
+      await fetch('/api/check-session', { credentials: 'include' });
+    } catch(e) { console.log('Heartbeat error:', e); }
+  }, 60000); // كل دقيقة
 
   // ========== Initial load ==========
   document.addEventListener('DOMContentLoaded', () => {
