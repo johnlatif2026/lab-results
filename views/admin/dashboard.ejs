@@ -10,7 +10,6 @@
        CSS VARIABLES FOR THEMING
     ======================================== */
     :root {
-      /* Light Mode Colors */
       --bg-primary: #f0f4f9;
       --bg-card: #ffffff;
       --bg-sidebar: #ffffff;
@@ -31,10 +30,10 @@
       --danger-bg: #dc2626;
       --telegram-bg: #0088cc;
       --email-bg: #ea4335;
+      --transition-default: all 0.2s ease;
     }
 
     [data-theme="dark"] {
-      /* Dark Mode Colors */
       --bg-primary: #0f172a;
       --bg-card: #1e293b;
       --bg-sidebar: #1e293b;
@@ -66,32 +65,32 @@
     }
 
     /* ========================================
-       DASHBOARD LAYOUT
+       NEW LAYOUT: CSS GRID + FLEXBOX
     ======================================== */
-    .dashboard-wrapper {
-      display: flex;
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
       min-height: 100vh;
+      transition: all 0.3s ease;
     }
 
-    /* ========================================
-       SIDEBAR (DESKTOP)
-    ======================================== */
+    /* SIDEBAR - Fixed & Independent */
     .sidebar {
-      width: 280px;
       background: var(--bg-sidebar);
       border-left: 1px solid var(--border-color);
-      position: fixed;
-      right: 0;
+      height: 100vh;
+      position: sticky;
       top: 0;
-      bottom: 0;
-      z-index: 100;
-      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       overflow-y: auto;
       box-shadow: var(--shadow-sm);
+      z-index: 50;
     }
 
     .sidebar-header {
-      padding: 24px 20px;
+      padding: 28px 20px;
       border-bottom: 1px solid var(--border-color);
     }
 
@@ -109,6 +108,7 @@
 
     .sidebar-nav {
       padding: 20px 0;
+      flex: 1;
     }
 
     .sidebar-item {
@@ -116,11 +116,12 @@
       align-items: center;
       gap: 12px;
       padding: 12px 20px;
+      margin: 4px 12px;
+      border-radius: 16px;
       color: var(--text-secondary);
       text-decoration: none;
-      transition: all 0.2s;
+      transition: var(--transition-default);
       cursor: pointer;
-      border-right: 3px solid transparent;
     }
 
     .sidebar-item:hover {
@@ -130,8 +131,8 @@
 
     .sidebar-item.active {
       background: linear-gradient(90deg, transparent, rgba(42, 82, 152, 0.1));
-      border-right-color: var(--gradient-end);
       color: var(--gradient-end);
+      font-weight: 600;
     }
 
     .sidebar-item i {
@@ -140,12 +141,9 @@
     }
 
     .sidebar-footer {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
       padding: 20px;
       border-top: 1px solid var(--border-color);
+      margin-top: auto;
     }
 
     .logout-sidebar {
@@ -154,36 +152,33 @@
       gap: 12px;
       color: var(--danger-bg);
       text-decoration: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 12px;
-      transition: all 0.2s;
+      transition: var(--transition-default);
     }
 
     .logout-sidebar:hover {
       background: rgba(220, 38, 38, 0.1);
     }
 
-    /* ========================================
-       MAIN CONTENT
-    ======================================== */
+    /* MAIN CONTENT */
     .main-content {
-      flex: 1;
-      margin-right: 280px;
-      padding: 20px;
-      transition: all 0.3s ease;
+      padding: 24px 32px;
+      background: var(--bg-primary);
+      overflow-x: hidden;
     }
 
     /* Header Bar */
     .header-bar {
-      background: var(--bg-header);
+      background: var(--bg-card);
       border-radius: 28px;
       padding: 16px 24px;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
       box-shadow: var(--shadow-sm);
     }
 
@@ -195,21 +190,17 @@
       gap: 10px;
     }
 
-    .logo i {
-      color: var(--gradient-end);
-    }
-
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
     }
 
     .theme-toggle {
-      background: var(--bg-card);
+      background: var(--bg-primary);
       border: 1px solid var(--border-color);
       border-radius: 40px;
-      padding: 8px 16px;
+      padding: 8px 18px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -217,7 +208,7 @@
       color: var(--text-primary);
       font-size: 0.85rem;
       font-weight: 500;
-      transition: all 0.2s;
+      transition: var(--transition-default);
     }
 
     .theme-toggle:hover {
@@ -247,102 +238,103 @@
       gap: 6px;
     }
 
-    /* Mobile Menu Button */
+    /* Mobile Menu Button - Hidden on Desktop */
     .mobile-menu-btn {
       display: none;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 10px;
-      cursor: pointer;
-      color: var(--text-primary);
-      font-size: 1.2rem;
-    }
-
-    /* Mobile Drawer Overlay */
-    .drawer-overlay {
-      display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 200;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100;
+      background: var(--gradient-end);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      color: white;
+      font-size: 1.4rem;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
     }
 
-    /* Stats Grid */
+    /* Stats Grid - Independent Cards */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
     }
 
     .stat-card {
       background: var(--bg-card);
-      border-radius: 24px;
-      padding: 20px;
+      border-radius: 28px;
+      padding: 24px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
       box-shadow: var(--shadow-sm);
-      transition: all 0.2s;
+      transition: var(--transition-default);
     }
 
     .stat-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
       box-shadow: var(--shadow-md);
     }
 
     .stat-icon {
-      width: 50px;
-      height: 50px;
+      width: 56px;
+      height: 56px;
       background: var(--stat-icon-bg);
-      border-radius: 20px;
+      border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 28px;
       color: var(--gradient-end);
     }
 
     .stat-info h3 {
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 700;
       color: var(--text-primary);
+      line-height: 1.2;
     }
 
     .stat-info p {
       color: var(--text-secondary);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
 
-    /* Cards */
+    /* Section Cards - Independent */
     .section-card {
       background: var(--bg-card);
       border-radius: 28px;
-      padding: 24px;
-      margin-bottom: 30px;
+      padding: 28px;
+      margin-bottom: 32px;
       box-shadow: var(--shadow-sm);
+      transition: var(--transition-default);
+    }
+
+    .section-card:last-child {
+      margin-bottom: 0;
     }
 
     .section-title {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: var(--text-primary);
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 24px;
       padding-bottom: 12px;
       border-bottom: 2px solid var(--border-light);
     }
 
+    /* Form Layout */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+      gap: 20px;
     }
 
     .input-group {
@@ -354,20 +346,20 @@
       font-size: 0.8rem;
       font-weight: 600;
       color: var(--text-secondary);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .input-group input,
     .input-group select,
     .input-group textarea {
       width: 100%;
-      padding: 12px 14px;
+      padding: 12px 16px;
       background: var(--bg-primary);
       border: 1.5px solid var(--border-color);
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--text-primary);
-      transition: all 0.2s;
+      transition: var(--transition-default);
     }
 
     .input-group input:focus,
@@ -381,7 +373,7 @@
       background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
       color: white;
       border: none;
-      padding: 14px 24px;
+      padding: 14px 28px;
       border-radius: 40px;
       font-weight: 600;
       font-size: 0.9rem;
@@ -389,8 +381,8 @@
       align-items: center;
       gap: 10px;
       cursor: pointer;
-      margin-top: 16px;
-      transition: all 0.2s;
+      margin-top: 20px;
+      transition: var(--transition-default);
     }
 
     .upload-btn:hover {
@@ -398,32 +390,43 @@
       box-shadow: var(--shadow-md);
     }
 
-    /* Tables */
+    /* Results Table */
     .results-card {
       background: var(--bg-card);
       border-radius: 28px;
-      padding: 20px;
+      padding: 0;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    
+    .results-card .section-title {
+      padding: 24px 28px 0 28px;
+      margin-bottom: 0;
+    }
+    
+    .table-wrapper {
       overflow-x: auto;
+      padding: 0 0 24px 0;
     }
 
     .desktop-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px;
+      min-width: 800px;
     }
 
     .desktop-table th {
       text-align: right;
-      padding: 14px 12px;
+      padding: 16px 16px;
       color: var(--text-secondary);
       font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       border-bottom: 2px solid var(--border-light);
       background: var(--table-header-bg);
     }
 
     .desktop-table td {
-      padding: 14px 12px;
+      padding: 16px;
       color: var(--text-primary);
       font-size: 0.85rem;
       border-bottom: 1px solid var(--border-light);
@@ -433,35 +436,24 @@
       background: var(--bg-hover);
     }
 
-    .mobile-cards {
-      display: none;
-    }
-
-    .result-mobile-card {
-      background: var(--bg-primary);
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
+    /* Action Buttons */
     .action-group {
       display: flex;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .btn-mini {
-      padding: 8px 16px;
+      padding: 6px 12px;
       border-radius: 40px;
       border: none;
       font-weight: 600;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s;
+      transition: var(--transition-default);
     }
 
     .btn-view {
@@ -491,16 +483,25 @@
     }
 
     .btn-mini:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
       filter: brightness(1.05);
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 50px 20px;
-      color: var(--text-muted);
+    /* Mobile Cards for Results */
+    .mobile-cards {
+      display: none;
+      padding: 20px;
     }
 
+    .result-mobile-card {
+      background: var(--bg-primary);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-light);
+    }
+
+    /* Telegram & Email Tables */
     .telegram-numbers-table,
     .email-logs-table {
       width: 100%;
@@ -512,32 +513,31 @@
     .telegram-numbers-table td,
     .email-logs-table th,
     .email-logs-table td {
-      padding: 10px;
+      padding: 12px;
       text-align: right;
       border-bottom: 1px solid var(--border-light);
       color: var(--text-primary);
     }
 
     hr {
-      margin: 20px 0;
+      margin: 28px 0;
       border-color: var(--border-light);
     }
 
+    /* Toast Notification */
     .toast-notify {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
+      bottom: 30px;
+      left: 30px;
       background: var(--text-primary);
       color: white;
-      padding: 12px 18px;
+      padding: 12px 20px;
       border-radius: 60px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       z-index: 1000;
-      max-width: 400px;
-      margin: 0 auto;
+      box-shadow: var(--shadow-md);
       animation: slideUp 0.3s ease;
     }
 
@@ -560,113 +560,155 @@
       }
     }
 
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    /* Tab Content Visibility */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
     /* ========================================
-       RESPONSIVE
+       RESPONSIVE DESIGN
     ======================================== */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(100%);
-        width: 280px;
-        z-index: 300;
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
+    @media (max-width: 1024px) {
       .main-content {
-        margin-right: 0;
+        padding: 20px;
       }
-
-      .mobile-menu-btn {
-        display: block;
-      }
-
-      .drawer-overlay.open {
-        display: block;
-      }
-
-      .desktop-table {
-        display: none;
-      }
-
-      .mobile-cards {
-        display: block;
-      }
-
+      
       .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      }
-
-      .stat-card {
-        padding: 15px;
-      }
-
-      .stat-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-      }
-
-      .stat-info h3 {
-        font-size: 1.4rem;
+        gap: 16px;
       }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 280px;
+        height: 100vh;
+        transition: right 0.3s ease;
+        z-index: 200;
+        box-shadow: var(--shadow-md);
+      }
+      
+      .sidebar.open {
+        right: 0;
+      }
+      
+      .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
       .main-content {
+        margin-right: 0;
         padding: 16px;
       }
-
+      
+      .desktop-table {
+        display: none;
+      }
+      
+      .mobile-cards {
+        display: block;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .stat-card {
+        padding: 16px;
+      }
+      
+      .section-card {
+        padding: 20px;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      
       .header-bar {
-        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
       }
-
-      .logo h1 {
-        font-size: 1rem;
+      
+      .header-actions {
+        justify-content: center;
       }
-
+      
       .user-badge {
         display: none;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 12px;
+      }
+      
+      .section-title {
+        font-size: 1.1rem;
+      }
+      
+      .stat-info h3 {
+        font-size: 1.6rem;
       }
     }
   </style>
 </head>
 <body>
-<div class="dashboard-wrapper">
+<div class="dashboard-container">
   <!-- Mobile Menu Button -->
   <button class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
   </button>
 
-  <!-- Drawer Overlay -->
-  <div class="drawer-overlay" id="drawerOverlay"></div>
-
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2><i class="fas fa-microscope"></i> معمل التحاليل</h2>
+    <div>
+      <div class="sidebar-header">
+        <h2><i class="fas fa-microscope"></i> معمل التحاليل</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-item active" data-tab="tab-lab">
+          <i class="fas fa-flask"></i>
+          <span>رفع التحاليل</span>
+        </div>
+        <div class="sidebar-item" data-tab="tab-telegram">
+          <i class="fab fa-telegram"></i>
+          <span>التيليجرام</span>
+        </div>
+        <div class="sidebar-item" data-tab="tab-smtp">
+          <i class="fas fa-envelope"></i>
+          <span>SMTP / الإيميلات</span>
+        </div>
+      </nav>
     </div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-item active" data-tab="tab-lab">
-        <i class="fas fa-flask"></i>
-        <span>رفع التحاليل</span>
-      </div>
-      <div class="sidebar-item" data-tab="tab-telegram">
-        <i class="fab fa-telegram"></i>
-        <span>التيليجرام</span>
-      </div>
-      <div class="sidebar-item" data-tab="tab-smtp">
-        <i class="fas fa-envelope"></i>
-        <span>SMTP / الإيميلات</span>
-      </div>
-    </nav>
     <div class="sidebar-footer">
       <a href="/admin/logout" class="logout-sidebar">
         <i class="fas fa-sign-out-alt"></i>
         <span>خروج</span>
       </a>
-      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
         <a href="/privacy" style="color: var(--text-muted); text-decoration: none; font-size: 0.75rem;">
           <i class="fas fa-shield-alt"></i> سياسة الخصوصية
         </a>
@@ -692,7 +734,7 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Stats Cards Section -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
@@ -719,6 +761,7 @@
 
     <!-- Tab Content: رفع التحاليل -->
     <div id="tab-lab" class="tab-content active">
+      <!-- Upload Section -->
       <div class="section-card">
         <div class="section-title"><i class="fas fa-cloud-upload-alt"></i> رفع نتيجة تحليل جديدة</div>
         <form action="/admin/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
@@ -734,48 +777,51 @@
         </form>
       </div>
 
+      <!-- Results Database Section -->
       <div class="results-card">
         <div class="section-title"><i class="fas fa-database"></i> قاعدة البيانات</div>
-        <% if (results.length > 0) { %>
-          <table class="desktop-table">
-            <thead>
-              <tr><th>المريض</th><th>نوع التحليل</th><th>الهاتف</th><th>البريد</th><th>الملف</th><th>التاريخ</th><th>الإجراءات</th></tr>
-            </thead>
-            <tbody>
+        <div class="table-wrapper">
+          <% if (results.length > 0) { %>
+            <table class="desktop-table">
+              <thead>
+                <tr><th>المريض</th><th>نوع التحليل</th><th>الهاتف</th><th>البريد</th><th>الملف</th><th>التاريخ</th><th>الإجراءات</th></tr>
+              </thead>
+              <tbody>
+                <% results.forEach((r) => { %>
+                  <tr id="row-<%= r.id %>">
+                    <td><strong><%= r.name %></strong></td>
+                    <td><%= r.test %></td>
+                    <td><%= r.phone %></td>
+                    <td><%= r.email %></td>
+                    <td><a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view"><i class="fas fa-eye"></i> عرض</a></td>
+                    <td><%= r.date %></td>
+                    <td><div class="action-group">
+                      <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash"></i> حذف</button>
+                      <button class="btn-mini btn-notify" onclick="sendEmailNotification('<%= r.id %>', '<%= r.name %>', '<%= r.email %>')"><i class="fas fa-envelope"></i> إيميل</button>
+                      <button class="btn-mini btn-telegram" onclick="sendTelegramToPatient('<%= r.id %>', '<%= r.name %>', '<%= r.phone %>')"><i class="fab fa-telegram"></i> تليجرام</button>
+                    </div></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+            <div class="mobile-cards">
               <% results.forEach((r) => { %>
-                <tr id="row-<%= r.id %>">
-                  <td><strong><%= r.name %></strong></td>
-                  <td><%= r.test %></td>
-                  <td><%= r.phone %></td>
-                  <td><%= r.email %></td>
-                  <td><a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view"><i class="fas fa-eye"></i> عرض</a></td>
-                  <td><%= r.date %></td>
-                  <td><div class="action-group">
-                    <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash"></i> حذف</button>
-                    <button class="btn-mini btn-notify" onclick="sendEmailNotification('<%= r.id %>', '<%= r.name %>', '<%= r.email %>')"><i class="fas fa-envelope"></i> إيميل</button>
-                    <button class="btn-mini btn-telegram" onclick="sendTelegramToPatient('<%= r.id %>', '<%= r.name %>', '<%= r.phone %>')"><i class="fab fa-telegram"></i> تليجرام</button>
-                  </div></td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-          <div class="mobile-cards">
-            <% results.forEach((r) => { %>
-              <div class="result-mobile-card">
-                <div><strong><%= r.name %></strong> - <%= r.test %></div>
-                <div>📞 <%= r.phone %></div>
-                <div>📧 <%= r.email %></div>
-                <div class="action-group">
-                  <a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view">عرض</a>
-                  <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')">حذف</button>
-                  <button class="btn-mini btn-telegram" onclick="sendTelegramToPatient('<%= r.id %>', '<%= r.name %>', '<%= r.phone %>')">تليجرام</button>
+                <div class="result-mobile-card">
+                  <div><strong><%= r.name %></strong> - <%= r.test %></div>
+                  <div>📞 <%= r.phone %></div>
+                  <div>📧 <%= r.email %></div>
+                  <div class="action-group" style="margin-top: 12px;">
+                    <a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view">عرض</a>
+                    <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')">حذف</button>
+                    <button class="btn-mini btn-telegram" onclick="sendTelegramToPatient('<%= r.id %>', '<%= r.name %>', '<%= r.phone %>')">تليجرام</button>
+                  </div>
                 </div>
-              </div>
-            <% }) %>
-          </div>
-        <% } else { %>
-          <div class="empty-state"><i class="fas fa-folder-open" style="font-size: 3rem;"></i><p>لا توجد نتائج مسجلة</p></div>
-        <% } %>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="empty-state"><i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 16px; display: block;"></i><p>لا توجد نتائج مسجلة</p></div>
+          <% } %>
+        </div>
       </div>
     </div>
 
@@ -783,35 +829,37 @@
     <div id="tab-telegram" class="tab-content">
       <div class="section-card">
         <div class="section-title"><i class="fab fa-telegram"></i> إرسال إشعارات عبر التيليجرام</div>
-        <div style="margin-bottom: 24px;">
-          <h4><i class="fas fa-paper-plane"></i> إرسال رسالة لرقم معين</h4>
+        <div style="margin-bottom: 28px;">
+          <h4 style="margin-bottom: 16px;"><i class="fas fa-paper-plane"></i> إرسال رسالة لرقم معين</h4>
           <div class="form-grid">
             <div class="input-group"><label>رقم الهاتف</label><input type="tel" id="telegramPhone" placeholder="مثال: 01234567890"></div>
             <div class="input-group"><label>نص الرسالة</label><textarea id="telegramMessage" rows="3"></textarea></div>
           </div>
           <button id="sendTelegramBtn" class="upload-btn" style="background: #0088cc;"><i class="fab fa-telegram"></i> إرسال عبر تليجرام</button>
-          <div id="telegramResult" style="margin-top: 12px;"></div>
+          <div id="telegramResult" style="margin-top: 16px;"></div>
         </div>
         <hr>
         <div>
-          <h4><i class="fas fa-list"></i> الأرقام المسجلة في البوت</h4>
-          <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
-            <input type="tel" id="newTelegramNumber" placeholder="رقم جديد" style="padding: 10px; border-radius: 40px; border: 1px solid var(--border-color); flex:1; background: var(--bg-primary); color: var(--text-primary);">
-            <button id="addTelegramNumberBtn" class="btn-mini" style="background:var(--gradient-end);color:white;">إضافة</button>
-            <button id="refreshTelegramNumbers" class="btn-mini" style="background:var(--text-muted);color:white;">تحديث</button>
+          <h4 style="margin-bottom: 16px;"><i class="fas fa-list"></i> الأرقام المسجلة في البوت</h4>
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+            <input type="tel" id="newTelegramNumber" placeholder="رقم جديد" style="padding: 12px; border-radius: 40px; border: 1px solid var(--border-color); flex:1; background: var(--bg-primary); color: var(--text-primary);">
+            <button id="addTelegramNumberBtn" class="btn-mini" style="background:var(--gradient-end);color:white; padding: 8px 20px;">إضافة</button>
+            <button id="refreshTelegramNumbers" class="btn-mini" style="background:var(--text-muted);color:white; padding: 8px 20px;">تحديث</button>
           </div>
-          <table class="telegram-numbers-table">
-            <thead><tr><th>الرقم</th><th>التاريخ</th><th></th></tr></thead>
-            <tbody id="telegramNumbersBody">
-              <% if (telegramNumbers && telegramNumbers.length) { %>
-                <% telegramNumbers.forEach(num => { %>
-                  <tr id="tg-row-<%= num.phone %>"><td><%= num.phone %></td><td><%= num.createdAt || '—' %></td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('<%= num.phone %>')">حذف</button></td></tr>
-                <% }) %>
-              <% } else { %>
-                <tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td><tr>
-              <% } %>
-            </tbody>
-          </table>
+          <div class="table-wrapper">
+            <table class="telegram-numbers-table">
+              <thead><tr><th>الرقم</th><th>التاريخ</th><th></th></tr></thead>
+              <tbody id="telegramNumbersBody">
+                <% if (telegramNumbers && telegramNumbers.length) { %>
+                  <% telegramNumbers.forEach(num => { %>
+                    <tr id="tg-row-<%= num.phone %>"><td><%= num.phone %></td><td><%= num.createdAt || '—' %></td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('<%= num.phone %>')">حذف</button></td></tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -827,64 +875,58 @@
           <div class="input-group" style="grid-column: span 2;"><label><i class="fas fa-comment"></i> محتوى الرسالة</label><textarea id="manualEmailBody" rows="5" placeholder="اكتب محتوى الإيميل هنا..."></textarea></div>
         </div>
         <button id="sendManualEmailBtn" class="upload-btn" style="background: #ea4335;"><i class="fas fa-envelope"></i> إرسال الإيميل</button>
-        <div id="manualEmailResult" style="margin-top: 12px;"></div>
+        <div id="manualEmailResult" style="margin-top: 16px;"></div>
       </div>
 
       <div class="section-card">
         <div class="section-title"><i class="fas fa-users"></i> إرسال إيميل جماعي لقائمة مخصصة</div>
-        <div style="margin-bottom: 20px;">
-          <h4 style="margin-bottom: 12px;"><i class="fas fa-plus-circle"></i> إضافة مستلمين</h4>
+        <div style="margin-bottom: 24px;">
+          <h4 style="margin-bottom: 16px;"><i class="fas fa-plus-circle"></i> إضافة مستلمين</h4>
           <div class="form-grid">
             <div class="input-group"><label>اسم المستلم</label><input type="text" id="bulkRecipientName" placeholder="الاسم"></div>
             <div class="input-group"><label>البريد الإلكتروني</label><input type="email" id="bulkRecipientEmail" placeholder="email@example.com"></div>
           </div>
-          <button id="addRecipientBtn" class="btn-mini" style="background:var(--gradient-end);color:white;margin-top:8px;"><i class="fas fa-plus"></i> إضافة للمستلمين</button>
+          <button id="addRecipientBtn" class="btn-mini" style="background:var(--gradient-end);color:white; margin-top: 12px; padding: 10px 20px;"><i class="fas fa-plus"></i> إضافة للمستلمين</button>
         </div>
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 24px;">
           <h4><i class="fas fa-list"></i> قائمة المستلمين (<span id="recipientCount">0</span>)</h4>
-          <div id="recipientsList" style="background: var(--bg-primary); border-radius: 16px; padding: 12px; max-height: 200px; overflow-y: auto;">
+          <div id="recipientsList" style="background: var(--bg-primary); border-radius: 20px; padding: 16px; max-height: 250px; overflow-y: auto; margin-top: 12px;">
             <div style="text-align: center; color: var(--text-muted);">لا يوجد مستلمين، أضف مستلمين أولاً</div>
           </div>
-          <button id="clearRecipientsBtn" class="btn-mini" style="background:var(--danger-bg);color:white;margin-top:8px;"><i class="fas fa-trash"></i> حذف الكل</button>
+          <button id="clearRecipientsBtn" class="btn-mini" style="background:var(--danger-bg);color:white; margin-top: 16px; padding: 8px 20px;"><i class="fas fa-trash"></i> حذف الكل</button>
         </div>
         <hr>
         <div>
-          <h4><i class="fas fa-envelope-open-text"></i> بيانات الإيميل</h4>
+          <h4 style="margin-bottom: 16px;"><i class="fas fa-envelope-open-text"></i> بيانات الإيميل</h4>
           <div class="input-group"><label><i class="fas fa-tag"></i> الموضوع</label><input type="text" id="bulkEmailSubject" placeholder="موضوع الرسالة"></div>
           <div class="input-group"><label><i class="fas fa-comment"></i> محتوى الرسالة</label><textarea id="bulkEmailBody" rows="5" placeholder="محتوى الإيميل لجميع المستلمين..."></textarea></div>
           <button id="sendBulkEmailBtn" class="upload-btn" style="background: #ea4335;"><i class="fas fa-paper-plane"></i> إرسال للجميع</button>
-          <div id="bulkEmailResult" style="margin-top: 12px;"></div>
+          <div id="bulkEmailResult" style="margin-top: 16px;"></div>
         </div>
       </div>
 
       <div class="section-card">
         <div class="section-title"><i class="fas fa-clipboard-list"></i> قوالب سريعة</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-          <button class="btn-mini" style="background:var(--gradient-end);color:white;" onclick="loadTemplate('welcome')">ترحيب</button>
-          <button class="btn-mini" style="background:var(--gradient-end);color:white;" onclick="loadTemplate('reminder')">تذكير</button>
-          <button class="btn-mini" style="background:var(--gradient-end);color:white;" onclick="loadTemplate('thanks')">شكر</button>
-          <button class="btn-mini" style="background:var(--gradient-end);color:white;" onclick="loadTemplate('result_ready')">نتيجة جاهزة</button>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+          <button class="btn-mini" style="background:var(--gradient-end);color:white; padding: 8px 16px;" onclick="loadTemplate('welcome')">ترحيب</button>
+          <button class="btn-mini" style="background:var(--gradient-end);color:white; padding: 8px 16px;" onclick="loadTemplate('reminder')">تذكير</button>
+          <button class="btn-mini" style="background:var(--gradient-end);color:white; padding: 8px 16px;" onclick="loadTemplate('thanks')">شكر</button>
+          <button class="btn-mini" style="background:var(--gradient-end);color:white; padding: 8px 16px;" onclick="loadTemplate('result_ready')">نتيجة جاهزة</button>
         </div>
       </div>
 
       <div class="section-card">
         <div class="section-title"><i class="fas fa-history"></i> سجل الإيميلات المرسلة</div>
-        <button id="refreshEmailLogs" class="btn-mini" style="background:var(--text-muted);color:white;margin-bottom:16px;">تحديث</button>
-        <div style="overflow-x: auto;">
+        <button id="refreshEmailLogs" class="btn-mini" style="background:var(--text-muted);color:white; margin-bottom: 20px; padding: 8px 20px;">تحديث</button>
+        <div class="table-wrapper">
           <table class="email-logs-table">
             <thead>
-              <tr>
-                <th>إلى</th>
-                <th>الموضوع</th>
-                <th>التاريخ</th>
-                <th>الحالة</th>
-                <th>الإجراءات</th>
-              </tr>
+              <tr><th>إلى</th><th>الموضوع</th><th>التاريخ</th><th>الحالة</th><th>الإجراءات</th></tr>
             </thead>
             <tbody id="emailLogsBody">
               <tr><td colspan="5" style="text-align:center;">جاري التحميل...</td></tr>
             </tbody>
-          </table>
+           </table>
         </div>
       </div>
     </div>
@@ -936,25 +978,27 @@
   // ========================================
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');
   const sidebar = document.getElementById('sidebar');
-  const drawerOverlay = document.getElementById('drawerOverlay');
 
   function closeDrawer() {
     sidebar?.classList.remove('open');
-    drawerOverlay?.classList.remove('open');
   }
 
   function openDrawer() {
     sidebar?.classList.add('open');
-    drawerOverlay?.classList.add('open');
   }
 
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', openDrawer);
   }
 
-  if (drawerOverlay) {
-    drawerOverlay.addEventListener('click', closeDrawer);
-  }
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+      if (sidebar && sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== mobileMenuBtn) {
+        closeDrawer();
+      }
+    }
+  });
 
   // ========================================
   // SIDEBAR NAVIGATION (TABS)
@@ -1121,6 +1165,7 @@
       const data = await res.json();
       const items = data.items || []; const tbody = document.getElementById('telegramNumbersBody');
       if(tbody) tbody.innerHTML = items.length ? items.map(i => `<tr id="tg-row-${i.phone}"><td>${i.phone}</td><td>${i.createdAt || '—'}</td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('${i.phone}')">حذف</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td></tr>';
+      document.getElementById('telegramCount').innerText = items.length;
     } catch(e) { console.error(e); }
   }
   document.getElementById('refreshTelegramNumbers')?.addEventListener('click', loadTelegramNumbers);
@@ -1142,7 +1187,7 @@
     }
     
     container.innerHTML = recipientsList.map((r, idx) => `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid var(--border-color);">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color);">
         <div><strong>${escapeHtml(r.name)}</strong> - ${escapeHtml(r.email)}</div>
         <button class="btn-mini" style="background:var(--danger-bg);color:white;padding:4px 12px;" onclick="removeRecipient(${idx})">حذف</button>
       </div>
@@ -1257,7 +1302,6 @@
     }
   });
 
-  // حذف إيميل من السجل
   window.deleteEmailLog = async (logId) => {
     if (!confirm('⚠️ هل تريد حذف هذا الإيميل من السجل؟')) return;
     try {
@@ -1293,6 +1337,7 @@
           </tr>
         `).join('');
         else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد إيميلات مرسلة بعد</td></tr>';
+        document.getElementById('emailCount').innerText = logs.length;
       }
     } catch(e) { console.error(e); }
   }
