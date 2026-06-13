@@ -37,11 +37,11 @@ app.use(bodyParser.json());
 const MemoryStore = require('memorystore')(session);
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret-key",
-  resave: false,        // ✅ changed from true to false
-  saveUninitialized: false,  // ✅ changed from true to false
+  resave: false,
+  saveUninitialized: false,
   cookie: {
     secure: false,
-    maxAge: 24 * 60 * 60 * 1000,  // ✅ 24 ساعة بدل 8
+    maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax'
   }
@@ -338,7 +338,7 @@ app.post("/admin/delete", async (req, res) => {
   }
 });
 
-// ========== View Route ==========
+// ========== View Route (MODIFIED - Patient Name as Filename) ==========
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
@@ -354,10 +354,39 @@ app.get("/view/:id", async (req, res) => {
     const fileUrl = data.file;
     const isDownload = req.query.download === 'true';
     
-    let filename = data.original_filename || "result.pdf";
-    if (!filename.match(/\.(pdf|jpg|jpeg|png|doc|docx)$/i)) {
-      filename += '.pdf';
+    // --- START OF MODIFICATION ---
+    // Create filename using patient's name instead of original filename
+    
+    // 1. Get patient name and clean it for filesystem safety
+    let patientName = (data.name || 'result').trim();
+    // Remove problematic characters from the name
+    patientName = patientName.replace(/[\\/:*?"<>|]/g, '');
+    // If name becomes empty after cleaning, use a fallback
+    if (!patientName) patientName = 'result';
+    
+    // 2. Determine the correct file extension
+    let fileExtension = 'pdf'; // default extension
+    
+    // Try to get extension from original_filename
+    if (data.original_filename && data.original_filename.includes('.')) {
+      fileExtension = data.original_filename.split('.').pop().toLowerCase();
+    } 
+    // If that fails, try to get it from the Cloudinary URL
+    else if (data.file && data.file.includes('.')) {
+      const urlParts = data.file.split('.');
+      if (urlParts.length > 1) {
+        let potentialExt = urlParts.pop().split('?')[0].toLowerCase();
+        // Only allow specific extensions
+        const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'doc', 'docx'];
+        if (allowedExtensions.includes(potentialExt)) {
+          fileExtension = potentialExt;
+        }
+      }
     }
+    
+    // 3. Construct the final filename: PatientName.Extension
+    const filename = `${patientName}.${fileExtension}`;
+    // --- END OF MODIFICATION ---
 
     const response = await axios({
       method: 'get',
@@ -366,21 +395,26 @@ app.get("/view/:id", async (req, res) => {
       headers: { 'User-Agent': 'Mozilla/5.0' }
     });
 
+    // Determine content type based on file extension
     let contentType = 'application/octet-stream';
-    const fileExtension = filename.split('.').pop().toLowerCase();
-    
     switch (fileExtension) {
       case 'pdf': contentType = 'application/pdf'; break;
-      case 'jpg': case 'jpeg': contentType = 'image/jpeg'; break;
+      case 'jpg': 
+      case 'jpeg': contentType = 'image/jpeg'; break;
       case 'png': contentType = 'image/png'; break;
+      case 'gif': contentType = 'image/gif'; break;
+      case 'webp': contentType = 'image/webp'; break;
       case 'doc': contentType = 'application/msword'; break;
       case 'docx': contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; break;
+      default: contentType = 'application/octet-stream';
     }
 
+    // Set Content-Disposition header with proper encoding for Arabic names
     if (isDownload) {
-      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+      // Using both ASCII and UTF-8 encoding for maximum browser compatibility
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
     } else {
-      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"`);
+      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
     }
     
     res.setHeader('Content-Type', contentType);
