@@ -1,3 +1,4 @@
+// app.js - النسخة النهائية المدمجة (معمل + تليجرام)
 const axios = require('axios');
 const express = require("express");
 const session = require("express-session");
@@ -11,56 +12,47 @@ require("dotenv").config();
 
 const admin = require("firebase-admin");
 
-// Firebase
+// ========== Firebase ==========
 if (!process.env.FIREBASE_CONFIG) {
   console.log("❌ FIREBASE_CONFIG مش موجود");
   process.exit(1);
 }
 
 const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-
 admin.initializeApp({
   credential: admin.credential.cert(firebaseConfig),
 });
-
 const db = admin.firestore();
 
 const app = express();
 
-// ✅ تحديد مسار views
+// ========== View Engine ==========
 const viewsPath = path.join(__dirname, "views");
-console.log("Views path:", viewsPath);
-
 app.set("views", viewsPath);
 app.set("view engine", "ejs");
 
-// ✅ Body parser middleware
+// ========== Middleware ==========
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// ✅ Session configuration
+// Session configuration
 const MemoryStore = require('memorystore')(session);
-
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret-key",
   resave: true,
   saveUninitialized: true,
   cookie: {
     secure: false,
-    maxAge: 8 * 60 * 60 * 1000, // 8 ساعات
+    maxAge: 8 * 60 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax'
-  },
-  unset: 'keep'
+  }
 }));
 
-// ✅ Middleware لتجديد الجلسة تلقائياً (يمنع انتهائها)
+// Session refresh middleware
 app.use((req, res, next) => {
   if (req.session && req.session.loggedIn) {
-    // تجديد الجلسة لكل request نشط
     req.session.touch();
-    
-    // إضافة متغير محلي للتحقق من حالة الدخول في الـ views
     res.locals.isAdmin = true;
   } else {
     res.locals.isAdmin = false;
@@ -68,15 +60,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Middleware لحماية الجلسة
-app.use((req, res, next) => {
-  if (req.path.startsWith('/admin')) {
-    console.log(`[${req.method}] ${req.path} - Session ID: ${req.session.id}, LoggedIn: ${req.session.loggedIn}`);
-  }
-  next();
-});
-
-// Cloudinary Config
+// ========== Cloudinary Config ==========
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -85,10 +69,42 @@ cloudinary.config({
 
 const multerMemory = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB حد أقصى
+  limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Firestore functions
+// ========== Email Transporter ==========
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_ADDRESS,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+// ========== Telegram Functions ==========
+async function sendTelegramMessage(chatId, text) {
+  const token = process.env.BOT_TOKEN;
+  if (!token) throw new Error("Missing BOT_TOKEN env var");
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error("Telegram sendMessage failed: " + t);
+  }
+  return resp.json();
+}
+
+function normalizePhone(input) {
+  return String(input || "").replace(/[^\d]/g, "");
+}
+
+// ========== Firestore Functions (المعمل) ==========
 async function loadResults() {
   const snapshot = await db.collection("results").get();
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -104,22 +120,10 @@ async function deleteResult(id) {
 
 async function findResultsByPhone(phone) {
   const snapshot = await db.collection("results").where("phone", "==", phone).get();
-  return snapshot.docs.map(doc => ({ 
-    id: doc.id,
-    ...doc.data() 
-  }));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-// Email
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_ADDRESS,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
-// Routes
+// ========== Routes ==========
 app.get("/", (req, res) => {
   res.render("index");
 });
@@ -133,48 +137,40 @@ app.post("/result", async (req, res) => {
   });
 });
 
-// Admin routes
+// ========== Admin Routes ==========
 app.get("/admin", async (req, res) => {
-  console.log("🔐 Admin route accessed - Session ID:", req.session?.id, "LoggedIn:", req.session?.loggedIn);
-  
   if (req.session && req.session.loggedIn) {
     try {
       const results = await loadResults();
-      console.log(`✅ Loaded ${results.length} results`);
+      // جلب أرقام التيليجرام المسجلة
+      const numbersSnapshot = await db.collection("bot_numbers").orderBy("createdAt", "desc").limit(100).get();
+      const telegramNumbers = numbersSnapshot.docs.map(doc => doc.data());
       
-      // لا نمرر successMessage من query string لأننا سنستخدم localStorage
       res.render("admin/dashboard", { 
         results,
-        successMessage: null  // إلغاء استخدام query string
+        telegramNumbers,
+        successMessage: null
       });
     } catch (error) {
       console.error("Error loading dashboard:", error);
       res.status(500).send("Error loading dashboard: " + error.message);
     }
   } else {
-    console.log("🔐 Not logged in, showing login page");
     res.render("admin/login");
   }
 });
 
 app.post("/admin/login", (req, res) => {
   const { username, password } = req.body;
-  console.log("Login attempt:", username);
-  
   if (
     username === (process.env.ADMIN_USERNAME || "john") &&
     password === (process.env.ADMIN_PASSWORD || "latif")
   ) {
     req.session.loggedIn = true;
-    console.log("Login successful, session saved:", req.session);
-    
     req.session.save((err) => {
-      if (err) console.error("Session save error:", err);
-      console.log("Session saved, redirecting to /admin");
       res.redirect("/admin");
     });
   } else {
-    console.log("Login failed");
     res.send("بيانات الدخول غير صحيحة.");
   }
 });
@@ -185,62 +181,36 @@ app.get("/admin/logout", (req, res) => {
   });
 });
 
-// ✅ UPLOAD ROUTE - النسخة النهائية المستقرة
+// ========== Upload Route (المعمل) ==========
 app.post("/admin/upload", 
-  // 1. التحقق من الجلسة أولاً
   async (req, res, next) => {
-    console.log("🔐 [1] Session check - ID:", req.session.id, "LoggedIn:", req.session.loggedIn);
-    
-    // تحديث الجلسة لتجديد وقتها
-    req.session.touch();
-    
     if (!req.session.loggedIn) {
-      console.log("❌ Not logged in, redirecting to login");
       return res.redirect("/admin");
     }
+    req.session.touch();
     next();
   },
-  
-  // 2. معالجة الملف (استخدام multer memory storage)
   multerMemory.single("pdf"),
-  
-  // 3. معالجة البيانات
   async (req, res) => {
-    console.log("📁 [2] Processing upload, Session ID:", req.session.id);
-    
-    // التحقق من الجلسة مرة أخرى بعد multer
     if (!req.session || !req.session.loggedIn) {
-      console.log("❌ [3] Session lost! Redirecting to login");
       return res.redirect("/admin?error=session_expired");
     }
 
     try {
-      // تحديث الجلسة قبل أي عملية
-      req.session.touch();
-      
-      // التحقق من وجود ملف
       if (!req.file) {
-        console.log("❌ No file uploaded");
         return res.redirect("/admin?error=no_file");
       }
 
-      console.log(`📄 File: ${req.file.originalname}, Size: ${req.file.size}`);
-
-      // استخراج البيانات
       const { name, phone, email, test, notes } = req.body;
-      
       if (!name || !phone || !email || !test) {
         return res.redirect("/admin?error=missing_fields");
       }
 
-      // التحقق من رقم الهاتف
       if (!/^[0-9]{10,11}$/.test(phone.replace(/\D/g, ''))) {
         return res.redirect("/admin?error=invalid_phone");
       }
 
-      // ========== رفع الملف إلى Cloudinary ==========
-      console.log("☁️ Uploading to Cloudinary...");
-      
+      // Upload to Cloudinary
       const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
       const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
       const isPdf = fileExtension === 'pdf';
@@ -260,24 +230,16 @@ app.post("/admin/upload",
             resource_type: resourceType,
             access_mode: "public",
             public_id: publicId,
-            ...(resourceType === 'raw' && { allowed_formats: ['pdf', 'doc', 'docx'] })
           },
           (error, result) => {
-            if (error) {
-              console.error("❌ Cloudinary error:", error);
-              reject(error);
-            } else {
-              console.log("✅ Cloudinary success:", result.secure_url);
-              resolve(result);
-            }
+            if (error) reject(error);
+            else resolve(result);
           }
         );
         uploadStream.end(req.file.buffer);
       });
       
-      // ========== حفظ في Firestore ==========
       const cleanId = Date.now().toString();
-      
       const newResult = {
         name: name.trim(),
         test: test.trim(),
@@ -294,9 +256,8 @@ app.post("/admin/upload",
       };
       
       await addResult(cleanId, newResult);
-      console.log(`✅ Saved to Firestore: ${cleanId}`);
       
-      // ========== إرسال البريد ==========
+      // Send Email
       const protocol = req.protocol === 'https' ? 'https' : 'http';
       const host = req.get('host');
       const link = `${protocol}://${host}/view/${cleanId}`;
@@ -305,150 +266,80 @@ app.post("/admin/upload",
         from: process.env.EMAIL_ADDRESS,
         to: email,
         subject: `نتيجة التحليل - ${test}`,
-        html: `
-          <div dir="rtl" style="font-family: Tahoma; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-            <h2 style="color: #6a11cb;">مرحباً ${name}</h2>
-            <p>تم إضافة نتيجة التحليل الخاصة بك.</p>
-            <p><strong>نوع التحليل:</strong> ${test}</p>
-            <p style="text-align: center;">
-              <a href="${link}" style="display: inline-block; background: #6a11cb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px;">📄 عرض النتيجة</a>
-            </p>
-            ${notes ? `<p><strong>📝 ملاحظات:</strong> ${notes}</p>` : ''}
-            <hr>
-            <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
-          </div>
-        `
-      }).catch(err => console.error("📧 Email error:", err.message));
+        html: `<div dir="rtl"><h2>مرحباً ${name}</h2><p>تم إضافة نتيجة التحليل الخاصة بك.</p><a href="${link}">عرض النتيجة</a></div>`
+      }).catch(err => console.error("Email error:", err.message));
       
-      // ========== إعادة التوجيه مع الحفاظ على الجلسة ==========
-      console.log("✅ Upload complete! Redirecting to /admin");
-      
-      // استخدام save للتأكد من بقاء الجلسة
       req.session.save((err) => {
-        if (err) console.error("Session save error:", err);
-        
-        // استخدام JavaScript redirect مع localStorage
         res.send(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <script>
-              // تخزين رسالة النجاح في localStorage
-              localStorage.setItem('uploadSuccess', 'تم رفع النتيجة بنجاح للمريض: ${name.replace(/'/g, "\\'")}');
-              // التوجيه إلى /admin
-              window.location.href = '/admin';
-            </script>
-          </head>
-          <body>جاري التوجيه...</body>
-          </html>
+          <script>
+            localStorage.setItem('uploadSuccess', 'تم رفع النتيجة بنجاح للمريض: ${name.replace(/'/g, "\\'")}');
+            window.location.href = '/admin';
+          </script>
         `);
       });
       
     } catch (error) {
-      console.error("💥 Upload error:", error);
+      console.error("Upload error:", error);
       res.redirect("/admin?error=" + encodeURIComponent(error.message));
     }
   }
 );
 
-// Delete route - نسخة محسنة
+// ========== Delete Route ==========
 app.post("/admin/delete", async (req, res) => {
-  console.log("🗑️ Delete request received");
-  console.log("Request body:", req.body);
-  
   try {
     if (!req.session.loggedIn) {
-      console.log("❌ Unauthorized");
-      return res.status(401).json({
-        success: false,
-        message: "غير مصرح بهذا الإجراء"
-      });
+      return res.status(401).json({ success: false, message: "غير مصرح" });
     }
 
     const id = req.body.file;
-    console.log(`File ID to delete: ${id}`);
-
     if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "لم يتم إرسال معرف الملف"
-      });
+      return res.status(400).json({ success: false, message: "لم يتم إرسال معرف الملف" });
     }
 
     const doc = await db.collection("results").doc(id).get();
-
     if (!doc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: "النتيجة غير موجودة"
-      });
+      return res.status(404).json({ success: false, message: "النتيجة غير موجودة" });
     }
 
     const result = doc.data();
-    console.log(`Patient: ${result.name}`);
-
-    // حذف الملف من Cloudinary
     if (result.public_id) {
       try {
         const resourceType = result.resource_type === "image" ? "image" : "raw";
-        console.log(`☁️ Deleting from Cloudinary: ${result.public_id}`);
-        
-        await cloudinary.uploader.destroy(result.public_id, {
-          resource_type: resourceType,
-        });
-        console.log("✅ File deleted from Cloudinary");
+        await cloudinary.uploader.destroy(result.public_id, { resource_type: resourceType });
       } catch (cloudinaryError) {
-        console.error("❌ Cloudinary error:", cloudinaryError.message);
+        console.error("Cloudinary error:", cloudinaryError.message);
       }
     }
 
-    // حذف من Firestore
     await db.collection("results").doc(id).delete();
-    console.log("✅ Result deleted from Firestore");
 
-    // إرسال إشعار بريد
     if (result.email) {
       transporter.sendMail({
         from: process.env.EMAIL_ADDRESS,
         to: result.email,
         subject: "تم حذف نتيجة التحليل",
-        html: `
-          <div dir="rtl" style="font-family: Tahoma, sans-serif; padding: 20px;">
-            <h2 style="color: #dc2626;">مرحباً ${result.name}</h2>
-            <p>تم حذف نتيجة التحليل الخاصة بك من النظام.</p>
-            <p><strong>نوع التحليل:</strong> ${result.test}</p>
-            <hr>
-            <p style="color: #666; font-size: 12px;">هذا إشعار آلي</p>
-          </div>
-        `
-      }).catch(emailErr => console.error("❌ Email error:", emailErr.message));
+        html: `<div dir="rtl"><h2>مرحباً ${result.name}</h2><p>تم حذف نتيجة التحليل الخاصة بك من النظام.</p></div>`
+      }).catch(err => console.error("Email error:", err.message));
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "تم حذف النتيجة بنجاح"
-    });
+    return res.status(200).json({ success: true, message: "تم حذف النتيجة بنجاح" });
 
   } catch (error) {
-    console.error("💥 Delete error:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    console.error("Delete error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// مسار عرض وتحميل الملفات
+// ========== View Route ==========
 app.get("/view/:id", async (req, res) => {
   try {
     const doc = await db.collection("results").doc(req.params.id).get();
-
     if (!doc.exists) {
       return res.status(404).send("الملف غير موجود");
     }
 
     const data = doc.data();
-
     if (!data.file) {
       return res.status(404).send("لا يوجد ملف");
     }
@@ -465,31 +356,18 @@ app.get("/view/:id", async (req, res) => {
       method: 'get',
       url: fileUrl,
       responseType: 'stream',
-      headers: {
-        'User-Agent': 'Mozilla/5.0'
-      }
+      headers: { 'User-Agent': 'Mozilla/5.0' }
     });
 
     let contentType = 'application/octet-stream';
     const fileExtension = filename.split('.').pop().toLowerCase();
     
     switch (fileExtension) {
-      case 'pdf':
-        contentType = 'application/pdf';
-        break;
-      case 'jpg':
-      case 'jpeg':
-        contentType = 'image/jpeg';
-        break;
-      case 'png':
-        contentType = 'image/png';
-        break;
-      case 'doc':
-        contentType = 'application/msword';
-        break;
-      case 'docx':
-        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        break;
+      case 'pdf': contentType = 'application/pdf'; break;
+      case 'jpg': case 'jpeg': contentType = 'image/jpeg'; break;
+      case 'png': contentType = 'image/png'; break;
+      case 'doc': contentType = 'application/msword'; break;
+      case 'docx': contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; break;
     }
 
     if (isDownload) {
@@ -502,11 +380,235 @@ app.get("/view/:id", async (req, res) => {
     response.data.pipe(res);
 
   } catch (error) {
-    console.error("❌ Error in /view/:id:", error.message);
-    if (error.response && error.response.status === 404) {
-      return res.status(404).send("الملف غير موجود على الخادم");
+    console.error("Error in /view/:id:", error.message);
+    res.status(500).send("حدث خطأ أثناء معالجة الملف");
+  }
+});
+
+// ========== TELEGRAM APIs (المضافة) ==========
+
+// جلب قائمة الأرقام المسجلة في البوت
+app.get("/api/numbers", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+  
+  try {
+    const snapshot = await db.collection("bot_numbers").orderBy("createdAt", "desc").limit(300).get();
+    return res.json({ items: snapshot.docs.map(d => d.data()) });
+  } catch (e) {
+    console.error("numbers/get error:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// إضافة رقم جديد للبوت
+app.post("/api/numbers", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+  
+  try {
+    const phone = normalizePhone(req.body?.phone);
+    if (!phone) return res.status(400).json({ error: "رقم غير صحيح" });
+
+    await db.collection("bot_numbers").doc(phone).set({
+      phone,
+      createdAt: new Date().toISOString(),
+    });
+
+    return res.json({ ok: true, phone });
+  } catch (e) {
+    console.error("numbers/post error:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// حذف رقم من البوت
+app.delete("/api/numbers/:phone", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+  
+  try {
+    const phone = normalizePhone(req.params.phone);
+    await db.collection("bot_numbers").doc(phone).delete();
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error("numbers/delete error:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// إرسال رسالة تليجرام لرقم معين (لكل أفراد الأسرة)
+app.post("/api/send-telegram", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+  
+  try {
+    const phone = normalizePhone(req.body?.phone);
+    const message = String(req.body?.message || "").trim();
+    
+    if (!phone) return res.status(400).json({ error: "رقم غير صحيح" });
+    if (!message) return res.status(400).json({ error: "الرسالة مطلوبة" });
+
+    // جلب كل الشاتات المسجلة للرقم
+    const chatsSnap = await db
+      .collection("telegram_subscribers")
+      .doc(phone)
+      .collection("chats")
+      .get();
+
+    if (chatsSnap.empty) {
+      return res.status(404).json({
+        error: "هذا الرقم لم يراسل البوت بعد. لازم أي فرد من العائلة يفتح البوت ويرسل الرقم."
+      });
     }
-    res.status(500).send("حدث خطأ أثناء معالجة الملف: " + error.message);
+
+    let delivered = 0;
+    let failed = 0;
+    const failures = [];
+
+    for (const doc of chatsSnap.docs) {
+      const data = doc.data() || {};
+      const chatId = data.chatId || doc.id;
+      try {
+        await sendTelegramMessage(chatId, message);
+        delivered++;
+      } catch (e) {
+        failed++;
+        failures.push({ chatId, error: String(e?.message || e) });
+      }
+    }
+
+    return res.json({ ok: true, delivered, failed, failures: failures.slice(0, 5) });
+  } catch (e) {
+    console.error("send-telegram error:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// إرسال إشعار لمريض معين عبر التليجرام (باستخدام رقمه من جدول النتائج)
+app.post("/api/notify-patient", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+  
+  try {
+    const { resultId, customMessage } = req.body;
+    if (!resultId) return res.status(400).json({ error: "معرف النتيجة مطلوب" });
+
+    const doc = await db.collection("results").doc(resultId).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "النتيجة غير موجودة" });
+    }
+
+    const patient = doc.data();
+    const phone = normalizePhone(patient.phone);
+    
+    // جلب الشاتات المسجلة للرقم
+    const chatsSnap = await db
+      .collection("telegram_subscribers")
+      .doc(phone)
+      .collection("chats")
+      .get();
+
+    if (chatsSnap.empty) {
+      return res.status(404).json({
+        error: `الرقم ${phone} لم يسجل في البوت بعد`
+      });
+    }
+
+    const defaultMessage = `📋 مرحباً ${patient.name}\n\nتم إضافة نتيجة تحليل ${patient.test} الخاصة بك.\nيمكنك عرضها من خلال الرابط التالي:`;
+    const message = customMessage || defaultMessage;
+    
+    // رابط العرض (نفس نظام المعمل)
+    const protocol = req.protocol === 'https' ? 'https' : 'http';
+    const host = req.get('host');
+    const link = `${protocol}://${host}/view/${resultId}`;
+    const fullMessage = `${message}\n\n🔗 ${link}`;
+
+    let delivered = 0;
+    for (const chatDoc of chatsSnap.docs) {
+      const chatId = chatDoc.data().chatId || chatDoc.id;
+      try {
+        await sendTelegramMessage(chatId, fullMessage);
+        delivered++;
+      } catch (e) {
+        console.error(`Failed to send to ${chatId}:`, e.message);
+      }
+    }
+
+    return res.json({ ok: true, delivered, message: `تم الإرسال لـ ${delivered} جهاز` });
+  } catch (e) {
+    console.error("notify-patient error:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Webhook التيليجرام (للاستقبال من البوت)
+app.post("/api/telegram/webhook", async (req, res) => {
+  try {
+    const update = req.body || {};
+    const msg = update.message;
+    if (!msg?.text) return res.status(200).json({ ok: true });
+
+    const chatId = msg.chat?.id;
+    const phone = normalizePhone(msg.text);
+    if (!phone || phone.length < 7) return res.status(200).json({ ok: true });
+
+    const allowed = await db.collection("bot_numbers").doc(phone).get();
+
+    if (allowed.exists) {
+      await db
+        .collection("telegram_subscribers")
+        .doc(phone)
+        .set({ phone, updatedAt: new Date().toISOString() }, { merge: true });
+
+      await db
+        .collection("telegram_subscribers")
+        .doc(phone)
+        .collection("chats")
+        .doc(String(chatId))
+        .set({
+          chatId,
+          addedAt: new Date().toISOString(),
+          username: msg.from?.username || null,
+          first_name: msg.from?.first_name || null,
+          last_name: msg.from?.last_name || null,
+        }, { merge: true });
+
+      await sendTelegramMessage(chatId, "✅ تم تسجيل رقمك بنجاح في النظام");
+    } else {
+      await sendTelegramMessage(chatId, "❌ هذا الرقم غير مسجل في النظام");
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error("[telegram/webhook]", e);
+    return res.status(200).json({ ok: true });
+  }
+});
+
+// ========== Diagnostic Route ==========
+app.get("/api/diag", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+  
+  try {
+    const has = (k) => !!process.env[k];
+    return res.json({
+      env: {
+        BOT_TOKEN: has("BOT_TOKEN"),
+        EMAIL_ADDRESS: has("EMAIL_ADDRESS"),
+        CLOUDINARY: has("CLOUDINARY_CLOUD_NAME"),
+        FIREBASE_CONFIG: has("FIREBASE_CONFIG"),
+      }
+    });
+  } catch (e) {
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
