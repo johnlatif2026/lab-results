@@ -33,19 +33,27 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Session configuration
+// Session configuration (المعدل)
 const MemoryStore = require('memorystore')(session);
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret-key",
-  resave: true,
-  saveUninitialized: true,
+  resave: false,        // ✅ changed from true to false
+  saveUninitialized: false,  // ✅ changed from true to false
   cookie: {
     secure: false,
-    maxAge: 8 * 60 * 60 * 1000,
+    maxAge: 24 * 60 * 60 * 1000,  // ✅ 24 ساعة بدل 8
     httpOnly: true,
     sameSite: 'lax'
   }
 }));
+
+// Force session cookie middleware
+app.use((req, res, next) => {
+  if (req.session && req.session.loggedIn && !req.cookies?.token) {
+    req.session.touch();
+  }
+  next();
+});
 
 // Session refresh middleware
 app.use((req, res, next) => {
@@ -753,8 +761,12 @@ app.get("/api/email-logs", async (req, res) => {
 });
 
 // Check session endpoint (للحفاظ على الجلسة)
-app.get("/api/check-session", async (req, res) => {
-  return res.json({ loggedIn: !!req.session.loggedIn });
+app.get("/api/check-session", (req, res) => {
+  if (req.session && req.session.loggedIn) {
+    req.session.touch();
+    return res.json({ loggedIn: true });
+  }
+  return res.json({ loggedIn: false });
 });
 
 module.exports = app;
