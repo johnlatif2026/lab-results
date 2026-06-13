@@ -612,4 +612,196 @@ app.get("/api/diag", async (req, res) => {
   }
 });
 
+// ========== SMTP / EMAIL APIs ==========
+
+app.post("/api/send-email-manual", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+
+  try {
+    const { to, name, subject, body } = req.body;
+    
+    if (!to || !subject || !body) {
+      return res.status(400).json({ error: "البريد الإلكتروني والموضوع والمحتوى مطلوبة" });
+    }
+
+    const html = `
+      <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #2a5298;">مرحباً ${name || 'عميلنا العزيز'}</h2>
+        <div style="margin: 20px 0;">${body.replace(/\n/g, '<br>')}</div>
+        <hr>
+        <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_ADDRESS,
+      to: to,
+      subject: subject,
+      html: html
+    });
+
+    // تسجيل في Firestore
+    await db.collection("email_logs").add({
+      to: to,
+      subject: subject,
+      body: body.substring(0, 200),
+      date: new Date().toISOString(),
+      status: "sent",
+      type: "manual"
+    });
+
+    return res.json({ ok: true, message: "تم الإرسال" });
+  } catch (error) {
+    console.error("send-email-manual error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// إرسال إيميل جماعي لجميع المرضى
+app.post("/api/send-bulk-email", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+
+  try {
+    const { subject, body } = req.body;
+    
+    if (!subject || !body) {
+      return res.status(400).json({ error: "الموضوع والمحتوى مطلوبة" });
+    }
+
+    // جلب جميع المرضى من Firestore
+    const results = await loadResults();
+    const patients = results.map(r => ({ email: r.email, name: r.name }));
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const patient of patients) {
+      if (!patient.email) continue;
+      
+      try {
+        const html = `
+          <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <h2 style="color: #2a5298;">مرحباً ${patient.name || 'عميلنا العزيز'}</h2>
+            <div style="margin: 20px 0;">${body.replace(/\n/g, '<br>')}</div>
+            <hr>
+            <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
+          </div>
+        `;
+
+        await transporter.sendMail({
+          from: process.env.EMAIL_ADDRESS,
+          to: patient.email,
+          subject: subject,
+          html: html
+        });
+
+        sent++;
+        
+        // تسجيل كل إيميل على حدة (اختياري - ممكن تسجل واحدة بس لو عاوز توفر)
+        await db.collection("email_logs").add({
+          to: patient.email,
+          subject: subject,
+          date: new Date().toISOString(),
+          status: "sent",
+          type: "bulk"
+        });
+        
+        // تأخير بسيط عشان ما يضربش الـ rate limit
+        await new Promise(r => setTimeout(r, 500));
+        
+      } catch (err) {
+        failed++;
+        console.error(`Failed to send to ${patient.email}:`, err.message);
+      }
+    }
+
+    return res.json({ ok: true, total: patients.length, sent, failed });
+  } catch (error) {
+    console.error("send-bulk-email error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// إرسال إيميل نتيجة جاهزة (للمريض بعد رفع النتيجة)
+app.post("/api/send-email", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+
+  try {
+    const { to, name, type, resultId } = req.body;
+    
+    const protocol = req.protocol === 'https' ? 'https' : 'http';
+    const host = req.get('host');
+    const link = `${protocol}://${host}/view/${resultId}`;
+    
+    let subject = "";
+    let body = "";
+    
+    if (type === "result_ready") {
+      subject = "نتيجة التحليل جاهزة";
+      body = `
+        <p>تم تجهيز نتيجة التحليل الخاصة بك.</p>
+        <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
+        <p style="text-align: center;">
+          <a href="${link}" style="display: inline-block; background: #2a5298; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">📄 عرض النتيجة</a>
+        </p>
+      `;
+    } else {
+      subject = "إشعار من مركز التحاليل";
+      body = `<p>مرحباً ${name || ''}</p><p>هذا إشعار من مركز التحاليل الطبية.</p>`;
+    }
+    
+    const html = `
+      <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #2a5298;">مرحباً ${name || 'عميلنا العزيز'}</h2>
+        ${body}
+        <hr>
+        <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_ADDRESS,
+      to: to,
+      subject: subject,
+      html: html
+    });
+
+    await db.collection("email_logs").add({
+      to: to,
+      subject: subject,
+      date: new Date().toISOString(),
+      status: "sent",
+      type: "result_notification",
+      resultId: resultId
+    });
+
+    return res.json({ ok: true, message: "تم الإرسال" });
+  } catch (error) {
+    console.error("send-email error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// جلب سجل الإيميلات
+app.get("/api/email-logs", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+
+  try {
+    const snapshot = await db.collection("email_logs").orderBy("date", "desc").limit(100).get();
+    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return res.json({ logs });
+  } catch (error) {
+    console.error("email-logs error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = app;
