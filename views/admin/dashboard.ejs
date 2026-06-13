@@ -339,7 +339,7 @@
     </div>
   </div>
 
-  <!-- ========== TAB 3: SMTP / الإيميلات ========== -->
+  <!-- ========== TAB 3: SMTP / الإيميلات (النسخة المعدلة) ========== -->
   <div id="tab-smtp" class="tab-content">
     <!-- إرسال إيميل يدوي -->
     <div class="section-card">
@@ -354,16 +354,42 @@
       <div id="manualEmailResult" style="margin-top: 12px;"></div>
     </div>
 
-    <!-- إرسال إيميل لجميع المرضى (جماعي) -->
+    <!-- إرسال إيميل جماعي لقائمة مخصصة (جديد) -->
     <div class="section-card">
-      <div class="section-title"><i class="fas fa-users"></i> إرسال إيميل جماعي لجميع المرضى</div>
-      <div class="input-group"><label><i class="fas fa-tag"></i> الموضوع</label><input type="text" id="bulkEmailSubject" placeholder="موضوع الرسالة"></div>
-      <div class="input-group"><label><i class="fas fa-comment"></i> محتوى الرسالة</label><textarea id="bulkEmailBody" rows="5" placeholder="محتوى الإيميل لجميع المرضى..."></textarea></div>
-      <button id="sendBulkEmailBtn" class="upload-btn" style="background: #ea4335;"><i class="fas fa-envelope-open-text"></i> إرسال للجميع</button>
-      <div id="bulkEmailResult" style="margin-top: 12px;"></div>
+      <div class="section-title"><i class="fas fa-users"></i> إرسال إيميل جماعي لقائمة مخصصة</div>
+      
+      <!-- إضافة مستلمين -->
+      <div style="margin-bottom: 20px;">
+        <h4 style="margin-bottom: 12px;"><i class="fas fa-plus-circle"></i> إضافة مستلمين</h4>
+        <div class="form-grid">
+          <div class="input-group"><label>اسم المستلم</label><input type="text" id="bulkRecipientName" placeholder="الاسم"></div>
+          <div class="input-group"><label>البريد الإلكتروني</label><input type="email" id="bulkRecipientEmail" placeholder="email@example.com"></div>
+        </div>
+        <button id="addRecipientBtn" class="btn-mini" style="background:#2a5298;color:white;margin-top:8px;"><i class="fas fa-plus"></i> إضافة للمستلمين</button>
+      </div>
+      
+      <!-- قائمة المستلمين -->
+      <div style="margin-bottom: 20px;">
+        <h4><i class="fas fa-list"></i> قائمة المستلمين (<span id="recipientCount">0</span>)</h4>
+        <div id="recipientsList" style="background: #f8fafc; border-radius: 16px; padding: 12px; max-height: 200px; overflow-y: auto;">
+          <div style="text-align: center; color: #94a3b8;">لا يوجد مستلمين، أضف مستلمين أولاً</div>
+        </div>
+        <button id="clearRecipientsBtn" class="btn-mini" style="background:#dc2626;color:white;margin-top:8px;"><i class="fas fa-trash"></i> حذف الكل</button>
+      </div>
+      
+      <hr>
+      
+      <!-- بيانات الإيميل -->
+      <div>
+        <h4><i class="fas fa-envelope-open-text"></i> بيانات الإيميل</h4>
+        <div class="input-group"><label><i class="fas fa-tag"></i> الموضوع</label><input type="text" id="bulkEmailSubject" placeholder="موضوع الرسالة"></div>
+        <div class="input-group"><label><i class="fas fa-comment"></i> محتوى الرسالة</label><textarea id="bulkEmailBody" rows="5" placeholder="محتوى الإيميل لجميع المستلمين..."></textarea></div>
+        <button id="sendBulkEmailBtn" class="upload-btn" style="background: #ea4335;"><i class="fas fa-paper-plane"></i> إرسال للجميع</button>
+        <div id="bulkEmailResult" style="margin-top: 12px;"></div>
+      </div>
     </div>
 
-    <!-- قوالب جاهزة -->
+    <!-- قوالب سريعة -->
     <div class="section-card">
       <div class="section-title"><i class="fas fa-clipboard-list"></i> قوالب سريعة</div>
       <div style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -372,7 +398,6 @@
         <button class="btn-mini" style="background:#2a5298;color:white;" onclick="loadTemplate('thanks')">شكر</button>
         <button class="btn-mini" style="background:#2a5298;color:white;" onclick="loadTemplate('result_ready')">نتيجة جاهزة</button>
       </div>
-      <div id="templatePreview" style="margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 20px; font-size: 0.85rem; display: none;"></div>
     </div>
 
     <!-- سجل الإيميلات المرسلة -->
@@ -387,7 +412,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <script>
   // Helper functions
@@ -401,6 +425,16 @@
     setTimeout(() => toast.remove(), 4000);
   }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
   // Tabs switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -411,7 +445,7 @@
     });
   });
 
-  // حذف نتيجة
+  // ========== حذف نتيجة ==========
   async function deleteResult(id, patientName) {
     if (!confirm(`⚠️ حذف نتيجة ${patientName}؟`)) return;
     try {
@@ -421,19 +455,19 @@
     } catch(e) { showNotification('❌ فشل الحذف', 'error'); }
   }
 
-  // إرسال إيميل لمريض من جدول النتائج
+  // ========== إرسال إيميل لمريض من جدول النتائج ==========
   async function sendEmailNotification(id, patientName, email) {
     if (!confirm(`📧 إرسال إيميل للمريض ${patientName}؟`)) return;
     showNotification(`📧 جاري إرسال الإيميل إلى ${patientName}...`);
     try {
-      const res = await fetch('/api/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, name: patientName, type: 'result_ready', resultId: id }) });
+      const res = await fetch('/api/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: email, name: patientName, resultId: id }) });
       const data = await res.json();
       if (res.ok) showNotification(`✅ تم إرسال الإيميل إلى ${patientName}`);
       else showNotification(`❌ فشل: ${data.error}`, 'error');
     } catch(e) { showNotification('❌ خطأ', 'error'); }
   }
 
-  // إرسال تليجرام لمريض
+  // ========== إرسال تليجرام لمريض ==========
   async function sendTelegramToPatient(id, patientName, phone) {
     if (!confirm(`📱 إرسال تليجرام للمريض ${patientName}؟`)) return;
     const btn = event?.target; const original = btn?.innerHTML;
@@ -447,7 +481,7 @@
     if(btn) { btn.innerHTML = original; btn.disabled = false; }
   }
 
-  // Telegram: إرسال رسالة
+  // ========== Telegram: إرسال رسالة ==========
   document.getElementById('sendTelegramBtn')?.addEventListener('click', async () => {
     const phone = document.getElementById('telegramPhone')?.value.trim();
     const message = document.getElementById('telegramMessage')?.value.trim();
@@ -462,7 +496,7 @@
     } catch(e) { resultDiv.innerHTML = '<span style="color:#dc2626;">❌ خطأ</span>'; showNotification('خطأ', 'error'); }
   });
 
-  // Telegram: إضافة رقم
+  // ========== Telegram: إضافة رقم ==========
   document.getElementById('addTelegramNumberBtn')?.addEventListener('click', async () => {
     const phone = document.getElementById('newTelegramNumber')?.value.trim();
     if (!phone) { showNotification('⚠️ أدخل رقم', 'error'); return; }
@@ -491,7 +525,63 @@
   }
   document.getElementById('refreshTelegramNumbers')?.addEventListener('click', loadTelegramNumbers);
 
-  // ========== SMTP Functions ==========
+  // ========== SMTP Functions (النسخة المعدلة بالكامل) ==========
+  
+  // قائمة المستلمين للبريد الجماعي
+  let recipientsList = [];
+  
+  // تحديث عرض قائمة المستلمين
+  function updateRecipientsDisplay() {
+    const container = document.getElementById('recipientsList');
+    const countSpan = document.getElementById('recipientCount');
+    if (!container) return;
+    
+    if (recipientsList.length === 0) {
+      container.innerHTML = '<div style="text-align: center; color: #94a3b8;">لا يوجد مستلمين، أضف مستلمين أولاً</div>';
+      if (countSpan) countSpan.innerText = '0';
+      return;
+    }
+    
+    container.innerHTML = recipientsList.map((r, idx) => `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0;">
+        <div><strong>${escapeHtml(r.name)}</strong> - ${escapeHtml(r.email)}</div>
+        <button class="btn-mini" style="background:#dc2626;color:white;padding:4px 12px;" onclick="removeRecipient(${idx})">حذف</button>
+      </div>
+    `).join('');
+    if (countSpan) countSpan.innerText = recipientsList.length;
+  }
+  
+  window.removeRecipient = function(idx) {
+    recipientsList.splice(idx, 1);
+    updateRecipientsDisplay();
+  };
+  
+  // إضافة مستلم
+  document.getElementById('addRecipientBtn')?.addEventListener('click', () => {
+    const name = document.getElementById('bulkRecipientName')?.value.trim();
+    const email = document.getElementById('bulkRecipientEmail')?.value.trim();
+    
+    if (!name) { showNotification('⚠️ أدخل اسم المستلم', 'error'); return; }
+    if (!email) { showNotification('⚠️ أدخل البريد الإلكتروني', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showNotification('⚠️ البريد الإلكتروني غير صحيح', 'error'); return; }
+    
+    recipientsList.push({ name, email });
+    updateRecipientsDisplay();
+    
+    document.getElementById('bulkRecipientName').value = '';
+    document.getElementById('bulkRecipientEmail').value = '';
+    showNotification(`✅ تم إضافة ${name}`, 'success');
+  });
+  
+  // حذف الكل
+  document.getElementById('clearRecipientsBtn')?.addEventListener('click', () => {
+    if (recipientsList.length > 0 && confirm('هل تريد حذف جميع المستلمين؟')) {
+      recipientsList = [];
+      updateRecipientsDisplay();
+      showNotification('✅ تم حذف جميع المستلمين', 'success');
+    }
+  });
+  
   // إرسال إيميل يدوي
   document.getElementById('sendManualEmailBtn')?.addEventListener('click', async () => {
     const name = document.getElementById('manualEmailName')?.value.trim();
@@ -504,28 +594,66 @@
     resultDiv.innerHTML = '<span style="color:#ea4335;">⏳ جاري الإرسال...</span>';
     
     try {
-      const res = await fetch('/api/send-email-manual', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to, name, subject, body }) });
+      const res = await fetch('/api/send-email-manual', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ to, name, subject, body }) 
+      });
       const data = await res.json();
-      if (res.ok) { resultDiv.innerHTML = '<span style="color:#10b981;">✅ تم الإرسال بنجاح</span>'; showNotification('✅ تم إرسال الإيميل'); }
-      else { resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; showNotification(data.error, 'error'); }
-    } catch(e) { resultDiv.innerHTML = '<span style="color:#dc2626;">❌ خطأ في الاتصال</span>'; showNotification('خطأ', 'error'); }
+      if (res.ok) { 
+        resultDiv.innerHTML = '<span style="color:#10b981;">✅ تم الإرسال بنجاح</span>'; 
+        showNotification('✅ تم إرسال الإيميل');
+        // تفريغ الحقول
+        document.getElementById('manualEmailName').value = '';
+        document.getElementById('manualEmailAddress').value = '';
+        document.getElementById('manualEmailSubject').value = '';
+        document.getElementById('manualEmailBody').value = '';
+      } else { 
+        resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; 
+        showNotification(data.error, 'error');
+      }
+    } catch(e) { 
+      resultDiv.innerHTML = '<span style="color:#dc2626;">❌ خطأ في الاتصال</span>'; 
+      showNotification('خطأ في الاتصال', 'error');
+    }
   });
 
-  // إرسال إيميل جماعي
+  // إرسال إيميل جماعي لقائمة مخصصة
   document.getElementById('sendBulkEmailBtn')?.addEventListener('click', async () => {
     const subject = document.getElementById('bulkEmailSubject')?.value.trim();
     const body = document.getElementById('bulkEmailBody')?.value.trim();
     const resultDiv = document.getElementById('bulkEmailResult');
     
-    if (!subject || !body) { showNotification('⚠️ املأ الموضوع والمحتوى', 'error'); return; }
+    if (recipientsList.length === 0) { showNotification('⚠️ أضف مستلمين أولاً', 'error'); return; }
+    if (!subject) { showNotification('⚠️ أدخل الموضوع', 'error'); return; }
+    if (!body) { showNotification('⚠️ أدخل محتوى الرسالة', 'error'); return; }
+    
     resultDiv.innerHTML = '<span style="color:#ea4335;">⏳ جاري الإرسال للجميع...</span>';
     
     try {
-      const res = await fetch('/api/send-bulk-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subject, body }) });
+      const res = await fetch('/api/send-bulk-email', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ recipients: recipientsList, subject, body }) 
+      });
       const data = await res.json();
-      if (res.ok) { resultDiv.innerHTML = `<span style="color:#10b981;">✅ تم الإرسال إلى ${data.sent} من ${data.total} مستلم</span>`; showNotification(`✅ تم إرسال ${data.sent} إيميل`); }
-      else { resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; showNotification(data.error, 'error'); }
-    } catch(e) { resultDiv.innerHTML = '<span style="color:#dc2626;">❌ خطأ</span>'; showNotification('خطأ', 'error'); }
+      if (res.ok) { 
+        resultDiv.innerHTML = `<span style="color:#10b981;">✅ تم الإرسال إلى ${data.sent} من ${data.total} مستلم</span>`; 
+        showNotification(`✅ تم إرسال ${data.sent} إيميل`);
+        // تفريغ الحقول بعد الإرسال
+        document.getElementById('bulkEmailSubject').value = '';
+        document.getElementById('bulkEmailBody').value = '';
+        // اختياري: تفريغ قائمة المستلمين بعد الإرسال (فك التعليق لو عاوز)
+        // recipientsList = [];
+        // updateRecipientsDisplay();
+      } else { 
+        resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; 
+        showNotification(data.error, 'error');
+      }
+    } catch(e) { 
+      resultDiv.innerHTML = '<span style="color:#dc2626;">❌ خطأ</span>'; 
+      showNotification('خطأ', 'error');
+    }
   });
 
   // تحميل سجل الإيميلات
@@ -536,11 +664,12 @@
       const logs = data.logs || [];
       const tbody = document.getElementById('emailLogsBody');
       if(tbody) {
-        if(logs.length) tbody.innerHTML = logs.map(log => `<tr><td>${log.to}</td><td>${log.subject}</td><td>${log.date || '—'}</td><td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td></tr>`).join('');
+        if(logs.length) tbody.innerHTML = logs.map(log => `<tr><td>${escapeHtml(log.to)}</td><td>${escapeHtml(log.subject)}</td><td>${log.date ? new Date(log.date).toLocaleString() : '—'}</td><td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td></tr>`).join('');
         else tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">لا توجد إيميلات مرسلة بعد</td></tr>';
       }
     } catch(e) { console.error(e); }
   }
+  
   document.getElementById('refreshEmailLogs')?.addEventListener('click', loadEmailLogs);
 
   // قوالب سريعة
@@ -550,20 +679,23 @@
     thanks: { subject: 'شكراً لثقتك', body: 'نشكرك على ثقتك بنا. نحن في خدمتك دائماً.' },
     result_ready: { subject: 'نتيجة التحليل جاهزة', body: 'تم تجهيز نتيجة التحليل الخاصة بك. يمكنك الاطلاع عليها من خلال الرابط المرفق.' }
   };
+  
   window.loadTemplate = (type) => {
     const t = templates[type];
     if(t) {
       document.getElementById('manualEmailSubject').value = t.subject;
       document.getElementById('manualEmailBody').value = t.body;
       const preview = document.getElementById('templatePreview');
-      preview.style.display = 'block';
-      preview.innerHTML = `<strong>معاينة القالب:</strong><br>📧 ${t.subject}<br><hr>${t.body}`;
-      setTimeout(() => { preview.style.display = 'none'; }, 4000);
+      if(preview) {
+        preview.style.display = 'block';
+        preview.innerHTML = `<strong>معاينة القالب:</strong><br>📧 ${t.subject}<br><hr>${t.body}`;
+        setTimeout(() => { preview.style.display = 'none'; }, 4000);
+      }
       showNotification(`تم تحميل قالب: ${t.subject}`, 'success');
     }
   };
 
-  // Initial load
+  // ========== Initial load ==========
   document.addEventListener('DOMContentLoaded', () => {
     loadTelegramNumbers();
     loadEmailLogs();
