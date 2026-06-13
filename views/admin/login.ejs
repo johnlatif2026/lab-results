@@ -6,6 +6,45 @@
   <title>دخول المسؤولين - معمل التحاليل</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* ========================================
+       CSS VARIABLES FOR THEMING
+    ======================================== */
+    :root {
+      /* Light Mode Colors */
+      --bg-primary: linear-gradient(145deg, #e8eff9 0%, #d4e0f0 100%);
+      --bg-card: #ffffff;
+      --bg-footer: #f8fafc;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-label: #334155;
+      --border-color: #e2e8f0;
+      --border-footer: #eef2f6;
+      --input-bg: #f8fafc;
+      --shadow-card: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
+      --shadow-hover: 0 6px 14px rgba(42, 82, 152, 0.25);
+      --gradient-start: #1e3c72;
+      --gradient-end: #2a5298;
+      --error-bg: #dc2626;
+      --success-bg: #10b981;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Colors */
+      --bg-primary: linear-gradient(145deg, #0f172a 0%, #1e1b4b 100%);
+      --bg-card: #1e293b;
+      --bg-footer: #0f172a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-label: #cbd5e1;
+      --border-color: #334155;
+      --border-footer: #1e293b;
+      --input-bg: #0f172a;
+      --shadow-card: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+      --shadow-hover: 0 6px 14px rgba(0, 0, 0, 0.5);
+      --gradient-start: #0f172a;
+      --gradient-end: #1e3c72;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,29 +53,57 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tajawal', sans-serif;
-      background: linear-gradient(145deg, #e8eff9 0%, #d4e0f0 100%);
+      background: var(--bg-primary);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      transition: background 0.3s ease;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 40px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
     }
 
     .login-container {
-      max-width: 420px;
+      max-width: 450px;
       width: 100%;
     }
 
     .login-card {
-      background: white;
+      background: var(--bg-card);
       border-radius: 40px;
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--shadow-card);
       overflow: hidden;
+      transition: all 0.3s ease;
     }
 
-    /* الهيدر */
+    /* Header */
     .login-header {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       padding: 35px 25px;
       text-align: center;
       color: white;
@@ -52,6 +119,11 @@
       justify-content: center;
       margin: 0 auto 15px;
       font-size: 32px;
+      transition: transform 0.3s ease;
+    }
+
+    .login-icon:hover {
+      transform: scale(1.05);
     }
 
     .login-header h1 {
@@ -65,7 +137,7 @@
       opacity: 0.85;
     }
 
-    /* الفورم */
+    /* Form */
     .login-form {
       padding: 32px 28px;
     }
@@ -77,7 +149,7 @@
     .input-group label {
       display: block;
       margin-bottom: 8px;
-      color: #334155;
+      color: var(--text-label);
       font-weight: 600;
       font-size: 0.85rem;
     }
@@ -91,31 +163,54 @@
       right: 16px;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--text-secondary);
       font-size: 1rem;
+      transition: all 0.2s;
+      pointer-events: none;
     }
 
     .input-wrapper input {
       width: 100%;
       padding: 14px 45px 14px 16px;
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border-color);
       border-radius: 60px;
       font-size: 0.95rem;
+      color: var(--text-primary);
       transition: all 0.2s;
     }
 
     .input-wrapper input:focus {
       outline: none;
-      border-color: #2a5298;
-      background: white;
+      border-color: var(--gradient-end);
+      background: var(--bg-card);
       box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
     }
 
-    /* زر الدخول */
+    /* Password Toggle Button */
+    .password-toggle {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      transition: all 0.2s;
+      z-index: 1;
+      padding: 5px;
+    }
+
+    .password-toggle:hover {
+      color: var(--gradient-end);
+    }
+
+    /* Login Button */
     .login-btn {
       width: 100%;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       border: none;
       padding: 14px;
       border-radius: 60px;
@@ -129,30 +224,70 @@
       cursor: pointer;
       transition: all 0.2s;
       margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .login-btn:active::before {
+      width: 300px;
+      height: 300px;
     }
 
     .login-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(42, 82, 152, 0.25);
+      box-shadow: var(--shadow-hover);
     }
 
-    /* تذييل */
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Footer */
     .login-footer {
-      background: #f8fafc;
+      background: var(--bg-footer);
       padding: 18px;
       text-align: center;
-      border-top: 1px solid #eef2f6;
+      border-top: 1px solid var(--border-footer);
       font-size: 0.7rem;
-      color: #64748b;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
     }
 
-    /* رسائل الخطأ */
+    .login-footer a {
+      color: var(--gradient-end);
+      text-decoration: none;
+    }
+
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Error Toast */
     .error-toast {
       position: fixed;
       bottom: 30px;
       left: 20px;
       right: 20px;
-      background: #dc2626;
+      background: var(--error-bg);
       color: white;
       padding: 12px 18px;
       border-radius: 60px;
@@ -167,6 +302,10 @@
       animation: slideUp 0.3s ease;
     }
 
+    .error-toast.success {
+      background: var(--success-bg);
+    }
+
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -178,6 +317,7 @@
       }
     }
 
+    /* Responsive */
     @media (max-width: 480px) {
       .login-form {
         padding: 28px 22px;
@@ -188,10 +328,34 @@
       .login-header h1 {
         font-size: 1.4rem;
       }
+      .theme-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
+      .theme-toggle span {
+        display: none;
+      }
+    }
+
+    /* Focus visible for accessibility */
+    .login-btn:focus-visible,
+    .theme-toggle:focus-visible,
+    .password-toggle:focus-visible,
+    .input-wrapper input:focus-visible {
+      outline: 2px solid var(--gradient-end);
+      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع المظلم">
+    <i class="fas fa-moon"></i>
+    <span>الوضع المظلم</span>
+  </button>
+
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
@@ -216,6 +380,9 @@
           <div class="input-wrapper">
             <i class="fas fa-key"></i>
             <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required>
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="إظهار/إخفاء كلمة المرور">
+              <i class="fas fa-eye"></i>
+            </button>
           </div>
         </div>
 
@@ -227,17 +394,86 @@
 
       <div class="login-footer">
         <p>© 2025 نظام إدارة معمل التحاليل (جون)</p>
+        <p style="margin-top: 5px;">
+          <a href="/privacy">سياسة الخصوصية</a>
+        </p>
       </div>
     </div>
   </div>
 
+  <!-- Include WhatsApp Button -->
+  <%- include('../partials/whatsapp-button.ejs') %>
+
   <script>
+    // ========================================
+    // THEME MANAGEMENT
+    // ========================================
+    (function() {
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      
+      let currentTheme = localStorage.getItem('theme') || 'light';
+      
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          html.setAttribute('data-theme', 'dark');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>الوضع الفاتح</span>';
+          }
+          localStorage.setItem('theme', 'dark');
+        } else {
+          html.removeAttribute('data-theme');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>الوضع المظلم</span>';
+          }
+          localStorage.setItem('theme', 'light');
+        }
+        currentTheme = theme;
+      }
+      
+      setTheme(currentTheme);
+      
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          setTheme(newTheme);
+        });
+      }
+    })();
+
+    // ========================================
+    // PASSWORD TOGGLE FUNCTIONALITY
+    // ========================================
+    (function() {
+      const passwordInput = document.getElementById('password');
+      const passwordToggle = document.getElementById('passwordToggle');
+      
+      if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function() {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          
+          const icon = this.querySelector('i');
+          if (type === 'text') {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+          } else {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+          }
+        });
+      }
+    })();
+
+    // ========================================
+    // FORM VALIDATION & SUBMISSION
+    // ========================================
     function showMessage(message, isError = true) {
       const existing = document.querySelector('.error-toast');
       if (existing) existing.remove();
       
       const toast = document.createElement('div');
-      toast.className = 'error-toast';
+      toast.className = 'error-toast' + (isError ? '' : ' success');
       toast.style.background = isError ? '#dc2626' : '#10b981';
       toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message} <i class="fas fa-times-circle" style="margin-right: auto; cursor: pointer;" onclick="this.parentElement.remove()"></i>`;
       document.body.appendChild(toast);
@@ -250,19 +486,19 @@
     function shakeInput(input) {
       input.style.borderColor = '#dc2626';
       setTimeout(() => {
-        input.style.borderColor = '#e2e8f0';
+        input.style.borderColor = 'var(--border-color)';
       }, 300);
     }
 
     const form = document.getElementById('loginForm');
     const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
+    const passwordInputField = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
 
     if (form) {
       form.addEventListener('submit', function(e) {
         const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
+        const password = passwordInputField.value.trim();
         
         if (!username) {
           e.preventDefault();
@@ -274,9 +510,9 @@
         
         if (!password) {
           e.preventDefault();
-          shakeInput(passwordInput);
+          shakeInput(passwordInputField);
           showMessage('❌ يرجى إدخال كلمة المرور');
-          passwordInput.focus();
+          passwordInputField.focus();
           return false;
         }
         
