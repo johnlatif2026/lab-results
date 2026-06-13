@@ -852,10 +852,10 @@
               <tbody id="telegramNumbersBody">
                 <% if (telegramNumbers && telegramNumbers.length) { %>
                   <% telegramNumbers.forEach(num => { %>
-                    <tr id="tg-row-<%= num.phone %>"><td><%= num.phone %></td><td><%= num.createdAt || '—' %></td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('<%= num.phone %>')">حذف</button></td></tr>
+                    <tr id="tg-row-<%= num.phone %>"><td><%= num.phone %></td><td><%= num.createdAt || '—' %></td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('<%= num.phone %>')">حذف</button><\/td></tr>
                   <% }) %>
                 <% } else { %>
-                  <tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td></tr>
+                  <tr><td colspan="3" style="text-align:center;">لا توجد أرقام<\/td></tr>
                 <% } %>
               </tbody>
             </table>
@@ -924,9 +924,9 @@
               <tr><th>إلى</th><th>الموضوع</th><th>التاريخ</th><th>الحالة</th><th>الإجراءات</th></tr>
             </thead>
             <tbody id="emailLogsBody">
-              <tr><td colspan="5" style="text-align:center;">جاري التحميل...</td></tr>
+              <tr><td colspan="5" style="text-align:center;">جاري التحميل...<\/td></tr>
             </tbody>
-           </table>
+          </table>
         </div>
       </div>
     </div>
@@ -1164,7 +1164,7 @@
       const res = await fetch('/api/numbers', { credentials: 'include' }); 
       const data = await res.json();
       const items = data.items || []; const tbody = document.getElementById('telegramNumbersBody');
-      if(tbody) tbody.innerHTML = items.length ? items.map(i => `<tr id="tg-row-${i.phone}"><td>${i.phone}</td><td>${i.createdAt || '—'}</td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('${i.phone}')">حذف</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td></tr>';
+      if(tbody) tbody.innerHTML = items.length ? items.map(i => `<tr id="tg-row-${i.phone}"><td>${i.phone}<\/td><td>${i.createdAt || '—'}<\/td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('${i.phone}')">حذف</button><\/td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">لا توجد أرقام<\/td><\/tr>';
       document.getElementById('telegramCount').innerText = items.length;
     } catch(e) { console.error(e); }
   }
@@ -1302,24 +1302,44 @@
     }
   });
 
+  // ========================================
+  // DELETE EMAIL LOG - FIXED VERSION
+  // ========================================
   window.deleteEmailLog = async (logId) => {
+    // التحقق من وجود معرف صالح
+    if (!logId || logId === 'undefined' || logId === 'null') {
+      showNotification('❌ معرف الإيميل غير صالح', 'error');
+      return;
+    }
+    
     if (!confirm('⚠️ هل تريد حذف هذا الإيميل من السجل؟')) return;
+    
     try {
       const res = await fetch(`/api/email-logs/${logId}`, { 
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+      
+      const data = await res.json();
+      
       if (res.ok) {
         showNotification('✅ تم حذف الإيميل من السجل', 'success');
-        loadEmailLogs();
+        loadEmailLogs(); // إعادة تحميل السجل
       } else {
-        showNotification('❌ فشل الحذف', 'error');
+        showNotification(`❌ فشل الحذف: ${data.error || 'خطأ غير معروف'}`, 'error');
       }
     } catch(e) {
-      showNotification('❌ خطأ', 'error');
+      console.error('Delete email log error:', e);
+      showNotification('❌ خطأ في الاتصال', 'error');
     }
   };
 
+  // ========================================
+  // LOAD EMAIL LOGS - FIXED VERSION
+  // ========================================
   async function loadEmailLogs() {
     try {
       const res = await fetch('/api/email-logs', { credentials: 'include' });
@@ -1327,19 +1347,34 @@
       const logs = data.logs || [];
       const tbody = document.getElementById('emailLogsBody');
       if(tbody) {
-        if(logs.length) tbody.innerHTML = logs.map(log => `
-          <tr>
-            <td>${escapeHtml(log.to)}</td>
-            <td>${escapeHtml(log.subject)}</td>
-            <td>${log.date ? new Date(log.date).toLocaleString() : '—'}</td>
-            <td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td>
-            <td><button class="btn-mini btn-delete" onclick="deleteEmailLog('${log.id}')"><i class="fas fa-trash"></i> حذف</button></td>
-          </tr>
-        `).join('');
-        else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد إيميلات مرسلة بعد</td></tr>';
+        if(logs.length > 0) {
+          tbody.innerHTML = logs.map(log => {
+            // تأكد من وجود log.id
+            const logId = log.id || '';
+            return `
+              <tr>
+                <td>${escapeHtml(log.to || '')}</td>
+                <td>${escapeHtml(log.subject || '')}</td>
+                <td>${log.date ? new Date(log.date).toLocaleString() : '—'}</td>
+                <td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td>
+                <td>
+                  <button class="btn-mini btn-delete" onclick="deleteEmailLog('${logId}')">
+                    <i class="fas fa-trash"></i> حذف
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد إيميلات مرسلة بعد<\/td><\/tr>';
+        }
         document.getElementById('emailCount').innerText = logs.length;
       }
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+      console.error('Load email logs error:', e);
+      const tbody = document.getElementById('emailLogsBody');
+      if(tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">❌ خطأ في تحميل السجل<\/td><\/tr>';
+    }
   }
   
   document.getElementById('refreshEmailLogs')?.addEventListener('click', loadEmailLogs);
