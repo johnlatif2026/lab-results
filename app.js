@@ -134,6 +134,10 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.get('/privacy', (req, res) => {
+  res.render('privacy');
+});
+
 app.post("/result", async (req, res) => {
   const phone = req.body.phone;
   const filteredResults = await findResultsByPhone(phone);
