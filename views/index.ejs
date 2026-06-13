@@ -6,6 +6,54 @@
   <title>معمل التحاليل - استعلام النتائج</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* ========================================
+       CSS VARIABLES FOR THEMING
+    ======================================== */
+    :root {
+      /* Light Mode Colors */
+      --bg-primary: linear-gradient(145deg, #e8eff9 0%, #d4e0f0 100%);
+      --bg-card: rgba(255, 255, 255, 0.98);
+      --bg-form-card: #f8fafc;
+      --bg-footer: #f1f5f9;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --text-label: #334155;
+      --border-color: #e2e8f0;
+      --border-focus: #2a5298;
+      --input-bg: white;
+      --input-placeholder: #cbd5e1;
+      --shadow-sm: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
+      --shadow-md: 0 4px 12px rgba(42, 82, 152, 0.3);
+      --shadow-lg: 0 8px 20px rgba(42, 82, 152, 0.35);
+      --gradient-start: #1e3c72;
+      --gradient-end: #2a5298;
+      --error-bg: #dc2626;
+      --success-bg: #10b981;
+      --transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Colors */
+      --bg-primary: linear-gradient(145deg, #0f172a 0%, #1e1b4b 100%);
+      --bg-card: rgba(30, 41, 59, 0.98);
+      --bg-form-card: #1e293b;
+      --bg-footer: #0f172a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-label: #e2e8f0;
+      --border-color: #334155;
+      --border-focus: #3b82f6;
+      --input-bg: #1e293b;
+      --input-placeholder: #64748b;
+      --shadow-sm: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.6);
+      --gradient-start: #0f172a;
+      --gradient-end: #1e3c72;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,12 +62,40 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tajawal', sans-serif;
-      background: linear-gradient(145deg, #e8eff9 0%, #d4e0f0 100%);
+      background: var(--bg-primary);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      transition: var(--transition);
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 40px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: var(--transition);
+      z-index: 1000;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
     .container {
@@ -28,19 +104,19 @@
       margin: 0 auto;
     }
 
-    /* كارت رئيسي ناعم */
+    /* Main Card */
     .main-card {
-      background: rgba(255, 255, 255, 0.98);
+      background: var(--bg-card);
       backdrop-filter: blur(0px);
       border-radius: 40px;
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.02);
+      box-shadow: var(--shadow-sm), 0 0 0 1px rgba(0, 0, 0, 0.02);
       overflow: hidden;
-      transition: all 0.3s ease;
+      transition: var(--transition);
     }
 
-    /* الهيدر */
+    /* Header */
     .header {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       padding: 35px 25px;
       text-align: center;
       color: white;
@@ -68,9 +144,14 @@
       justify-content: center;
       margin: 0 auto 15px;
       font-size: 32px;
+      transition: transform 0.3s ease;
     }
 
-    /* المحتوى */
+    .lab-icon:hover {
+      transform: scale(1.05);
+    }
+
+    /* Content */
     .content {
       padding: 30px 25px;
     }
@@ -82,21 +163,22 @@
 
     .welcome-title h2 {
       font-size: 1.5rem;
-      color: #1e293b;
+      color: var(--text-primary);
       font-weight: 700;
       margin-bottom: 6px;
     }
 
     .welcome-title p {
-      color: #64748b;
+      color: var(--text-secondary);
       font-size: 0.9rem;
     }
 
-    /* الفورم */
+    /* Form Card */
     .form-card {
-      background: #f8fafc;
+      background: var(--bg-form-card);
       border-radius: 28px;
       padding: 20px;
+      transition: var(--transition);
     }
 
     .input-phone {
@@ -106,7 +188,7 @@
     .input-phone label {
       display: block;
       margin-bottom: 10px;
-      color: #334155;
+      color: var(--text-label);
       font-weight: 600;
       font-size: 0.9rem;
     }
@@ -120,19 +202,20 @@
       right: 18px;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 1.1rem;
+      transition: var(--transition);
     }
 
     .phone-wrapper input {
       width: 100%;
       padding: 16px 48px 16px 18px;
-      background: white;
-      border: 1.5px solid #e2e8f0;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border-color);
       border-radius: 60px;
       font-size: 1rem;
-      color: #0f172a;
-      transition: all 0.2s;
+      color: var(--text-primary);
+      transition: var(--transition);
       font-family: monospace;
       font-size: 1.1rem;
       letter-spacing: 1px;
@@ -140,19 +223,19 @@
 
     .phone-wrapper input:focus {
       outline: none;
-      border-color: #2a5298;
+      border-color: var(--border-focus);
       box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
     }
 
     .phone-wrapper input::placeholder {
-      color: #cbd5e1;
+      color: var(--input-placeholder);
       font-family: inherit;
     }
 
-    /* زر البحث */
+    /* Search Button */
     .search-btn {
       width: 100%;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       border: none;
       padding: 16px;
       border-radius: 60px;
@@ -164,36 +247,105 @@
       justify-content: center;
       gap: 10px;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(42, 82, 152, 0.3);
+      transition: var(--transition);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .search-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .search-btn:active::before {
+      width: 300px;
+      height: 300px;
     }
 
     .search-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(42, 82, 152, 0.35);
+      box-shadow: var(--shadow-lg);
     }
 
     .search-btn:active {
       transform: translateY(0);
     }
 
-    /* تذييل */
+    .search-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Loading state for button */
+    .search-btn.loading {
+      pointer-events: none;
+    }
+
+    .search-btn.loading i.fa-search {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Footer */
     .footer {
       text-align: center;
       padding: 20px;
-      background: #f1f5f9;
+      background: var(--bg-footer);
       font-size: 0.75rem;
-      color: #64748b;
-      border-top: 1px solid #e2e8f0;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      transition: var(--transition);
     }
 
-    /* رسائل الخطأ */
+    .footer a {
+      color: var(--gradient-end);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.7rem;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--gradient-end);
+    }
+
+    /* Error Toast */
     .error-toast {
       position: fixed;
       bottom: 30px;
       left: 20px;
       right: 20px;
-      background: #dc2626;
+      background: var(--error-bg);
       color: white;
       padding: 14px 20px;
       border-radius: 60px;
@@ -219,6 +371,7 @@
       }
     }
 
+    /* Responsive */
     @media (max-width: 480px) {
       body {
         padding: 16px;
@@ -235,10 +388,33 @@
       .form-card {
         padding: 18px;
       }
+      .theme-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
+      .theme-toggle span {
+        display: none;
+      }
+    }
+
+    /* Focus visible for accessibility */
+    .search-btn:focus-visible,
+    .theme-toggle:focus-visible,
+    .phone-wrapper input:focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع المظلم">
+    <i class="fas fa-moon"></i>
+    <span>الوضع المظلم</span>
+  </button>
+
   <div class="container">
     <div class="main-card">
       <div class="header">
@@ -264,7 +440,7 @@
                 <input type="tel" name="phone" id="phoneInput" placeholder="05XXXXXXXX" required autofocus>
               </div>
             </div>
-            <button type="submit" class="search-btn">
+            <button type="submit" class="search-btn" id="searchBtn">
               <i class="fas fa-search"></i> عرض النتائج
             </button>
           </form>
@@ -273,11 +449,56 @@
 
       <div class="footer">
         <p>© 2025 معمل التحاليل (جون) - جميع الحقوق محفوظة</p>
+        <div class="footer-links">
+          <a href="/privacy">سياسة الخصوصية</a>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Include WhatsApp Button -->
+  <%- include('partials/whatsapp-button.ejs') %>
+
   <script>
+    // ========================================
+    // THEME MANAGEMENT
+    // ========================================
+    (function() {
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      
+      let currentTheme = localStorage.getItem('theme') || 'light';
+      
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          html.setAttribute('data-theme', 'dark');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>الوضع الفاتح</span>';
+          }
+          localStorage.setItem('theme', 'dark');
+        } else {
+          html.removeAttribute('data-theme');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>الوضع المظلم</span>';
+          }
+          localStorage.setItem('theme', 'light');
+        }
+        currentTheme = theme;
+      }
+      
+      setTheme(currentTheme);
+      
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          setTheme(newTheme);
+        });
+      }
+    })();
+
+    // ========================================
+    // PAGE FUNCTIONALITY
+    // ========================================
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('phoneInput').focus();
     });
@@ -310,9 +531,23 @@
     }
 
     const form = document.getElementById('phoneForm');
+    const searchBtn = document.getElementById('searchBtn');
+    
     form.addEventListener('submit', function(e) {
       if (!validatePhone()) {
         e.preventDefault();
+      } else {
+        searchBtn.classList.add('loading');
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> جاري البحث...';
+        
+        setTimeout(() => {
+          if (searchBtn.disabled) {
+            searchBtn.classList.remove('loading');
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = '<i class="fas fa-search"></i> عرض النتائج';
+          }
+        }, 10000);
       }
     });
   </script>
