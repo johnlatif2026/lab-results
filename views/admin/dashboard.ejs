@@ -808,7 +808,7 @@
                   <tr id="tg-row-<%= num.phone %>"><td><%= num.phone %></td><td><%= num.createdAt || '—' %></td><td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('<%= num.phone %>')">حذف</button></td></tr>
                 <% }) %>
               <% } else { %>
-                <tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td></tr>
+                <tr><td colspan="3" style="text-align:center;">لا توجد أرقام</td><tr>
               <% } %>
             </tbody>
           </table>
@@ -872,8 +872,18 @@
         <button id="refreshEmailLogs" class="btn-mini" style="background:var(--text-muted);color:white;margin-bottom:16px;">تحديث</button>
         <div style="overflow-x: auto;">
           <table class="email-logs-table">
-            <thead><tr><th>إلى</th><th>الموضوع</th><th>التاريخ</th><th>الحالة</th></tr></thead>
-            <tbody id="emailLogsBody"><tr><td colspan="4" style="text-align:center;">جاري التحميل...</td></tr></tbody>
+            <thead>
+              <tr>
+                <th>إلى</th>
+                <th>الموضوع</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="emailLogsBody">
+              <tr><td colspan="5" style="text-align:center;">جاري التحميل...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -1247,6 +1257,25 @@
     }
   });
 
+  // حذف إيميل من السجل
+  window.deleteEmailLog = async (logId) => {
+    if (!confirm('⚠️ هل تريد حذف هذا الإيميل من السجل؟')) return;
+    try {
+      const res = await fetch(`/api/email-logs/${logId}`, { 
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        showNotification('✅ تم حذف الإيميل من السجل', 'success');
+        loadEmailLogs();
+      } else {
+        showNotification('❌ فشل الحذف', 'error');
+      }
+    } catch(e) {
+      showNotification('❌ خطأ', 'error');
+    }
+  };
+
   async function loadEmailLogs() {
     try {
       const res = await fetch('/api/email-logs', { credentials: 'include' });
@@ -1254,8 +1283,16 @@
       const logs = data.logs || [];
       const tbody = document.getElementById('emailLogsBody');
       if(tbody) {
-        if(logs.length) tbody.innerHTML = logs.map(log => `<tr><td>${escapeHtml(log.to)}</td><td>${escapeHtml(log.subject)}</td><td>${log.date ? new Date(log.date).toLocaleString() : '—'}</td><td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td></tr>`).join('');
-        else tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">لا توجد إيميلات مرسلة بعد</td></tr>';
+        if(logs.length) tbody.innerHTML = logs.map(log => `
+          <tr>
+            <td>${escapeHtml(log.to)}</td>
+            <td>${escapeHtml(log.subject)}</td>
+            <td>${log.date ? new Date(log.date).toLocaleString() : '—'}</td>
+            <td>${log.status === 'sent' ? '✅ مرسل' : '❌ فشل'}</td>
+            <td><button class="btn-mini btn-delete" onclick="deleteEmailLog('${log.id}')"><i class="fas fa-trash"></i> حذف</button></td>
+          </tr>
+        `).join('');
+        else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد إيميلات مرسلة بعد</td></tr>';
       }
     } catch(e) { console.error(e); }
   }
