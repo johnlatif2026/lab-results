@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>سياسة الخصوصية - معمل التحاليل</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* CSS Variables for Theming */
+    :root {
+      --bg-primary: #f0f4f9;
+      --bg-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --gradient-start: #1e3c72;
+      --gradient-end: #2a5298;
+      --card-bg: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-card: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: #334155;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --card-bg: #1e293b;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tajawal', sans-serif;
+      background: var(--bg-primary);
+      min-height: 100vh;
+      padding: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 40px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .theme-toggle i {
+      font-size: 1.1rem;
+    }
+
+    /* Header Card */
+    .privacy-header {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      border-radius: 32px;
+      padding: 40px 30px;
+      margin-bottom: 30px;
+      text-align: center;
+      color: white;
+    }
+
+    .privacy-header h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .privacy-header p {
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+
+    /* Content Card */
+    .privacy-content {
+      background: var(--bg-card);
+      border-radius: 32px;
+      padding: 40px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section h2 {
+      color: var(--text-primary);
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section h2 i {
+      color: var(--gradient-end);
+    }
+
+    .section p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .section ul {
+      list-style: none;
+      padding-right: 20px;
+    }
+
+    .section li {
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .section li:before {
+      content: "•";
+      color: var(--gradient-end);
+      font-weight: bold;
+      position: absolute;
+      right: -20px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gradient-end);
+      text-decoration: none;
+      margin-top: 20px;
+      font-weight: 600;
+      transition: gap 0.2s;
+    }
+
+    .back-link:hover {
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .privacy-header {
+        padding: 30px 20px;
+      }
+      
+      .privacy-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .privacy-content {
+        padding: 25px 20px;
+      }
+      
+      .section h2 {
+        font-size: 1.2rem;
+      }
+      
+      .theme-toggle {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع المظلم">
+    <i class="fas fa-moon"></i>
+    <span>الوضع المظلم</span>
+  </button>
+
+  <div class="container">
+    <div class="privacy-header">
+      <i class="fas fa-shield-alt" style="font-size: 48px; margin-bottom: 16px;"></i>
+      <h1>سياسة الخصوصية</h1>
+      <p>نحن نحمي خصوصية بياناتك ونتعامل معها بأقصى درجات الأمان</p>
+    </div>
+
+    <div class="privacy-content">
+      <div class="section">
+        <h2><i class="fas fa-info-circle"></i> مقدمة</h2>
+        <p>نحن في معمل التحاليل (جون) نلتزم بحماية خصوصية بياناتك الشخصية. توضح هذه السياسة كيفية جمع واستخدام وحماية معلوماتك عند استخدام خدماتنا.</p>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-database"></i> المعلومات التي نجمعها</h2>
+        <p>نقوم بجمع المعلومات التالية:</p>
+        <ul>
+          <li>الاسم الكامل للمريض</li>
+          <li>رقم الهاتف للتواصل وإرسال النتائج</li>
+          <li>البريد الإلكتروني (اختياري)</li>
+          <li>نتائج التحاليل الطبية</li>
+          <li>تاريخ إجراء التحاليل</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-lock"></i> كيفية استخدام معلوماتك</h2>
+        <p>تُستخدم معلوماتك للأغراض التالية فقط:</p>
+        <ul>
+          <li>تقديم نتائج التحاليل الطبية</li>
+          <li>التواصل معك بخصوص نتائجك</li>
+          <li>تحسين خدماتنا المعملية</li>
+          <li>الامتثال للمتطلبات القانونية والتنظيمية</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-share-alt"></i> مشاركة المعلومات</h2>
+        <p>نحن لا نشارك معلوماتك الشخصية مع أطراف ثالثة إلا في الحالات التالية:</p>
+        <ul>
+          <li>عند طلب من الجهات القضائية أو التنظيمية</li>
+          <li>لحماية حقوقنا القانونية</li>
+          <li>بموافقتك الصريحة</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-clock"></i> الاحتفاظ بالبيانات</h2>
+        <p>نحتفظ بنتائج التحاليل والبيانات الشخصية للفترة التي تتطلبها القوانين واللوائح الصحية، ولمدة لا تقل عن 5 سنوات من تاريخ إجراء التحليل.</p>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-cookie-bite"></i> ملفات تعريف الارتباط (Cookies)</h2>
+        <p>نستخدم ملفات تعريف الارتباط لتحسين تجربة التصفح، مثل تذكر تفضيلاتك (الوضع المظلم/الفاتح). لا نستخدمها لتتبع نشاطاتك الشخصية خارج الموقع.</p>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-user-shield"></i> حقوقك</h2>
+        <p>لديك الحق في:</p>
+        <ul>
+          <li>الاطلاع على بياناتك الشخصية</li>
+          <li>طلب تصحيح أي أخطاء في بياناتك</li>
+          <li>طلب حذف بياناتك (مع مراعاة الالتزامات القانونية)</li>
+          <li>سحب موافقتك على معالجة بياناتك</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-envelope"></i> اتصل بنا</h2>
+        <p>إذا كان لديك أي استفسارات حول سياسة الخصوصية، يمكنك التواصل معنا عبر:</p>
+        <ul>
+          <li>البريد الإلكتروني: privacy@lab.com</li>
+          <li>رقم الهاتف: 966XXXXXXXXX</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-calendar-alt"></i> تحديثات السياسة</h2>
+        <p>قد نقوم بتحديث هذه السياسة من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة مع تحديث تاريخ آخر مراجعة.</p>
+        <p><strong>آخر تحديث: 1 يناير 2025</strong></p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>© 2025 معمل التحاليل (جون) - جميع الحقوق محفوظة</p>
+      <a href="/" class="back-link">
+        <i class="fas fa-arrow-right"></i> العودة إلى صفحة البحث
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Theme Management
+    (function() {
+      const themeToggle = document.getElementById('themeToggle');
+      const html = document.documentElement;
+      
+      // Get saved theme or default to light
+      let currentTheme = localStorage.getItem('theme') || 'light';
+      
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          html.setAttribute('data-theme', 'dark');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>الوضع الفاتح</span>';
+          }
+          localStorage.setItem('theme', 'dark');
+        } else {
+          html.removeAttribute('data-theme');
+          if (themeToggle) {
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i><span>الوضع المظلم</span>';
+          }
+          localStorage.setItem('theme', 'light');
+        }
+        currentTheme = theme;
+      }
+      
+      // Apply saved theme
+      setTheme(currentTheme);
+      
+      // Toggle theme on click
+      if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          setTheme(newTheme);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
