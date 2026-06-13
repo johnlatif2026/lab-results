@@ -3,34 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>لوحة التحكم | إدارة نتائج التحاليل</title>
+  <title>لوحة التحكم - معمل التحاليل</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    :root {
-      --bg-dark: #0a0f1c;
-      --bg-card: rgba(18, 25, 45, 0.85);
-      --primary: #4f46e5;
-      --primary-dark: #6366f1;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --text-light: #f1f5f9;
-      --text-dim: #94a3b8;
-      --border-glow: rgba(79, 70, 229, 0.3);
     }
 
     body {
-      background: radial-gradient(ellipse at 30% 40%, #0f172a, #020617);
-      font-family: 'Inter', 'Segoe UI', 'Tajawal', system-ui, sans-serif;
-      color: var(--text-light);
-      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tajawal', sans-serif;
+      background: #f0f4f9;
       padding: 20px;
     }
 
@@ -39,123 +23,121 @@
       margin: 0 auto;
     }
 
-    .glass-header {
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 32px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 20px 28px;
-      margin-bottom: 28px;
+    /* الهيدر */
+    .header-bar {
+      background: white;
+      border-radius: 28px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .logo-area h1 {
-      font-size: 1.8rem;
-      background: linear-gradient(135deg, #a5b4fc, #818cf8);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-area i {
-      background: #1e293b;
-      padding: 12px;
-      border-radius: 20px;
-      color: #818cf8;
-    }
-
-    .welcome-badge {
-      background: #1e293b;
-      padding: 8px 20px;
-      border-radius: 40px;
-      font-weight: 500;
-      font-size: 1rem;
+    .logo h1 {
+      font-size: 1.3rem;
+      color: #1e293b;
       display: flex;
       align-items: center;
       gap: 10px;
-      border-right: 3px solid var(--primary);
     }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
+    .logo i {
+      color: #2a5298;
     }
 
-    .stat-card-modern {
-      background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      border-radius: 28px;
-      padding: 24px 20px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      transition: all 0.25s ease;
+    .user-info {
       display: flex;
       align-items: center;
-      gap: 18px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      gap: 15px;
     }
 
-    .stat-card-modern:hover {
-      transform: translateY(-4px);
-      border-color: var(--primary);
-      background: rgba(30, 41, 59, 0.8);
+    .user-badge {
+      background: #f1f5f9;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      color: #334155;
+    }
+
+    .logout-link {
+      color: #dc2626;
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* كروت الإحصائيات */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
     .stat-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border-radius: 24px;
+      width: 50px;
+      height: 50px;
+      background: #eef2ff;
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      color: #818cf8;
+      font-size: 24px;
+      color: #2a5298;
     }
 
     .stat-info h3 {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 700;
-      letter-spacing: -0.5px;
+      color: #0f172a;
     }
 
     .stat-info p {
-      color: var(--text-dim);
-      font-weight: 500;
+      color: #64748b;
+      font-size: 0.8rem;
     }
 
+    /* كارت الرفع */
     .upload-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(12px);
-      border-radius: 36px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 28px 30px;
-      margin-bottom: 40px;
-      transition: all 0.2s;
+      background: white;
+      border-radius: 28px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
     .section-title {
-      font-size: 1.6rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1e293b;
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
+      gap: 10px;
+      margin-bottom: 20px;
       padding-bottom: 12px;
-      border-bottom: 2px solid rgba(79, 70, 229, 0.4);
+      border-bottom: 2px solid #eef2f6;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
+      gap: 16px;
     }
 
     .input-group {
@@ -163,274 +145,278 @@
     }
 
     .input-group label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: block;
+      font-size: 0.8rem;
       font-weight: 600;
-      margin-bottom: 10px;
-      color: #cbd5e1;
+      color: #334155;
+      margin-bottom: 6px;
     }
 
-    .input-group input, 
-    .input-group select, 
+    .input-group input,
+    .input-group select,
     .input-group textarea {
       width: 100%;
-      padding: 14px 18px;
-      background: #111827;
-      border: 1px solid #2d3a5e;
-      border-radius: 24px;
-      color: white;
-      font-size: 1rem;
-      transition: 0.2s;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
     }
 
-    .input-group input:focus, 
+    .input-group input:focus,
     .input-group textarea:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+      border-color: #2a5298;
+      background: white;
     }
 
-    .upload-btn-modern {
-      background: linear-gradient(95deg, #4f46e5, #7c3aed);
-      border: none;
-      padding: 16px 28px;
-      border-radius: 40px;
-      font-weight: bold;
-      font-size: 1.1rem;
+    .upload-btn {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       cursor: pointer;
-      transition: 0.2s;
       margin-top: 16px;
-      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+      transition: all 0.2s;
     }
 
-    .upload-btn-modern:hover {
-      transform: scale(1.02);
-      background: linear-gradient(95deg, #6366f1, #8b5cf6);
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(42, 82, 152, 0.25);
     }
 
-    .results-wrapper {
-      background: var(--bg-card);
-      backdrop-filter: blur(12px);
-      border-radius: 36px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 20px 20px 28px;
+    /* جدول النتائج - يتحول لكروت في الموبايل */
+    .results-card {
+      background: white;
+      border-radius: 28px;
+      padding: 20px;
       overflow-x: auto;
     }
 
-    .modern-table {
+    /* في الشاشات الكبيرة جدول */
+    .desktop-table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 12px;
+      border-collapse: collapse;
+      min-width: 600px;
     }
 
-    .modern-table th {
+    .desktop-table th {
       text-align: right;
-      padding: 16px 20px;
-      background: #0f172a80;
-      border-radius: 20px;
+      padding: 14px 12px;
+      color: #475569;
       font-weight: 600;
-      color: #a5b4fc;
+      font-size: 0.8rem;
+      border-bottom: 2px solid #eef2f6;
     }
 
-    .modern-table td {
-      background: #1e293b60;
-      padding: 18px 20px;
-      border-radius: 24px;
-      backdrop-filter: blur(4px);
-      transition: 0.2s;
+    .desktop-table td {
+      padding: 14px 12px;
+      color: #1e293b;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #f1f5f9;
     }
 
-    .modern-table tr:hover td {
-      background: #2d3a5e80;
-      transform: scale(1.01);
+    /* في الموبايل - كروت */
+    .mobile-cards {
+      display: none;
+    }
+
+    .result-mobile-card {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .mobile-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mobile-label {
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+
+    .mobile-value {
+      color: #0f172a;
+      font-size: 0.85rem;
     }
 
     .action-group {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
 
     .btn-mini {
       padding: 8px 16px;
-      border-radius: 30px;
+      border-radius: 40px;
       border: none;
       font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-      font-size: 0.85rem;
+      gap: 6px;
+      transition: all 0.2s;
     }
 
     .btn-view {
-      background: #4f46e5;
+      background: #1e3c72;
       color: white;
+      text-decoration: none;
     }
+
     .btn-delete {
       background: #dc2626;
       color: white;
     }
+
     .btn-notify {
       background: #10b981;
       color: white;
     }
 
     .btn-mini:hover {
-      transform: translateY(-2px);
+      transform: translateY(-1px);
       filter: brightness(1.05);
     }
 
+    /* حالة فارغة */
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
-      background: #0f172a60;
-      border-radius: 48px;
-    }
-    .empty-state i {
-      font-size: 4rem;
-      color: #4f46e5;
-      margin-bottom: 20px;
+      padding: 50px 20px;
+      color: #94a3b8;
     }
 
+    /* التصميم المتجاوب */
+    @media (max-width: 768px) {
+      .desktop-table {
+        display: none;
+      }
+      .mobile-cards {
+        display: block;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 550px) {
+      body {
+        padding: 12px;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .header-bar {
+        flex-direction: column;
+        text-align: center;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* توست notifications */
     .toast-notify {
       position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
       background: #1e293b;
-      backdrop-filter: blur(16px);
-      padding: 12px 24px;
+      color: white;
+      padding: 12px 18px;
       border-radius: 60px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       z-index: 1000;
-      font-weight: 500;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
-      border-right: 4px solid var(--primary);
-      animation: fadeUp 0.3s ease;
+      max-width: 400px;
+      margin: 0 auto;
+      animation: slideUp 0.3s ease;
     }
 
     .toast-success {
-      border-right-color: #10b981;
+      border-right: 4px solid #10b981;
     }
-    
+
     .toast-error {
-      border-right-color: #ef4444;
+      border-right: 4px solid #dc2626;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; bottom: 0; }
-      to { opacity: 1; bottom: 30px; }
-    }
-
-    @media (max-width: 780px) {
-      body { padding: 12px; }
-      .glass-header { flex-direction: column; align-items: flex-start; }
-      .modern-table th, .modern-table td { padding: 12px 12px; font-size: 0.85rem; }
-      .action-group { flex-direction: column; }
-      .btn-mini { justify-content: center; }
-      .stat-card-modern { padding: 16px; }
-      .stat-icon { width: 48px; height: 48px; font-size: 22px; }
-      .stat-info h3 { font-size: 1.8rem; }
-      .upload-card { padding: 20px; }
-    }
-
-    @media (max-width: 560px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .section-title { font-size: 1.3rem; }
-      .logo-area h1 { font-size: 1.3rem; }
-      .welcome-badge { font-size: 0.8rem; }
-    }
-
-    .particle-effect {
-      position: fixed;
-      pointer-events: none;
-      border-radius: 50%;
-      background: radial-gradient(circle, #a5b4fc, #4f46e5);
-      animation: particleBurst 0.6s ease-out forwards;
-      z-index: 9999;
-    }
-
-    @keyframes particleBurst {
-      0% { transform: scale(1); opacity: 0.8; }
-      100% { transform: scale(2.5); opacity: 0; }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
 <div class="dashboard">
-  <div class="glass-header">
-    <div class="logo-area">
-      <h1><i class="fas fa-microscope"></i> لوحة التحكم المتقدمة</h1>
+  <div class="header-bar">
+    <div class="logo">
+      <h1><i class="fas fa-microscope"></i> لوحة التحكم</h1>
     </div>
-    <div class="welcome-badge">
-      <i class="fas fa-user-md"></i> مرحباً، الدكتور جون
-      <i class="fas fa-chart-line"></i>
-      <a href="/admin/logout" style="color: #f87171; margin-right: 15px; text-decoration: none;">
-        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
-      </a>
+    <div class="user-info">
+      <span class="user-badge"><i class="fas fa-user-md"></i> الدكتور جون</span>
+      <a href="/admin/logout" class="logout-link"><i class="fas fa-sign-out-alt"></i> خروج</a>
     </div>
   </div>
 
-  <!-- عرض رسالة النجاح من الـ query string -->
-  <% if (successMessage) { %>
-    <div class="toast-notify toast-success" style="top: 20px; bottom: auto;">
-      <i class="fas fa-check-circle"></i> 
-      <span><%= successMessage %></span>
-      <i class="fas fa-times-circle" style="cursor: pointer; margin-right: 12px;" onclick="this.parentElement.remove()"></i>
-    </div>
-    <script>
-      setTimeout(() => {
-        const toast = document.querySelector('.toast-notify');
-        if (toast) toast.remove();
-      }, 4000);
-    </script>
-  <% } %>
-
-  <!-- كروت الإحصائيات -->
+  <!-- الإحصائيات -->
   <div class="stats-grid">
-    <div class="stat-card-modern">
-      <div class="stat-icon"><i class="fas fa-file-pdf"></i></div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
       <div class="stat-info">
         <h3 id="totalResultsCount"><%= results.length %></h3>
         <p>إجمالي النتائج</p>
       </div>
     </div>
-    <div class="stat-card-modern">
+    <div class="stat-card">
       <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
       <div class="stat-info">
         <h3 id="sentCount">0</h3>
-        <p>النتائج المرسلة</p>
+        <p>تم الإشعار بها</p>
       </div>
     </div>
-    <div class="stat-card-modern">
+    <div class="stat-card">
       <div class="stat-icon"><i class="fas fa-clock"></i></div>
       <div class="stat-info">
         <h3 id="pendingCount">0</h3>
-        <p>في انتظار الإرسال</p>
+        <p>في انتظار الإشعار</p>
       </div>
     </div>
   </div>
 
-  <!-- نموذج رفع نتيجة -->
+  <!-- رفع نتيجة جديدة -->
   <div class="upload-card">
     <div class="section-title">
-      <i class="fas fa-cloud-upload-alt"></i>
-      <span>رفع نتيجة تحليل جديدة</span>
+      <i class="fas fa-cloud-upload-alt"></i> رفع نتيجة تحليل جديدة
     </div>
     <form action="/admin/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
       <div class="form-grid">
         <div class="input-group">
           <label><i class="fas fa-user"></i> اسم المريض</label>
-          <input type="text" id="name" name="name" placeholder="أدخل الاسم الكامل" required>
+          <input type="text" id="name" name="name" placeholder="الاسم الكامل" required>
         </div>
         <div class="input-group">
           <label><i class="fas fa-flask"></i> نوع التحليل</label>
@@ -438,7 +424,7 @@
         </div>
         <div class="input-group">
           <label><i class="fas fa-phone"></i> رقم الهاتف</label>
-          <input type="text" id="phone" name="phone" placeholder="10 أو 11 رقم" pattern="[0-9]{10,11}" required>
+          <input type="tel" id="phone" name="phone" placeholder="10 أو 11 رقم" pattern="[0-9]{10,11}" required>
         </div>
         <div class="input-group">
           <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
@@ -446,249 +432,206 @@
         </div>
         <div class="input-group">
           <label><i class="fas fa-file-pdf"></i> ملف النتيجة</label>
-          <input type="file" id="pdf" name="pdf" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required onchange="previewFileName(this)">
+          <input type="file" id="pdf" name="pdf" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required>
         </div>
         <div class="input-group">
-          <label><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
-          <textarea id="notes" name="notes" rows="2" placeholder="أي ملاحظات خاصة بالنتيجة..."></textarea>
+          <label><i class="fas fa-sticky-note"></i> ملاحظات (اختياري)</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="أي ملاحظات خاصة..."></textarea>
         </div>
       </div>
-      <button type="submit" class="upload-btn-modern" id="uploadButton">
-        <i class="fas fa-cloud-upload-alt"></i> رفع النتيجة إلى النظام
+      <button type="submit" class="upload-btn" id="uploadButton">
+        <i class="fas fa-cloud-upload-alt"></i> رفع النتيجة
       </button>
     </form>
   </div>
 
-  <!-- جدول النتائج -->
-  <div class="results-wrapper">
+  <!-- عرض النتائج -->
+  <div class="results-card">
     <div class="section-title">
-      <i class="fas fa-database"></i>
-      <span>قاعدة بيانات النتائج</span>
+      <i class="fas fa-database"></i> قاعدة البيانات
     </div>
-    <div class="table-responsive">
-      <% if (results.length > 0) { %>
-        <table class="modern-table">
-          <thead>
-            <tr><th>اسم المريض</th><th>نوع التحليل</th><th>رقم الهاتف</th><th>البريد الإلكتروني</th><th>الملف</th><th>تاريخ الإضافة</th><th>الإجراءات</th></tr>
-          </thead>
-          <tbody>
-            <% results.forEach((r, index) => { %>
-              <!-- المهم: id="row-<%= r.id %>" وليس r.file -->
-              <tr data-index="<%= index %>" id="row-<%= r.id %>">
-                <td><strong><%= r.name %></strong></td>
-                <td><span><%= r.test %></span></td>
-                <td><code><%= r.phone %></code></td>
-                <td><small><%= r.email %></small></td>
-                <td><a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view" onclick="createParticles(event)"><i class="fas fa-eye"></i> معاينة</a></td>
-                <td><%= r.date %></td>
-                <td>
-                  <div class="action-group">
-                    <button type="button" class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')">
-                      <i class="fas fa-trash-alt"></i> حذف
-                    </button>
-                    <button type="button" class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')" id="notifyBtn-<%= r.id %>">
-                      <i class="fas fa-bell"></i> إشعار
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      <% } else { %>
-        <div class="empty-state">
-          <i class="fas fa-folder-open"></i>
-          <h3>لا توجد نتائج مسجلة</h3>
-          <p>لم يتم رفع أي نتائج حتى الآن، استخدم النموذج أعلاه لإضافة أول نتيجة.</p>
-        </div>
-      <% } %>
-    </div>
+
+    <% if (results.length > 0) { %>
+      <!-- جدول للشاشات الكبيرة -->
+      <table class="desktop-table">
+        <thead>
+          <tr><th>المريض</th><th>نوع التحليل</th><th>الهاتف</th><th>البريد</th><th>الملف</th><th>التاريخ</th><th>الإجراءات</th></tr>
+        </thead>
+        <tbody>
+          <% results.forEach((r) => { %>
+            <tr id="row-<%= r.id %>">
+              <td><strong><%= r.name %></strong><br><small style="color:#64748b;"><%= r.test %></small></td>
+              <td><%= r.test %></td>
+              <td><%= r.phone %></td>
+              <td><%= r.email %></td>
+              <td><a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view" style="padding:4px 12px;"><i class="fas fa-eye"></i> عرض</a></td>
+              <td><%= r.date %></td>
+              <td>
+                <div class="action-group" style="gap:6px;">
+                  <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash"></i> حذف</button>
+                  <button class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-bell"></i> إشعار</button>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <!-- كروت للموبايل -->
+      <div class="mobile-cards">
+        <% results.forEach((r) => { %>
+          <div class="result-mobile-card" id="mobile-row-<%= r.id %>">
+            <div class="mobile-row">
+              <span class="mobile-label">المريض:</span>
+              <span class="mobile-value"><strong><%= r.name %></strong></span>
+            </div>
+            <div class="mobile-row">
+              <span class="mobile-label">نوع التحليل:</span>
+              <span class="mobile-value"><%= r.test %></span>
+            </div>
+            <div class="mobile-row">
+              <span class="mobile-label">الهاتف:</span>
+              <span class="mobile-value"><%= r.phone %></span>
+            </div>
+            <div class="mobile-row">
+              <span class="mobile-label">البريد:</span>
+              <span class="mobile-value"><%= r.email %></span>
+            </div>
+            <div class="mobile-row">
+              <span class="mobile-label">التاريخ:</span>
+              <span class="mobile-value"><%= r.date %></span>
+            </div>
+            <div class="action-group">
+              <a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view"><i class="fas fa-eye"></i> عرض الملف</a>
+              <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash"></i> حذف</button>
+              <button class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-bell"></i> إشعار</button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 12px;"></i>
+        <p>لا توجد نتائج مسجلة حتى الآن</p>
+        <p style="font-size: 0.8rem;">استخدم النموذج أعلاه لإضافة أول نتيجة</p>
+      </div>
+    <% } %>
   </div>
 </div>
 
 <script>
-  function createParticles(event) {
-    if(event && event.currentTarget) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      for(let i=0; i<12; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle-effect');
-        const size = Math.random() * 8 + 4;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        particle.style.left = (centerX + (Math.random() - 0.5) * 40) + 'px';
-        particle.style.top = (centerY + (Math.random() - 0.5) * 40) + 'px';
-        document.body.appendChild(particle);
-        setTimeout(() => particle.remove(), 600);
-      }
-    }
-  }
-
-  function previewFileName(input) {
-    if(input.files && input.files[0]) {
-      console.log("تم اختيار ملف: " + input.files[0].name);
-    }
-  }
-
-  // دالة الحذف - id هو المعرف الصحيح من Firestore
-  async function deleteResult(id, patientName) {
-    console.log("Delete called with id:", id);
+  function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.toast-notify');
+    if(existing) existing.remove();
     
-    if (!confirm(`⚠️ تأكيد الحذف\n\nهل أنت متأكد من حذف نتيجة المريض:\n${patientName}\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
-      return;
-    }
+    const toast = document.createElement('div');
+    toast.className = `toast-notify toast-${type}`;
+    const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
+    toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="margin-right: auto; cursor: pointer;" onclick="this.parentElement.remove()"></i>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
 
-    // البحث عن الصف باستخدام id الصحيح
+  async function deleteResult(id, patientName) {
+    if (!confirm(`⚠️ حذف نتيجة\n\nهل أنت متأكد من حذف نتيجة: ${patientName}؟`)) return;
+    
     const row = document.getElementById(`row-${id}`);
-    if (!row) {
-      console.error("Row not found for id:", id);
-      showNotification("لم يتم العثور على العنصر", "error");
-      return;
-    }
-
-    const deleteButton = row.querySelector('.btn-delete');
-    const originalHTML = deleteButton ? deleteButton.innerHTML : 'حذف';
-    if (deleteButton) {
-      deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
-      deleteButton.disabled = true;
-    }
-
+    const mobileRow = document.getElementById(`mobile-row-${id}`);
+    
     try {
       const response = await fetch('/admin/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `file=${encodeURIComponent(id)}`
       });
-
+      
       if (response.ok) {
-        showNotification(`✅ تم حذف نتيجة المريض: ${patientName} بنجاح`, 'success');
-        row.style.transition = 'all 0.3s ease';
-        row.style.opacity = '0';
-        setTimeout(() => {
-          row.remove();
-          updateStatsAfterDelete();
-          const remainingRows = document.querySelectorAll('.modern-table tbody tr').length;
-          if (remainingRows === 0) {
-            location.reload();
-          }
-        }, 300);
+        showNotification(`✅ تم حذف نتيجة ${patientName}`, 'success');
+        if (row) row.remove();
+        if (mobileRow) mobileRow.remove();
+        updateStatsAfterDelete();
+        
+        // تحديث العدد الكلي
+        const remaining = document.querySelectorAll('.desktop-table tbody tr, .result-mobile-card').length;
+        if (remaining === 0) location.reload();
       } else {
-        const error = await response.text();
-        throw new Error(error);
+        throw new Error('فشل الحذف');
       }
     } catch(error) {
-      console.error('Delete error:', error);
       showNotification('❌ حدث خطأ أثناء الحذف', 'error');
-      if (deleteButton) {
-        deleteButton.innerHTML = originalHTML;
-        deleteButton.disabled = false;
-      }
     }
   }
 
   async function sendNotification(id, patientName) {
-    if (!confirm(`🔔 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض:\n${patientName}؟`)) {
-      return;
+    if (!confirm(`📨 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض: ${patientName}؟`)) return;
+    
+    const btn = event?.target?.closest?.('.btn-notify');
+    const originalHTML = btn ? btn.innerHTML : 'إشعار';
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
     }
     
-    const row = document.getElementById(`row-${id}`);
-    const notifyBtn = row ? row.querySelector('.btn-notify') : document.getElementById(`notifyBtn-${id}`);
-    if(!notifyBtn) return;
-    
-    const originalHTML = notifyBtn.innerHTML;
-    notifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
-    notifyBtn.disabled = true;
-
     try {
       const response = await fetch('/admin/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `file=${encodeURIComponent(id)}`
       });
-      if(response.ok) {
-        showNotification('📨 تم إرسال الإشعار بنجاح!', 'success');
+      
+      if (response.ok) {
+        showNotification(`📨 تم إرسال الإشعار إلى ${patientName}`, 'success');
       } else {
-        throw new Error('فشل الإشعار');
+        throw new Error('فشل الإرسال');
       }
     } catch(err) {
-      showNotification('⚠️ فشل إرسال الإشعار، حاول مجددًا', 'error');
+      showNotification('⚠️ فشل إرسال الإشعار', 'error');
     } finally {
-      setTimeout(() => {
-        notifyBtn.innerHTML = originalHTML;
-        notifyBtn.disabled = false;
-      }, 1500);
+      if (btn) {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      }
     }
   }
 
-  function showNotification(message, type = 'success') {
-    const existing = document.querySelector('.toast-notify');
-    if(existing) existing.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = 'toast-notify ' + (type === 'success' ? 'toast-success' : 'toast-error');
-    const icon = type === 'success' ? 
-      '<i class="fas fa-check-circle" style="color:#10b981"></i>' : 
-      '<i class="fas fa-exclamation-triangle" style="color:#f97316"></i>';
-    toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="cursor:pointer; margin-right:12px;" onclick="this.parentElement.remove()"></i>`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      if(toast && toast.remove) toast.remove();
-    }, 4500);
-  }
-
   function updateStatsAfterDelete() {
-    const totalElem = document.querySelector('.stat-card-modern:first-child .stat-info h3');
-    if(totalElem) {
+    const totalElem = document.querySelector('#totalResultsCount');
+    if (totalElem) {
       let current = parseInt(totalElem.innerText) || 0;
-      if(current > 0) totalElem.innerText = current - 1;
+      if (current > 0) totalElem.innerText = current - 1;
     }
     updateStats();
   }
 
   function updateStats() {
-    const rows = document.querySelectorAll('.modern-table tbody tr').length;
+    const rows = document.querySelectorAll('.desktop-table tbody tr, .result-mobile-card').length;
     const sent = Math.floor(rows * 0.7);
     const pending = rows - sent;
     
     const sentSpan = document.getElementById('sentCount');
     const pendingSpan = document.getElementById('pendingCount');
-    
-    if(sentSpan) sentSpan.innerText = sent;
-    if(pendingSpan) pendingSpan.innerText = pending;
+    if (sentSpan) sentSpan.innerText = sent;
+    if (pendingSpan) pendingSpan.innerText = pending;
   }
 
   document.addEventListener('DOMContentLoaded', function() {
     updateStats();
-
+    
     const form = document.getElementById('uploadForm');
-    if(form) {
+    if (form) {
       form.addEventListener('submit', function(e) {
-        const phoneInput = document.getElementById('phone');
-        const phonePattern = /^[0-9]{10,11}$/;
-        if(!phonePattern.test(phoneInput.value)) {
+        const phone = document.getElementById('phone').value;
+        if (!/^[0-9]{10,11}$/.test(phone.replace(/\D/g, ''))) {
           e.preventDefault();
-          phoneInput.style.border = '2px solid #ef4444';
-          showNotification('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقمًا فقط', 'error');
-          setTimeout(() => { phoneInput.style.border = ''; }, 1000);
-          phoneInput.focus();
+          showNotification('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقم', 'error');
           return false;
         }
-        const uploadBtn = document.getElementById('uploadButton');
-        if(uploadBtn) {
-          uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
-          uploadBtn.disabled = true;
-        }
+        const btn = document.getElementById('uploadButton');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+        btn.disabled = true;
         return true;
       });
     }
-
-    document.querySelectorAll('.btn-mini').forEach(btn => {
-      btn.addEventListener('mouseenter', function(e) {
-        createParticles(e);
-      });
-    });
   });
 </script>
 </body>
