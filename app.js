@@ -1,9 +1,7 @@
-// app.js - النسخة النهائية المدمجة (معمل + تليجرام)
 const axios = require('axios');
 const express = require("express");
 const session = require("express-session");
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
@@ -104,7 +102,7 @@ function normalizePhone(input) {
   return String(input || "").replace(/[^\d]/g, "");
 }
 
-// ========== Firestore Functions (المعمل) ==========
+// ========== Firestore Functions ==========
 async function loadResults() {
   const snapshot = await db.collection("results").get();
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -142,7 +140,6 @@ app.get("/admin", async (req, res) => {
   if (req.session && req.session.loggedIn) {
     try {
       const results = await loadResults();
-      // جلب أرقام التيليجرام المسجلة
       const numbersSnapshot = await db.collection("bot_numbers").orderBy("createdAt", "desc").limit(100).get();
       const telegramNumbers = numbersSnapshot.docs.map(doc => doc.data());
       
@@ -181,7 +178,7 @@ app.get("/admin/logout", (req, res) => {
   });
 });
 
-// ========== Upload Route (المعمل) ==========
+// ========== Upload Route ==========
 app.post("/admin/upload", 
   async (req, res, next) => {
     if (!req.session.loggedIn) {
@@ -210,7 +207,6 @@ app.post("/admin/upload",
         return res.redirect("/admin?error=invalid_phone");
       }
 
-      // Upload to Cloudinary
       const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
       const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
       const isPdf = fileExtension === 'pdf';
@@ -257,7 +253,6 @@ app.post("/admin/upload",
       
       await addResult(cleanId, newResult);
       
-      // Send Email
       const protocol = req.protocol === 'https' ? 'https' : 'http';
       const host = req.get('host');
       const link = `${protocol}://${host}/view/${cleanId}`;
@@ -385,9 +380,8 @@ app.get("/view/:id", async (req, res) => {
   }
 });
 
-// ========== TELEGRAM APIs (المضافة) ==========
+// ========== TELEGRAM APIs ==========
 
-// جلب قائمة الأرقام المسجلة في البوت
 app.get("/api/numbers", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
@@ -402,7 +396,6 @@ app.get("/api/numbers", async (req, res) => {
   }
 });
 
-// إضافة رقم جديد للبوت
 app.post("/api/numbers", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
@@ -424,7 +417,6 @@ app.post("/api/numbers", async (req, res) => {
   }
 });
 
-// حذف رقم من البوت
 app.delete("/api/numbers/:phone", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
@@ -440,7 +432,6 @@ app.delete("/api/numbers/:phone", async (req, res) => {
   }
 });
 
-// إرسال رسالة تليجرام لرقم معين (لكل أفراد الأسرة)
 app.post("/api/send-telegram", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
@@ -453,7 +444,6 @@ app.post("/api/send-telegram", async (req, res) => {
     if (!phone) return res.status(400).json({ error: "رقم غير صحيح" });
     if (!message) return res.status(400).json({ error: "الرسالة مطلوبة" });
 
-    // جلب كل الشاتات المسجلة للرقم
     const chatsSnap = await db
       .collection("telegram_subscribers")
       .doc(phone)
@@ -462,13 +452,12 @@ app.post("/api/send-telegram", async (req, res) => {
 
     if (chatsSnap.empty) {
       return res.status(404).json({
-        error: "هذا الرقم لم يراسل البوت بعد. لازم أي فرد من العائلة يفتح البوت ويرسل الرقم."
+        error: "هذا الرقم لم يراسل البوت بعد."
       });
     }
 
     let delivered = 0;
     let failed = 0;
-    const failures = [];
 
     for (const doc of chatsSnap.docs) {
       const data = doc.data() || {};
@@ -478,18 +467,16 @@ app.post("/api/send-telegram", async (req, res) => {
         delivered++;
       } catch (e) {
         failed++;
-        failures.push({ chatId, error: String(e?.message || e) });
       }
     }
 
-    return res.json({ ok: true, delivered, failed, failures: failures.slice(0, 5) });
+    return res.json({ ok: true, delivered, failed });
   } catch (e) {
     console.error("send-telegram error:", e);
     return res.status(500).json({ error: "Server error" });
   }
 });
 
-// إرسال إشعار لمريض معين عبر التليجرام (باستخدام رقمه من جدول النتائج)
 app.post("/api/notify-patient", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
@@ -507,7 +494,6 @@ app.post("/api/notify-patient", async (req, res) => {
     const patient = doc.data();
     const phone = normalizePhone(patient.phone);
     
-    // جلب الشاتات المسجلة للرقم
     const chatsSnap = await db
       .collection("telegram_subscribers")
       .doc(phone)
@@ -520,10 +506,9 @@ app.post("/api/notify-patient", async (req, res) => {
       });
     }
 
-    const defaultMessage = `📋 مرحباً ${patient.name}\n\nتم إضافة نتيجة تحليل ${patient.test} الخاصة بك.\nيمكنك عرضها من خلال الرابط التالي:`;
+    const defaultMessage = `📋 مرحباً ${patient.name}\n\nتم إضافة نتيجة تحليل ${patient.test} الخاصة بك.`;
     const message = customMessage || defaultMessage;
     
-    // رابط العرض (نفس نظام المعمل)
     const protocol = req.protocol === 'https' ? 'https' : 'http';
     const host = req.get('host');
     const link = `${protocol}://${host}/view/${resultId}`;
@@ -540,14 +525,13 @@ app.post("/api/notify-patient", async (req, res) => {
       }
     }
 
-    return res.json({ ok: true, delivered, message: `تم الإرسال لـ ${delivered} جهاز` });
+    return res.json({ ok: true, delivered });
   } catch (e) {
     console.error("notify-patient error:", e);
     return res.status(500).json({ error: "Server error" });
   }
 });
 
-// Webhook التيليجرام (للاستقبال من البوت)
 app.post("/api/telegram/webhook", async (req, res) => {
   try {
     const update = req.body || {};
@@ -591,29 +575,9 @@ app.post("/api/telegram/webhook", async (req, res) => {
   }
 });
 
-// ========== Diagnostic Route ==========
-app.get("/api/diag", async (req, res) => {
-  if (!req.session.loggedIn) {
-    return res.status(401).json({ error: "غير مصرح" });
-  }
-  
-  try {
-    const has = (k) => !!process.env[k];
-    return res.json({
-      env: {
-        BOT_TOKEN: has("BOT_TOKEN"),
-        EMAIL_ADDRESS: has("EMAIL_ADDRESS"),
-        CLOUDINARY: has("CLOUDINARY_CLOUD_NAME"),
-        FIREBASE_CONFIG: has("FIREBASE_CONFIG"),
-      }
-    });
-  } catch (e) {
-    return res.status(500).json({ error: "Server error" });
-  }
-});
-
 // ========== SMTP / EMAIL APIs ==========
 
+// إرسال إيميل يدوي
 app.post("/api/send-email-manual", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
@@ -623,7 +587,7 @@ app.post("/api/send-email-manual", async (req, res) => {
     const { to, name, subject, body } = req.body;
     
     if (!to || !subject || !body) {
-      return res.status(400).json({ error: "البريد الإلكتروني والموضوع والمحتوى مطلوبة" });
+      return res.status(400).json({ error: "جميع الحقول مطلوبة" });
     }
 
     const html = `
@@ -642,11 +606,9 @@ app.post("/api/send-email-manual", async (req, res) => {
       html: html
     });
 
-    // تسجيل في Firestore
     await db.collection("email_logs").add({
       to: to,
       subject: subject,
-      body: body.substring(0, 200),
       date: new Date().toISOString(),
       status: "sent",
       type: "manual"
@@ -659,33 +621,29 @@ app.post("/api/send-email-manual", async (req, res) => {
   }
 });
 
-// إرسال إيميل جماعي لجميع المرضى
+// إرسال إيميل جماعي لقائمة مخصصة
 app.post("/api/send-bulk-email", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
   }
 
   try {
-    const { subject, body } = req.body;
+    const { recipients, subject, body } = req.body;
     
-    if (!subject || !body) {
-      return res.status(400).json({ error: "الموضوع والمحتوى مطلوبة" });
+    if (!recipients || !recipients.length || !subject || !body) {
+      return res.status(400).json({ error: "المستلمين والموضوع والمحتوى مطلوبة" });
     }
-
-    // جلب جميع المرضى من Firestore
-    const results = await loadResults();
-    const patients = results.map(r => ({ email: r.email, name: r.name }));
 
     let sent = 0;
     let failed = 0;
 
-    for (const patient of patients) {
-      if (!patient.email) continue;
+    for (const recipient of recipients) {
+      if (!recipient.email) continue;
       
       try {
         const html = `
           <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-            <h2 style="color: #2a5298;">مرحباً ${patient.name || 'عميلنا العزيز'}</h2>
+            <h2 style="color: #2a5298;">مرحباً ${recipient.name || 'عميلنا العزيز'}</h2>
             <div style="margin: 20px 0;">${body.replace(/\n/g, '<br>')}</div>
             <hr>
             <p style="color: #666; font-size: 12px;">مع تحيات مركز التحاليل الطبية</p>
@@ -694,67 +652,57 @@ app.post("/api/send-bulk-email", async (req, res) => {
 
         await transporter.sendMail({
           from: process.env.EMAIL_ADDRESS,
-          to: patient.email,
+          to: recipient.email,
           subject: subject,
           html: html
         });
 
         sent++;
         
-        // تسجيل كل إيميل على حدة (اختياري - ممكن تسجل واحدة بس لو عاوز توفر)
         await db.collection("email_logs").add({
-          to: patient.email,
+          to: recipient.email,
           subject: subject,
           date: new Date().toISOString(),
           status: "sent",
-          type: "bulk"
+          type: "bulk_custom"
         });
         
-        // تأخير بسيط عشان ما يضربش الـ rate limit
         await new Promise(r => setTimeout(r, 500));
         
       } catch (err) {
         failed++;
-        console.error(`Failed to send to ${patient.email}:`, err.message);
+        console.error(`Failed to send to ${recipient.email}:`, err.message);
       }
     }
 
-    return res.json({ ok: true, total: patients.length, sent, failed });
+    return res.json({ ok: true, total: recipients.length, sent, failed });
   } catch (error) {
     console.error("send-bulk-email error:", error);
     return res.status(500).json({ error: error.message });
   }
 });
 
-// إرسال إيميل نتيجة جاهزة (للمريض بعد رفع النتيجة)
+// إرسال إيميل نتيجة جاهزة
 app.post("/api/send-email", async (req, res) => {
   if (!req.session.loggedIn) {
     return res.status(401).json({ error: "غير مصرح" });
   }
 
   try {
-    const { to, name, type, resultId } = req.body;
+    const { to, name, resultId } = req.body;
     
     const protocol = req.protocol === 'https' ? 'https' : 'http';
     const host = req.get('host');
     const link = `${protocol}://${host}/view/${resultId}`;
     
-    let subject = "";
-    let body = "";
-    
-    if (type === "result_ready") {
-      subject = "نتيجة التحليل جاهزة";
-      body = `
-        <p>تم تجهيز نتيجة التحليل الخاصة بك.</p>
-        <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
-        <p style="text-align: center;">
-          <a href="${link}" style="display: inline-block; background: #2a5298; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">📄 عرض النتيجة</a>
-        </p>
-      `;
-    } else {
-      subject = "إشعار من مركز التحاليل";
-      body = `<p>مرحباً ${name || ''}</p><p>هذا إشعار من مركز التحاليل الطبية.</p>`;
-    }
+    const subject = "نتيجة التحليل جاهزة";
+    const body = `
+      <p>تم تجهيز نتيجة التحليل الخاصة بك.</p>
+      <p>يمكنك الاطلاع عليها من خلال الرابط التالي:</p>
+      <p style="text-align: center;">
+        <a href="${link}" style="display: inline-block; background: #2a5298; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">📄 عرض النتيجة</a>
+      </p>
+    `;
     
     const html = `
       <div dir="rtl" style="font-family: Tahoma, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
@@ -802,6 +750,11 @@ app.get("/api/email-logs", async (req, res) => {
     console.error("email-logs error:", error);
     return res.status(500).json({ error: error.message });
   }
+});
+
+// Check session endpoint (للحفاظ على الجلسة)
+app.get("/api/check-session", async (req, res) => {
+  return res.json({ loggedIn: !!req.session.loggedIn });
 });
 
 module.exports = app;
