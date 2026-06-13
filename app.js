@@ -773,4 +773,27 @@ app.get("/api/check-session", (req, res) => {
   return res.json({ loggedIn: false });
 });
 
+// حذف إيميل من السجل
+app.delete("/api/email-logs/:logId", async (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.status(401).json({ error: "غير مصرح" });
+  }
+
+  try {
+    const { logId } = req.params;
+    
+    if (!logId) {
+      return res.status(400).json({ error: "معرف الإيميل مطلوب" });
+    }
+
+    // حذف المستند من Firestore
+    await db.collection("email_logs").doc(logId).delete();
+    
+    return res.json({ ok: true, message: "تم حذف الإيميل من السجل" });
+  } catch (error) {
+    console.error("delete email log error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = app;
