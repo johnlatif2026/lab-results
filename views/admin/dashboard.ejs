@@ -617,6 +617,45 @@
   document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     
+    // ========== قراءة رسائل النجاح من localStorage ==========
+    const successMsg = localStorage.getItem('uploadSuccess');
+    const errorMsg = localStorage.getItem('uploadError');
+    const urlError = new URLSearchParams(window.location.search).get('error');
+    
+    if (successMsg) {
+      showNotification(successMsg, 'success');
+      localStorage.removeItem('uploadSuccess');
+    }
+    
+    if (errorMsg) {
+      showNotification(errorMsg, 'error');
+      localStorage.removeItem('uploadError');
+    }
+    
+    if (urlError) {
+      let errorText = '';
+      switch(urlError) {
+        case 'session_expired':
+          errorText = '⚠️ انتهت الجلسة، يرجى إعادة تسجيل الدخول';
+          break;
+        case 'no_file':
+          errorText = '❌ لم يتم اختيار ملف';
+          break;
+        case 'missing_fields':
+          errorText = '❌ جميع الحقول مطلوبة';
+          break;
+        case 'invalid_phone':
+          errorText = '❌ رقم الهاتف غير صحيح (10 أو 11 رقم)';
+          break;
+        default:
+          errorText = `❌ حدث خطأ: ${decodeURIComponent(urlError)}`;
+      }
+      showNotification(errorText, 'error');
+      // تنظيف الـ URL من الـ error parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // ========== إعدادات الفورم ==========
     const form = document.getElementById('uploadForm');
     if (form) {
       form.addEventListener('submit', function(e) {
@@ -627,8 +666,10 @@
           return false;
         }
         const btn = document.getElementById('uploadButton');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
-        btn.disabled = true;
+        if (btn) {
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+          btn.disabled = true;
+        }
         return true;
       });
     }
