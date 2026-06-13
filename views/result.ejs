@@ -2,592 +2,385 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>نتائج التحاليل الطبية</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --primary-color: #6a11cb;
-      --secondary-color: #2575fc;
-      --accent-color: #ff512f;
-      --success-color: #00b09b;
-      --border-radius: 16px;
-      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      --transition: all 0.3s ease;
-      --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      --gradient-success: linear-gradient(135deg, #00b09b, #96c93d);
-      --gradient-danger: linear-gradient(135deg, #ff512f, #dd2476);
-      --gradient-info: linear-gradient(135deg, #3498db, #2980b9);
-    }
-    
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
-      color: #ffffff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tajawal', sans-serif;
+      background: #f0f4f9;
       min-height: 100vh;
-      line-height: 1.6;
       padding: 20px;
     }
-    
+
     .container {
-      max-width: 1200px;
+      max-width: 700px;
       margin: 0 auto;
-      background: rgba(22, 33, 62, 0.95);
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
-    header {
-      background: linear-gradient(135deg, rgba(106, 17, 203, 0.9), rgba(37, 117, 252, 0.9));
+
+    /* كارت الهيدر */
+    .header-card {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      border-radius: 32px;
+      padding: 25px;
+      margin-bottom: 20px;
       color: white;
-      padding: 40px 20px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
+      box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.15);
     }
-    
-    header h1 {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ffffff, #e6e6e6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
+
     .back-btn {
       position: absolute;
       top: 20px;
       right: 20px;
       background: rgba(255, 255, 255, 0.15);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 12px 20px;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: var(--transition);
+      padding: 8px 16px;
+      border-radius: 40px;
       text-decoration: none;
+      color: white;
+      font-size: 0.8rem;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 600;
-    }
-    
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateY(-2px);
-    }
-    
-    main {
-      padding: 40px 30px;
-      background: rgba(26, 26, 46, 0.9);
-      min-height: 500px;
-    }
-    
-    .results-header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 30px;
-      background: rgba(15, 52, 96, 0.7);
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .results-header h2 {
-      font-size: 1.8rem;
-      margin-bottom: 15px;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
+      gap: 6px;
+      transition: all 0.2s;
     }
 
-    .results-header h2 i {
-      color: var(--success-color);
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
     }
-    
-    .patient-info {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 20px;
+
+    .header-card h1 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      padding-left: 60px;
     }
-    
-    .info-card {
-      background: rgba(106, 17, 203, 0.2);
-      padding: 15px 25px;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(106, 17, 203, 0.3);
+
+    .header-card p {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    /* معلومات المريض */
+    .patient-info-card {
+      background: white;
+      border-radius: 28px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .patient-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 10px;
-      min-width: 200px;
-    }
-    
-    .info-label {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1rem;
-    }
-    
-    .info-value {
-      font-weight: bold;
-      color: #ffffff;
-      font-family: 'Courier New', monospace;
-      font-size: 1.1rem;
-    }
-    
-    .phone-number {
-      font-weight: bold;
-      color: #ffffff;
-      direction: ltr;
-      font-family: 'Courier New', monospace;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
-      background: var(--gradient);
-      padding: 8px 15px;
-      border-radius: 8px;
     }
 
-    .result-count {
-      background: var(--gradient-success);
-      color: white;
-      padding: 8px 20px;
+    .patient-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .detail-badge {
+      background: #f1f5f9;
+      padding: 6px 14px;
       border-radius: 30px;
-      font-weight: 600;
-      font-size: 1.1rem;
-      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .result-badge {
       display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      margin-top: 12px;
     }
-    
+
     /* قسم الملاحظات */
-    .notes-section {
-      background: rgba(52, 152, 219, 0.1);
-      padding: 25px;
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(52, 152, 219, 0.3);
-      margin-bottom: 30px;
+    .notes-card {
+      background: #fefce8;
+      border-right: 4px solid #eab308;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 20px;
     }
-    
+
     .notes-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 15px;
-      color: #ffffff;
+      gap: 10px;
+      color: #854d0e;
+      margin-bottom: 10px;
+      font-weight: 600;
     }
-    
-    .notes-header i {
-      color: #3498db;
-      font-size: 1.4rem;
-    }
-    
-    .notes-header h3 {
-      font-size: 1.4rem;
-      margin: 0;
-    }
-    
+
     .notes-content {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1.1rem;
-      line-height: 1.7;
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: var(--border-radius);
-      border-right: 4px solid #3498db;
+      color: #422006;
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
-    
-    .no-notes {
-      color: rgba(255, 255, 255, 0.6);
-      font-style: italic;
-      text-align: center;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: var(--border-radius);
+
+    /* كروت النتائج - تصميم موبايل أولاً */
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
     }
-    
-    .table-container {
-      background: rgba(15, 52, 96, 0.7);
-      border-radius: var(--border-radius);
-      padding: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 40px;
+
+    .result-card {
+      background: white;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s;
+      border: 1px solid #eef2f6;
     }
-    
-    .table-responsive {
-      overflow-x: auto;
-      border-radius: 12px;
+
+    .result-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: 12px;
-      overflow: hidden;
+
+    .result-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    
-    thead {
-      background: var(--gradient);
-    }
-    
-    th {
-      padding: 20px;
-      text-align: right;
-      color: white;
+
+    .result-name {
       font-weight: 700;
-      font-size: 1.1rem;
-      position: relative;
+      font-size: 1rem;
+      color: #1e293b;
     }
-    
-    td {
-      padding: 20px;
-      text-align: right;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      font-size: 1.05rem;
+
+    .result-test {
+      background: #e0f2fe;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      color: #0369a1;
     }
-    
-    tbody tr {
-      background: rgba(255, 255, 255, 0.05);
-      transition: var(--transition);
+
+    .result-phone {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 12px;
+      direction: ltr;
+      text-align: left;
     }
-    
-    tr:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .action-buttons {
+
+    .result-actions {
       display: flex;
       gap: 12px;
+      margin-top: 15px;
+      flex-wrap: wrap;
     }
-    
+
     .btn {
+      flex: 1;
+      min-width: 110px;
+      padding: 12px 16px;
+      border-radius: 60px;
+      text-decoration: none;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 25px;
-      border-radius: var(--border-radius);
-      font-weight: 700;
-      text-decoration: none;
-      transition: var(--transition);
-      font-size: 1rem;
-      border: none;
+      gap: 8px;
+      transition: all 0.2s;
       cursor: pointer;
-      gap: 10px;
-      min-width: 130px;
     }
-    
-    .btn-download {
-      background: var(--gradient);
-      color: white;
-    }
-    
-    .btn-download:hover {
-      background: linear-gradient(135deg, #2575fc, #6a11cb);
-      transform: translateY(-2px);
-    }
-    
+
     .btn-view {
-      background: var(--gradient-success);
+      background: #1e3c72;
       color: white;
     }
-    
-    .btn-view:hover {
-      background: linear-gradient(135deg, #96c93d, #00b09b);
+
+    .btn-download {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-view:hover, .btn-download:hover {
       transform: translateY(-2px);
+      filter: brightness(1.05);
     }
-    
-    .no-results {
+
+    /* حالة عدم وجود نتائج */
+    .empty-card {
+      background: white;
+      border-radius: 32px;
+      padding: 50px 30px;
       text-align: center;
-      padding: 80px 30px;
-      background: rgba(15, 52, 96, 0.7);
-      border-radius: var(--border-radius);
-      margin: 30px 0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
-    .no-results-icon {
-      font-size: 5rem;
-      margin-bottom: 25px;
-      display: inline-block;
+
+    .empty-card i {
+      font-size: 4rem;
+      color: #cbd5e1;
+      margin-bottom: 16px;
     }
-    
-    .no-results h3 {
-      color: #ffffff;
-      margin-bottom: 20px;
-      font-size: 2rem;
-      background: var(--gradient-danger);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+
+    .empty-card h3 {
+      color: #475569;
+      margin-bottom: 12px;
     }
-    
-    .no-results p {
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 20px;
-      font-size: 1.1rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+
+    .empty-card p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
     }
-    
-    .search-again {
+
+    .search-again-btn {
+      background: #1e3c72;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 60px;
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 12px;
-      padding: 16px 35px;
-      background: var(--gradient);
-      color: white;
-      text-decoration: none;
-      border-radius: var(--border-radius);
-      font-weight: 700;
-      transition: var(--transition);
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      margin-top: 20px;
+      gap: 8px;
     }
-    
-    .search-again:hover {
-      background: linear-gradient(135deg, #2575fc, #6a11cb);
-      transform: translateY(-2px);
-    }
-    
-    footer {
+
+    /* تذييل */
+    .footer {
       text-align: center;
-      margin-top: 40px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.9rem;
-      padding: 25px;
-      background: rgba(0, 0, 0, 0.3);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      color: #94a3b8;
+      font-size: 0.7rem;
     }
 
-    footer p {
-      margin-bottom: 10px;
-    }
-
-    .footer-contact {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.85rem;
-    }
-    
-    @media (max-width: 768px) {
-      th, td {
-        padding: 15px 12px;
+    @media (max-width: 550px) {
+      body {
+        padding: 16px;
       }
-      
       .btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-        min-width: 110px;
+        padding: 10px 12px;
+        font-size: 0.8rem;
       }
-      
-      header h1 {
-        font-size: 1.8rem;
-      }
-      
-      .back-btn {
-        position: relative;
-        top: auto;
-        right: auto;
-        margin: 0 auto 20px;
-        display: inline-flex;
-        justify-content: center;
-        width: auto;
-      }
-
-      .results-header h2 {
+      .result-title {
         flex-direction: column;
-        gap: 10px;
-      }
-
-      .patient-info {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .info-card {
-        width: 100%;
-        max-width: 300px;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .action-buttons {
-        flex-direction: column;
-        gap: 8px;
-      }
-      
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .container {
-        padding: 10px;
-      }
-
-      header, main {
-        padding: 20px 15px;
+        align-items: flex-start;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
+    <div class="header-card">
       <a href="/" class="back-btn">
-        <i class="fas fa-arrow-right"></i> العودة للبحث
+        <i class="fas fa-arrow-right"></i> بحث جديد
       </a>
-      <h1>نتائج التحاليل الطبية</h1>
-    </header>
+      <h1>📋 نتائج التحاليل</h1>
+      <p>مرحباً بك، يمكنك الاطلاع على النتائج أدناه</p>
+    </div>
 
-    <main>
-      <div class="results-header">
-        <h2><i class="fas fa-file-medical-alt"></i> نتائج التحاليل</h2>
-        <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px; font-size: 1.1rem;">يمكنك الاطلاع على نتائج تحاليلك وتحميلها بسهولة</p>
-        
-        <% if (Array.isArray(result) && result.length > 0) { 
-          const patient = result[0]; // نفترض أن جميع النتائج لنفس المريض
-        %>
-          <div class="patient-info">
-            <div class="info-card">
-              <span class="info-label">اسم المريض:</span>
-              <span class="info-value"><%= patient.name %></span>
-            </div>
-            
-            <div class="info-card">
-              <span class="info-label">رقم الهاتف:</span>
-              <span class="phone-number"><%= phoneNumber || "غير محدد" %></span>
-            </div>
-            
-            <% if (patient.test) { %>
-              <div class="info-card">
-                <span class="info-label">نوع التحليل:</span>
-                <span class="info-value"><%= patient.test %></span>
-              </div>
-            <% } %>
-            
-            <% if (patient.date) { %>
-              <div class="info-card">
-                <span class="info-label">تاريخ النتيجة:</span>
-                <span class="info-value"><%= patient.date %></span>
-              </div>
-            <% } %>
-          </div>
-          
-          <div class="result-count">
-            <i class="fas fa-check-circle"></i> تم العثور على <%= result.length %> نتيجة
-          </div>
-        <% } %>
+    <% if (Array.isArray(result) && result.length > 0) { 
+      const patient = result[0];
+    %>
+      <!-- معلومات المريض -->
+      <div class="patient-info-card">
+        <div class="patient-name">
+          <i class="fas fa-user-circle" style="color: #1e3c72;"></i>
+          <%= patient.name %>
+        </div>
+        <div class="patient-details">
+          <span class="detail-badge"><i class="fas fa-phone"></i> <span style="direction: ltr;"><%= phoneNumber || patient.phone %></span></span>
+          <% if (patient.test) { %>
+            <span class="detail-badge"><i class="fas fa-flask"></i> <%= patient.test %></span>
+          <% } %>
+          <% if (patient.date) { %>
+            <span class="detail-badge"><i class="fas fa-calendar"></i> <%= patient.date %></span>
+          <% } %>
+        </div>
+        <div class="result-badge">
+          <i class="fas fa-file-alt"></i> <%= result.length %> نتيجة
+        </div>
       </div>
-      
-      <% if (Array.isArray(result) && result.length > 0) { 
-        const patient = result[0];
-      %>
-        <!-- قسم الملاحظات الإضافية -->
-        <% if (patient.notes && patient.notes.trim() !== '') { %>
-          <div class="notes-section">
-            <div class="notes-header">
-              <i class="fas fa-sticky-note"></i>
-              <h3>ملاحظات إضافية</h3>
-            </div>
-            <div class="notes-content">
-              <%= patient.notes %>
-            </div>
+
+      <!-- الملاحظات -->
+      <% if (patient.notes && patient.notes.trim() !== '') { %>
+        <div class="notes-card">
+          <div class="notes-header">
+            <i class="fas fa-pen"></i>
+            <span>ملاحظات إضافية</span>
           </div>
-        <% } else { %>
-          <div class="notes-section">
-            <div class="notes-header">
-              <i class="fas fa-sticky-note"></i>
-              <h3>ملاحظات إضافية</h3>
-            </div>
-            <div class="no-notes">
-              لا توجد ملاحظات إضافية مرفقة مع هذه النتيجة
-            </div>
-          </div>
-        <% } %>
-        
-        <div class="table-container">
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>اسم المريض</th>
-                  <th>رقم الهاتف</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% result.forEach((r, index) => { %>
-                  <tr>
-                    <td>
-                      <strong><%= r.name %></strong>
-                      <% if (r.test) { %>
-                        <br><small style="color: rgba(255, 255, 255, 0.7);">نوع التحليل: <%= r.test %></small>
-                      <% } %>
-                    </td>
-                    <td><%= r.phone %></td>
-                    <td>
-<div class="action-buttons">
-  <!-- عرض في المتصفح -->
-  <a href="/view/<%= r.id %>" target="_blank" class="btn btn-view">
-    <i class="fas fa-eye"></i> عرض
-  </a>
-  
-  <!-- تحميل الملف -->
-  <a href="/view/<%= r.id %>?download=true" class="btn btn-download">
-    <i class="fas fa-download"></i> تحميل
-  </a>
-</div>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
+          <div class="notes-content"><%= patient.notes %></div>
         </div>
       <% } else { %>
-        <div class="no-results">
-          <div class="no-results-icon">🔍</div>
-          <h3>لا توجد نتائج متاحة</h3>
-          <p>لم يتم العثور على نتائج للرقم المدخل</p>
-          <p>يرجى التأكد من صحة الرقم أو التواصل مع المركز الطبي للحصول على المساعدة</p>
-          <a href="/" class="search-again">
-            <i class="fas fa-redo"></i> البحث مرة أخرى
-          </a>
+        <div class="notes-card" style="background: #f8fafc; border-right-color: #cbd5e1;">
+          <div class="notes-header" style="color: #64748b;">
+            <i class="fas fa-pen"></i>
+            <span>ملاحظات إضافية</span>
+          </div>
+          <div class="notes-content" style="color: #94a3b8;">لا توجد ملاحظات مرفقة</div>
         </div>
       <% } %>
-    </main>
-    
-    <footer>
-      <p>© 2025 معمل التحاليل (جون). جميع الحقوق محفوظة.</p>
-    </footer>
-  </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // تأثير للنص الديناميكي
-      const phoneNumber = document.querySelector('.phone-number');
-      if (phoneNumber && phoneNumber.textContent !== 'غير محدد') {
-        phoneNumber.style.animation = 'pulse 2s infinite';
-      }
-    });
-  </script>
+      <!-- كروت النتائج -->
+      <div class="results-list">
+        <% result.forEach((r, index) => { %>
+          <div class="result-card">
+            <div class="result-title">
+              <span class="result-name"><i class="fas fa-user"></i> <%= r.name %></span>
+              <% if (r.test) { %>
+                <span class="result-test"><i class="fas fa-microscope"></i> <%= r.test %></span>
+              <% } %>
+            </div>
+            <div class="result-phone">
+              <i class="fas fa-phone"></i> <span style="direction: ltr;"><%= r.phone %></span>
+            </div>
+            <div class="result-actions">
+              <a href="/view/<%= r.id %>" target="_blank" class="btn btn-view">
+                <i class="fas fa-eye"></i> عرض
+              </a>
+              <a href="/view/<%= r.id %>?download=true" class="btn btn-download">
+                <i class="fas fa-download"></i> تحميل
+              </a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+    <% } else { %>
+      <!-- لا توجد نتائج -->
+      <div class="empty-card">
+        <i class="fas fa-search"></i>
+        <h3>لا توجد نتائج متاحة</h3>
+        <p>لم يتم العثور على نتائج للرقم المدخل<br>يرجى التأكد من صحة الرقم</p>
+        <a href="/" class="search-again-btn">
+          <i class="fas fa-redo"></i> بحث مرة أخرى
+        </a>
+      </div>
+    <% } %>
+
+    <div class="footer">
+      <p>© 2025 معمل التحاليل (جون) - خدمة آمنة وسريعة</p>
+    </div>
+  </div>
 </body>
 </html>
