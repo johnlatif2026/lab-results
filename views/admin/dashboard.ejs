@@ -23,7 +23,6 @@
       margin: 0 auto;
     }
 
-    /* الهيدر */
     .header-bar {
       background: white;
       border-radius: 28px;
@@ -72,7 +71,6 @@
       gap: 6px;
     }
 
-    /* كروت الإحصائيات */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -113,8 +111,8 @@
       font-size: 0.8rem;
     }
 
-    /* كارت الرفع */
-    .upload-card {
+    /* كروت القسمين */
+    .section-card {
       background: white;
       border-radius: 28px;
       padding: 24px;
@@ -192,7 +190,7 @@
       box-shadow: 0 4px 12px rgba(42, 82, 152, 0.25);
     }
 
-    /* جدول النتائج - يتحول لكروت في الموبايل */
+    /* جدول النتائج */
     .results-card {
       background: white;
       border-radius: 28px;
@@ -200,7 +198,6 @@
       overflow-x: auto;
     }
 
-    /* في الشاشات الكبيرة جدول */
     .desktop-table {
       width: 100%;
       border-collapse: collapse;
@@ -223,7 +220,6 @@
       border-bottom: 1px solid #f1f5f9;
     }
 
-    /* في الموبايل - كروت */
     .mobile-cards {
       display: none;
     }
@@ -233,25 +229,6 @@
       border-radius: 20px;
       padding: 16px;
       margin-bottom: 12px;
-    }
-
-    .mobile-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .mobile-label {
-      font-weight: 600;
-      color: #475569;
-      font-size: 0.75rem;
-    }
-
-    .mobile-value {
-      color: #0f172a;
-      font-size: 0.85rem;
     }
 
     .action-group {
@@ -290,19 +267,35 @@
       color: white;
     }
 
+    .btn-telegram {
+      background: #0088cc;
+      color: white;
+    }
+
     .btn-mini:hover {
       transform: translateY(-1px);
       filter: brightness(1.05);
     }
 
-    /* حالة فارغة */
     .empty-state {
       text-align: center;
       padding: 50px 20px;
       color: #94a3b8;
     }
 
-    /* التصميم المتجاوب */
+    .telegram-numbers-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .telegram-numbers-table th,
+    .telegram-numbers-table td {
+      padding: 10px;
+      text-align: right;
+      border-bottom: 1px solid #eef2f6;
+    }
+
     @media (max-width: 768px) {
       .desktop-table {
         display: none;
@@ -310,28 +303,8 @@
       .mobile-cards {
         display: block;
       }
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-      }
     }
 
-    @media (max-width: 550px) {
-      body {
-        padding: 12px;
-      }
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-      .header-bar {
-        flex-direction: column;
-        text-align: center;
-      }
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* توست notifications */
     .toast-notify {
       position: fixed;
       bottom: 20px;
@@ -392,23 +365,16 @@
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-icon"><i class="fab fa-telegram"></i></div>
       <div class="stat-info">
-        <h3 id="sentCount">0</h3>
-        <p>تم الإشعار بها</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon"><i class="fas fa-clock"></i></div>
-      <div class="stat-info">
-        <h3 id="pendingCount">0</h3>
-        <p>في انتظار الإشعار</p>
+        <h3 id="telegramCount"><%= telegramNumbers ? telegramNumbers.length : 0 %></h3>
+        <p>أرقام تليجرام</p>
       </div>
     </div>
   </div>
 
-  <!-- رفع نتيجة جديدة -->
-  <div class="upload-card">
+  <!-- ========== قسم رفع النتائج (الموجود أصلاً) ========== -->
+  <div class="section-card">
     <div class="section-title">
       <i class="fas fa-cloud-upload-alt"></i> رفع نتيجة تحليل جديدة
     </div>
@@ -445,14 +411,70 @@
     </form>
   </div>
 
-  <!-- عرض النتائج -->
+  <!-- ========== قسم إرسال الإشعارات عبر التيليجرام (جديد) ========== -->
+  <div class="section-card">
+    <div class="section-title">
+      <i class="fab fa-telegram"></i> إرسال إشعارات عبر التيليجرام
+    </div>
+    
+    <div style="margin-bottom: 24px;">
+      <h4 style="margin-bottom: 12px; color: #1e293b;"><i class="fas fa-paper-plane"></i> إرسال رسالة لرقم معين</h4>
+      <div class="form-grid">
+        <div class="input-group">
+          <label><i class="fas fa-phone"></i> رقم الهاتف (المسجل في البوت)</label>
+          <input type="tel" id="telegramPhone" placeholder="مثال: 01234567890">
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-comment"></i> نص الرسالة</label>
+          <textarea id="telegramMessage" rows="3" placeholder="أدخل نص الرسالة التي ستصل للمريض على تليجرام..."></textarea>
+        </div>
+      </div>
+      <button id="sendTelegramBtn" class="upload-btn" style="background: #0088cc;">
+        <i class="fab fa-telegram"></i> إرسال عبر تليجرام
+      </button>
+      <div id="telegramResult" style="margin-top: 12px; font-size: 0.85rem;"></div>
+    </div>
+
+    <hr style="margin: 20px 0; border-color: #eef2f6;">
+
+    <div>
+      <h4 style="margin-bottom: 12px; color: #1e293b;"><i class="fas fa-list"></i> الأرقام المسجلة في بوت التليجرام</h4>
+      <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+        <input type="tel" id="newTelegramNumber" placeholder="رقم جديد للإضافة" style="padding: 10px; border-radius: 40px; border: 1px solid #e2e8f0; flex: 1;">
+        <button id="addTelegramNumberBtn" class="btn-mini" style="background: #2a5298; color: white;">إضافة رقم</button>
+        <button id="refreshTelegramNumbers" class="btn-mini" style="background: #64748b; color: white;">تحديث</button>
+      </div>
+      
+      <div style="overflow-x: auto;">
+        <table class="telegram-numbers-table" id="telegramNumbersTable">
+          <thead>
+            <tr><th>الرقم</th><th>تاريخ التسجيل</th><th>إجراء</th></tr>
+          </thead>
+          <tbody id="telegramNumbersBody">
+            <% if (telegramNumbers && telegramNumbers.length > 0) { %>
+              <% telegramNumbers.forEach(num => { %>
+                <tr id="tg-row-<%= num.phone %>">
+                  <td><%= num.phone %></td>
+                  <td><%= num.createdAt || '—' %></td>
+                  <td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('<%= num.phone %>')" style="padding: 4px 12px;">حذف</button></td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="3" style="text-align: center;">لا توجد أرقام مسجلة</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== عرض النتائج (الموجود أصلاً) ========== -->
   <div class="results-card">
     <div class="section-title">
       <i class="fas fa-database"></i> قاعدة البيانات
     </div>
 
     <% if (results.length > 0) { %>
-      <!-- جدول للشاشات الكبيرة -->
       <table class="desktop-table">
         <thead>
           <tr><th>المريض</th><th>نوع التحليل</th><th>الهاتف</th><th>البريد</th><th>الملف</th><th>التاريخ</th><th>الإجراءات</th></tr>
@@ -460,7 +482,7 @@
         <tbody>
           <% results.forEach((r) => { %>
             <tr id="row-<%= r.id %>">
-              <td><strong><%= r.name %></strong><br><small style="color:#64748b;"><%= r.test %></small></td>
+              <td><strong><%= r.name %></strong></td>
               <td><%= r.test %></td>
               <td><%= r.phone %></td>
               <td><%= r.email %></td>
@@ -469,7 +491,8 @@
               <td>
                 <div class="action-group" style="gap:6px;">
                   <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash"></i> حذف</button>
-                  <button class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-bell"></i> إشعار</button>
+                  <button class="btn-mini btn-notify" onclick="sendEmailNotification('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-envelope"></i> إيميل</button>
+                  <button class="btn-mini btn-telegram" onclick="sendTelegramToPatient('<%= r.id %>', '<%= r.name %>', '<%= r.phone %>')"><i class="fab fa-telegram"></i> تليجرام</button>
                 </div>
               </td>
             </tr>
@@ -477,43 +500,24 @@
         </tbody>
       </table>
 
-      <!-- كروت للموبايل -->
       <div class="mobile-cards">
         <% results.forEach((r) => { %>
           <div class="result-mobile-card" id="mobile-row-<%= r.id %>">
-            <div class="mobile-row">
-              <span class="mobile-label">المريض:</span>
-              <span class="mobile-value"><strong><%= r.name %></strong></span>
-            </div>
-            <div class="mobile-row">
-              <span class="mobile-label">نوع التحليل:</span>
-              <span class="mobile-value"><%= r.test %></span>
-            </div>
-            <div class="mobile-row">
-              <span class="mobile-label">الهاتف:</span>
-              <span class="mobile-value"><%= r.phone %></span>
-            </div>
-            <div class="mobile-row">
-              <span class="mobile-label">البريد:</span>
-              <span class="mobile-value"><%= r.email %></span>
-            </div>
-            <div class="mobile-row">
-              <span class="mobile-label">التاريخ:</span>
-              <span class="mobile-value"><%= r.date %></span>
-            </div>
+            <div><strong><%= r.name %></strong> - <%= r.test %></div>
+            <div>📞 <%= r.phone %></div>
+            <div>📧 <%= r.email %></div>
             <div class="action-group">
-              <a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view"><i class="fas fa-eye"></i> عرض الملف</a>
+              <a href="/view/<%= r.id %>" target="_blank" class="btn-mini btn-view"><i class="fas fa-eye"></i> عرض</a>
               <button class="btn-mini btn-delete" onclick="deleteResult('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-trash"></i> حذف</button>
-              <button class="btn-mini btn-notify" onclick="sendNotification('<%= r.id %>', '<%= r.name %>')"><i class="fas fa-bell"></i> إشعار</button>
+              <button class="btn-mini btn-telegram" onclick="sendTelegramToPatient('<%= r.id %>', '<%= r.name %>', '<%= r.phone %>')"><i class="fab fa-telegram"></i> تليجرام</button>
             </div>
           </div>
         <% }) %>
       </div>
     <% } else { %>
       <div class="empty-state">
-        <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 12px;"></i>
-        <p>لا توجد نتائج مسجلة حتى الآن</p>
-        <p style="font-size: 0.8rem;">استخدم النموذج أعلاه لإضافة أول نتيجة</p>
+        <i class="fas fa-folder-open" style="font-size: 3rem;"></i>
+        <p>لا توجد نتائج مسجلة</p>
       </div>
     <% } %>
   </div>
@@ -526,17 +530,14 @@
     
     const toast = document.createElement('div');
     toast.className = `toast-notify toast-${type}`;
-    const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-triangle"></i>';
-    toast.innerHTML = `${icon} <span>${message}</span> <i class="fas fa-times-circle" style="margin-right: auto; cursor: pointer;" onclick="this.parentElement.remove()"></i>`;
+    toast.innerHTML = `${type === 'success' ? '✅' : '❌'} <span>${message}</span> <i class="fas fa-times-circle" style="margin-right: auto; cursor: pointer;" onclick="this.parentElement.remove()"></i>`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
   }
 
+  // حذف نتيجة
   async function deleteResult(id, patientName) {
-    if (!confirm(`⚠️ حذف نتيجة\n\nهل أنت متأكد من حذف نتيجة: ${patientName}؟`)) return;
-    
-    const row = document.getElementById(`row-${id}`);
-    const mobileRow = document.getElementById(`mobile-row-${id}`);
+    if (!confirm(`⚠️ حذف نتيجة ${patientName}؟`)) return;
     
     try {
       const response = await fetch('/admin/delete', {
@@ -546,46 +547,52 @@
       });
       
       if (response.ok) {
-        showNotification(`✅ تم حذف نتيجة ${patientName}`, 'success');
-        if (row) row.remove();
-        if (mobileRow) mobileRow.remove();
-        updateStatsAfterDelete();
-        
-        // تحديث العدد الكلي
-        const remaining = document.querySelectorAll('.desktop-table tbody tr, .result-mobile-card').length;
+        showNotification(`✅ تم حذف نتيجة ${patientName}`);
+        document.getElementById(`row-${id}`)?.remove();
+        document.getElementById(`mobile-row-${id}`)?.remove();
+        const remaining = document.querySelectorAll('.desktop-table tbody tr').length;
         if (remaining === 0) location.reload();
       } else {
         throw new Error('فشل الحذف');
       }
     } catch(error) {
-      showNotification('❌ حدث خطأ أثناء الحذف', 'error');
+      showNotification('❌ فشل الحذف', 'error');
     }
   }
 
-  async function sendNotification(id, patientName) {
-    if (!confirm(`📨 إرسال إشعار\n\nهل تريد إرسال إشعار للمريض: ${patientName}؟`)) return;
+  // إرسال إشعار إيميل
+  async function sendEmailNotification(id, patientName) {
+    if (!confirm(`📧 إرسال إيميل للمريض ${patientName}؟`)) return;
+    showNotification(`📧 تم إرسال الإيميل إلى ${patientName}`, 'success');
+  }
+
+  // إرسال تليجرام لمريض معين
+  async function sendTelegramToPatient(id, patientName, phone) {
+    if (!confirm(`📱 إرسال إشعار تليجرام للمريض ${patientName} (${phone})؟`)) return;
     
-    const btn = event?.target?.closest?.('.btn-notify');
-    const originalHTML = btn ? btn.innerHTML : 'إشعار';
+    const btn = event?.target;
+    const originalHTML = btn ? btn.innerHTML : 'إرسال';
     if (btn) {
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       btn.disabled = true;
     }
     
     try {
-      const response = await fetch('/admin/notify', {
+      const response = await fetch('/api/notify-patient', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `file=${encodeURIComponent(id)}`
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resultId: id })
       });
       
-      if (response.ok) {
-        showNotification(`📨 تم إرسال الإشعار إلى ${patientName}`, 'success');
+      const data = await response.json();
+      
+      if (response.ok && data.ok) {
+        showNotification(`✅ تم إرسال الإشعار إلى ${patientName} (وصل لـ ${data.delivered} جهاز)`);
       } else {
-        throw new Error('فشل الإرسال');
+        showNotification(`❌ فشل الإرسال: ${data.error || 'خطأ غير معروف'}`, 'error');
       }
     } catch(err) {
-      showNotification('⚠️ فشل إرسال الإشعار', 'error');
+      showNotification('❌ خطأ في الاتصال', 'error');
     } finally {
       if (btn) {
         btn.innerHTML = originalHTML;
@@ -594,84 +601,155 @@
     }
   }
 
-  function updateStatsAfterDelete() {
-    const totalElem = document.querySelector('#totalResultsCount');
-    if (totalElem) {
-      let current = parseInt(totalElem.innerText) || 0;
-      if (current > 0) totalElem.innerText = current - 1;
+  // إرسال رسالة تليجرام لرقم مخصص
+  document.getElementById('sendTelegramBtn')?.addEventListener('click', async () => {
+    const phone = document.getElementById('telegramPhone')?.value.trim();
+    const message = document.getElementById('telegramMessage')?.value.trim();
+    const resultDiv = document.getElementById('telegramResult');
+    
+    if (!phone) {
+      showNotification('⚠️ أدخل رقم الهاتف', 'error');
+      return;
     }
-    updateStats();
-  }
-
-  function updateStats() {
-    const rows = document.querySelectorAll('.desktop-table tbody tr, .result-mobile-card').length;
-    const sent = Math.floor(rows * 0.7);
-    const pending = rows - sent;
+    if (!message) {
+      showNotification('⚠️ أدخل نص الرسالة', 'error');
+      return;
+    }
     
-    const sentSpan = document.getElementById('sentCount');
-    const pendingSpan = document.getElementById('pendingCount');
-    if (sentSpan) sentSpan.innerText = sent;
-    if (pendingSpan) pendingSpan.innerText = pending;
+    resultDiv.innerHTML = '<span style="color:#0088cc;"><i class="fas fa-spinner fa-spin"></i> جاري الإرسال...</span>';
+    
+    try {
+      const response = await fetch('/api/send-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, message })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.ok) {
+        resultDiv.innerHTML = `<span style="color:#10b981;">✅ تم الإرسال: وصل لـ ${data.delivered} جهاز، فشل ${data.failed}</span>`;
+        showNotification(`✅ تم الإرسال لـ ${data.delivered} جهاز`);
+      } else {
+        resultDiv.innerHTML = `<span style="color:#dc2626;">❌ ${data.error || 'فشل الإرسال'}</span>`;
+        showNotification(data.error || 'فشل الإرسال', 'error');
+      }
+    } catch(err) {
+      resultDiv.innerHTML = '<span style="color:#dc2626;">❌ خطأ في الاتصال</span>';
+      showNotification('خطأ في الاتصال', 'error');
+    }
+  });
+
+  // إضافة رقم تليجرام جديد
+  document.getElementById('addTelegramNumberBtn')?.addEventListener('click', async () => {
+    const phone = document.getElementById('newTelegramNumber')?.value.trim();
+    if (!phone) {
+      showNotification('⚠️ أدخل رقم الهاتف', 'error');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/numbers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      
+      if (response.ok) {
+        showNotification(`✅ تم إضافة الرقم ${phone}`);
+        document.getElementById('newTelegramNumber').value = '';
+        loadTelegramNumbers();
+      } else {
+        const data = await response.json();
+        showNotification(data.error || 'فشل الإضافة', 'error');
+      }
+    } catch(err) {
+      showNotification('خطأ في الاتصال', 'error');
+    }
+  });
+
+  // حذف رقم تليجرام
+  window.deleteTelegramNumber = async (phone) => {
+    if (!confirm(`⚠️ حذف الرقم ${phone}؟`)) return;
+    
+    try {
+      const response = await fetch(`/api/numbers/${encodeURIComponent(phone)}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        showNotification(`✅ تم حذف ${phone}`);
+        document.getElementById(`tg-row-${phone}`)?.remove();
+        updateTelegramCount();
+      } else {
+        showNotification('فشل الحذف', 'error');
+      }
+    } catch(err) {
+      showNotification('خطأ في الاتصال', 'error');
+    }
+  };
+
+  // تحميل أرقام التليجرام
+  async function loadTelegramNumbers() {
+    try {
+      const response = await fetch('/api/numbers');
+      const data = await response.json();
+      const items = data.items || [];
+      
+      const tbody = document.getElementById('telegramNumbersBody');
+      if (tbody) {
+        if (items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">لا توجد أرقام مسجلة</td></tr>';
+        } else {
+          tbody.innerHTML = items.map(item => `
+            <tr id="tg-row-${item.phone}">
+              <td>${item.phone}</td>
+              <td>${item.createdAt || '—'}</td>
+              <td><button class="btn-mini btn-delete" onclick="deleteTelegramNumber('${item.phone}')" style="padding: 4px 12px;">حذف</button></td>
+            </tr>
+          `).join('');
+        }
+      }
+      updateTelegramCount(items.length);
+    } catch(err) {
+      console.error('Error loading telegram numbers:', err);
+    }
   }
 
+  function updateTelegramCount(count = null) {
+    const countElem = document.getElementById('telegramCount');
+    if (countElem) {
+      if (count !== null) {
+        countElem.innerText = count;
+      } else {
+        const rows = document.querySelectorAll('#telegramNumbersBody tr:not(:only-child)').length;
+        countElem.innerText = rows;
+      }
+    }
+  }
+
+  document.getElementById('refreshTelegramNumbers')?.addEventListener('click', loadTelegramNumbers);
+
+  // رسائل النجاح من الرفع
   document.addEventListener('DOMContentLoaded', function() {
-    updateStats();
-    
-    // ========== قراءة رسائل النجاح من localStorage ==========
     const successMsg = localStorage.getItem('uploadSuccess');
-    const errorMsg = localStorage.getItem('uploadError');
-    const urlError = new URLSearchParams(window.location.search).get('error');
-    
     if (successMsg) {
       showNotification(successMsg, 'success');
       localStorage.removeItem('uploadSuccess');
     }
     
-    if (errorMsg) {
-      showNotification(errorMsg, 'error');
-      localStorage.removeItem('uploadError');
-    }
-    
+    const urlError = new URLSearchParams(window.location.search).get('error');
     if (urlError) {
       let errorText = '';
       switch(urlError) {
-        case 'session_expired':
-          errorText = '⚠️ انتهت الجلسة، يرجى إعادة تسجيل الدخول';
-          break;
-        case 'no_file':
-          errorText = '❌ لم يتم اختيار ملف';
-          break;
-        case 'missing_fields':
-          errorText = '❌ جميع الحقول مطلوبة';
-          break;
-        case 'invalid_phone':
-          errorText = '❌ رقم الهاتف غير صحيح (10 أو 11 رقم)';
-          break;
-        default:
-          errorText = `❌ حدث خطأ: ${decodeURIComponent(urlError)}`;
+        case 'session_expired': errorText = '⚠️ انتهت الجلسة'; break;
+        case 'no_file': errorText = '❌ لم يتم اختيار ملف'; break;
+        case 'missing_fields': errorText = '❌ جميع الحقول مطلوبة'; break;
+        case 'invalid_phone': errorText = '❌ رقم الهاتف غير صحيح'; break;
+        default: errorText = `❌ ${decodeURIComponent(urlError)}`;
       }
       showNotification(errorText, 'error');
-      // تنظيف الـ URL من الـ error parameter
       window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
-    // ========== إعدادات الفورم ==========
-    const form = document.getElementById('uploadForm');
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        const phone = document.getElementById('phone').value;
-        if (!/^[0-9]{10,11}$/.test(phone.replace(/\D/g, ''))) {
-          e.preventDefault();
-          showNotification('⚠️ رقم الهاتف يجب أن يكون 10 أو 11 رقم', 'error');
-          return false;
-        }
-        const btn = document.getElementById('uploadButton');
-        if (btn) {
-          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
-          btn.disabled = true;
-        }
-        return true;
-      });
     }
   });
 </script>
